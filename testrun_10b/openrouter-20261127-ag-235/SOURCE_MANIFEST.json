@@ -1,0 +1,42 @@
+{
+  "build": "4.3.0-c.6.6.235",
+  "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "AF1: erste 73 von 74 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
+  "savedMessages": 79,
+  "requests": 9,
+  "costUSD": "0.03609945",
+  "usage": {
+    "prompt_tokens": 125829,
+    "completion_tokens": 2065,
+    "total_tokens": 127894
+  },
+  "sha256": {
+    "actions.jsonl.gz": "3e3ce9a9b95cee8678deacac327cb34437833f68a7c15db1daa6ab3870060abc",
+    "chat.jsonl.gz": "7afc226a6c3aab486fae624f4f5ba6e16d0af24d018d9ee5ee21f36418afacd3",
+    "decisions.log.gz": "ed20342a3b85a833ca5c4115f2d22f36688783db53e663ddc0641e23fbd2ba19",
+    "events.json.gz": "c78bd2badccaffa59389995c3b622249d1cd18faa96e2c67a14c689bc224dfd1",
+    "last-verified-world.json.gz": "fab1f824126f5cc4e50fc2b7078bb1dd66fe83f7a7c294970f74734124d032ef",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "111b0e8391ad6f0772f23008ab002925271658ef5cf50bf690a183fcf9d98129",
+    "raw-313.gz": "6a1ec60c62230f96d0e23969617d9c31cd745a09e8bc317e542e4b51ea0c2f31",
+    "raw-314.gz": "6b8ccc374c15158ec73c92992872f7970f4578289c74f87f3a98607785c5e55c",
+    "raw-315.gz": "28c4baffe31314132ab651b380ef528dbe6c8a59ddfd41c3b0f575800e0e87ea",
+    "raw-316.gz": "a110662912e7361bd3cf407553fb28c16125c1c14d4c9031ef458f21961fd1b5",
+    "raw-317.gz": "6980ab52ff9885db2280cfa0248e8a295f5f8efb3b99f307b7d260b0dc28a01a",
+    "raw-318.gz": "f425172b7f5b0913411d08bfd7243197cf771b0cb51bf1962c5b9749c305fd6c",
+    "raw-319.gz": "29cced59432f681f3f3e4e275384f9862dd53b72dca0ea6cc65564ec2a855b90",
+    "raw-320.gz": "12269f1de749ef0a2272dfee61881f135117bd3fac678a8117144ff8a4ac946a",
+    "raw-321.gz": "b6f7c8613c3e9e06c77ec9199f3131ff985c95bd2ac55a70ee19f51aa44b00af",
+    "requests.jsonl.gz": "15fc2400dfbe05bf659b55c89354170a61f0e852184be36936852f277764781c",
+    "st.log.gz": "3fd74795d3b740f23f9c4acb3afb88894e4d580008dde6ec893a5e92c59df945",
+    "turns.jsonl.gz": "04e88ab9b03b57a13550d2eaa6653dee65a2a2b7afb087a6925965452bd9ee31",
+    "visible.json.gz": "46416f44570f15919ff2ae381536c4963af09c33131e80d9a31b520790d5a85a",
+    "PREFIX.json": "74301c57c17e7ee752bba88a05a6bc57017175535b26aefdfcdf9b480b820d7c"
+  },
+  "prefixAudit": "PREFIX.json"
+}

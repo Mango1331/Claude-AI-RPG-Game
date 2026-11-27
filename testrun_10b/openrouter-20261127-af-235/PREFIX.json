@@ -1,0 +1,17 @@
+{
+  "parent": "AE",
+  "parentTurn": 3,
+  "parentMessages": 73,
+  "usedMessages": 72,
+  "lastUsedRole": "player",
+  "parentAt": "loc.old_crown_catacombs",
+  "startAt": "loc.alderwatch.guild_hall",
+  "differentStateKeys": [
+    "clock",
+    "dungeons",
+    "entities",
+    "memories",
+    "scene"
+  ],
+  "startWorldSHA256": "0897afd906c5f469c58712e297ab322e5dcbce3801bf8c3bd22d0bc154d31cac"
+}

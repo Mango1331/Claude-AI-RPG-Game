@@ -6,7 +6,7 @@
   "provider": "openai",
   "reasoning": "low",
   "st": "1.19.0",
-  "prefix": "N4 nach Warden und vor Abgabe, Variante mit direkter Ansprache zur Trennung.",
+  "prefix": "N4: erste 67 von 68 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
   "savedMessages": 71,
   "requests": 6,
   "costUSD": "0.04307685",
@@ -32,6 +32,8 @@
     "requests.jsonl.gz": "140fa96980406fdc9148404db4a262b8290293aa6522a28c7861a2e954ae3a44",
     "st.log.gz": "4817bacb45f50f17121f30cbcb12e3b7ff09aad4bab3a020fd3fe238c61158c9",
     "turns.jsonl.gz": "18a195f9dd10bbf2fa7828aa8905fd8ee5ce0ba488978ad95ca27e228eb8f1df",
-    "visible.json.gz": "2e0f43cd84732d09c2f11ad2f98356f402f2c00a982f20a4446506bbf80356d6"
-  }
+    "visible.json.gz": "2e0f43cd84732d09c2f11ad2f98356f402f2c00a982f20a4446506bbf80356d6",
+    "PREFIX.json": "cda02d5544605891a99268c7e620e9fa352b752d979f00d18ed5de1820a8959a"
+  },
+  "prefixAudit": "PREFIX.json"
 }

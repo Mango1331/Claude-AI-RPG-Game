@@ -1,0 +1,11 @@
+{
+  "parent": "E",
+  "parentTurn": 6,
+  "parentMessages": 47,
+  "usedMessages": 47,
+  "lastUsedRole": "assistant",
+  "parentAt": "loc.east_fold_below_the_moss_grown_hill",
+  "startAt": "loc.east_fold_below_the_moss_grown_hill",
+  "differentStateKeys": [],
+  "startWorldSHA256": "c31cf7040487e08b1821f41122248a1e3236a40286d0368f36ab1650bfb71cbd"
+}

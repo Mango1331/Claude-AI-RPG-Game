@@ -6,7 +6,7 @@
   "provider": "openai",
   "reasoning": "low",
   "st": "1.19.0",
-  "prefix": "Echter N4 vor der Questabgabe, unabhängige Variante mit dem Wunsch nach Trennung vor der Auszahlung.",
+  "prefix": "N4: erste 67 von 68 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
   "savedMessages": 71,
   "requests": 4,
   "costUSD": "0.03291165",
@@ -30,6 +30,8 @@
     "requests.jsonl.gz": "0357f4207752d9c05e411f00b892fb0082f92dcfe7b510a6fa02db4b34f95973",
     "st.log.gz": "0990996dfc939bc203d55faa6e48a2c421018f3fecf31dd83c2855afd7e5c9ae",
     "turns.jsonl.gz": "ac425443e40aea56e98274eef96e9cd7eb947b326399634dbff6724a7b5cc000",
-    "visible.json.gz": "6cf73dfac66d79a7d886c3bfcc6864ecc3c6334bb369431a6ee9d73ec82b776b"
-  }
+    "visible.json.gz": "6cf73dfac66d79a7d886c3bfcc6864ecc3c6334bb369431a6ee9d73ec82b776b",
+    "PREFIX.json": "cda02d5544605891a99268c7e620e9fa352b752d979f00d18ed5de1820a8959a"
+  },
+  "prefixAudit": "PREFIX.json"
 }

@@ -1,0 +1,40 @@
+{
+  "build": "4.3.0-c.6.6.235",
+  "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Vollständiger AF1-Chat bis einschließlich gespeicherter Ankunft in Sektion 1. Startwelt byteinhaltlich mit AF1 verglichen.",
+  "savedMessages": 80,
+  "requests": 9,
+  "costUSD": "0.05327880",
+  "usage": {
+    "prompt_tokens": 121472,
+    "completion_tokens": 1732,
+    "total_tokens": 123204
+  },
+  "sha256": {
+    "actions.jsonl.gz": "5c2d67ef6bc4287c1ac53cb5623c3a876364d8cd495b4faefe0139bc879837b4",
+    "chat.jsonl.gz": "0573b7eada65c1f6ee4b84e1bc5ec92d2c582e7ee755dc877ef582fd6bac2ecc",
+    "decisions.log.gz": "d4506422143e050dce492f5c0148ec43d7e99dfe1049c2e3c1f2d16d716243ce",
+    "events.json.gz": "188a3763a3e4a9b52bab8b028be4f450972786ba7e48d4b9a57fc85dddd1ad4c",
+    "last-verified-world.json.gz": "134d9c19c4df95e34edfb630dbeb75fac0146516c82919c86ba729018f3f1980",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "9526d6dfbdde98e514abb94f4a44ca87f303f8284c8b75348e3b72e671e5d120",
+    "raw-322.gz": "56241c5ed5cc2350a5d2e2b43cfc5622f303b7b267ccc3da20e40770c1af8535",
+    "raw-323.gz": "f32b410966a1c2fb70569b41102477b87c295520cbdbc444f1f62faed3cdafcf",
+    "raw-324.gz": "acb05be16c4102ff9db0849fa2ed2085e2ddf492cda003642b20950da5d85cc3",
+    "raw-325.gz": "d2df04df8c3e9b531b54995b0cc174535881fce1f77eeb71e8960c6b25250258",
+    "raw-326.gz": "bc7f443de2d53e02839a3e5977fd62d4c3eef45275702709737e42997f3e1eac",
+    "raw-327.gz": "c8f919303d2754fb3925db62a520ae569eeead31b124aae91b0584aa7d76b6e3",
+    "raw-328.gz": "6736273dd0a082f48edd761a162a7360434c7bf5cb57b7462d4289c09481ada6",
+    "raw-329.gz": "2b4b88ce83986bf3ce2296f4cc89f79c106c9c4fb0d34766c79baf4725171add",
+    "raw-330.gz": "fdc2b8ca5e608abc76df1180caa452eb20da6e13de5d89ee6f9b541a59526c9e",
+    "requests.jsonl.gz": "52d0ba39ff00aa1e0995486675247cff5f84d48c70377657f23cdc9206bc42e0",
+    "st.log.gz": "3ba4c58a31cc29f60f41bdd9cd494fac3263c27efd6d306c3ecf87538436aaf8",
+    "turns.jsonl.gz": "a6f3711ae7389ab13aff1ebd94ed5a9ed63c03e214c1b0473aee1332b15e267d",
+    "visible.json.gz": "1c42d64f5fe78886436621230366fbe45c4f5981b0c86833879a375bda431c79"
+  }
+}

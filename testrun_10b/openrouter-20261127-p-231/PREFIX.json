@@ -1,0 +1,14 @@
+{
+  "parent": "O",
+  "parentTurn": 3,
+  "parentMessages": 43,
+  "usedMessages": 42,
+  "lastUsedRole": "player",
+  "parentAt": "loc.east_fold_below_the_moss_grown_hill",
+  "startAt": "loc.east_fold_below_the_moss_grown_hill",
+  "differentStateKeys": [
+    "facts",
+    "memories"
+  ],
+  "startWorldSHA256": "c543b7458de458e98a614eafec211ddc13ec6a5d8c7893ddf14748ac42029dd5"
+}

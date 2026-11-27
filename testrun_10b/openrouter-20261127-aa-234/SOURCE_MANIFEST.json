@@ -6,7 +6,7 @@
   "provider": "openai",
   "reasoning": "low",
   "st": "1.19.0",
-  "prefix": "Y3 einschließlich tatsächlichem Tod und Flucht der Slotgegner. Von außen weiter bis zur Begegnung beim Betreten.",
+  "prefix": "Y3: erste 42 von 43 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
   "savedMessages": 46,
   "requests": 6,
   "costUSD": "0.02728140",
@@ -32,6 +32,8 @@
     "requests.jsonl.gz": "1b1998b43ad0ad122bf142e9a8bb62348db4f48b6a75cc959ef944736234550f",
     "st.log.gz": "ec7d34ee804e6fc0f47503a43dbe92e487b54e88760a8c8a9821fc7dd3b68822",
     "turns.jsonl.gz": "ef8e2b5e32b9b8ed823f9707942b4223f925a013c90ed84e9f61b3d6cc457a1b",
-    "visible.json.gz": "174ccd41b3438196b548224a79bbba48df40569a81b406e11881c566bd0e4910"
-  }
+    "visible.json.gz": "174ccd41b3438196b548224a79bbba48df40569a81b406e11881c566bd0e4910",
+    "PREFIX.json": "035f24cbdc4b9496bdec21a1609f7096b5989220ab8b7ed852ff278f48e093f0"
+  },
+  "prefixAudit": "PREFIX.json"
 }

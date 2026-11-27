@@ -1,0 +1,36 @@
+{
+  "build": "4.3.0-c.6.6.235",
+  "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "AE3: erste 72 von 73 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
+  "savedMessages": 74,
+  "requests": 3,
+  "costUSD": "0.03048045",
+  "usage": {
+    "prompt_tokens": 42341,
+    "completion_tokens": 1003,
+    "total_tokens": 43344
+  },
+  "sha256": {
+    "actions.jsonl.gz": "db365f70d5c8c8fc23c85022ed4dcf969602dad292e43c29c058e3f557626562",
+    "chat.jsonl.gz": "80358d9fda8f616975dc2921e9cf36a7ad677d4f83270543a2fdec80187f2eff",
+    "decisions.log.gz": "d38b1a3895d11a0a0460e6d6f196fa9831fca708882d267f33ddf84d1bf87cbc",
+    "events.json.gz": "6b5688cc6cfc4c67849f0db9d12337540f3f55ac86d4316f39c1f7d42cda2c08",
+    "last-verified-world.json.gz": "5c69c99af89d3e1ecd6a88401148d5426e54d9985b4c73c223607a5a1c0e23f9",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "c45b2241aa9b7ac2f4b9eb719ddef5c3ffaa0cfb67365156cd9e04585cfeb975",
+    "raw-310.gz": "3908a101c2df8841b8f27910af653e52d14b812080e6c95c7b9a2d744b830dee",
+    "raw-311.gz": "bd239507c4b07e86d6e82bd76f553621dd07f5781f73027681f044761082d3f5",
+    "raw-312.gz": "8eba7edff797b9aaf9cc4d3f81b3920932f558eae3784b2f548662acf6e33389",
+    "requests.jsonl.gz": "84b24ea4e153e23f38044990854c999225a43b4d034c0aa5128060b24e4ab21f",
+    "st.log.gz": "d948d106faadff30c15e85e9419f302f80fb46cb59c1867e102c974107013e51",
+    "turns.jsonl.gz": "53c588c25aa25074089881167e324aac4d5d151ab723e591be40a985f37501cf",
+    "visible.json.gz": "b8463f8fe836e74acb0f7eb1eee39a509ac42cb7730195c0c409aeed046a1648",
+    "PREFIX.json": "5e01ecf3d7888615e30413cdc2e77462007fe8859ea3839a62a45fa3077e7fe1"
+  },
+  "prefixAudit": "PREFIX.json"
+}

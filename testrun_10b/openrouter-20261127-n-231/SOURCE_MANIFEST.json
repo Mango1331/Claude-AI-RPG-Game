@@ -6,7 +6,7 @@
   "provider": "openai",
   "reasoning": null,
   "st": "1.19.0",
-  "prefix": "Unveränderter bezahlter I22-Spielstand (60 Nachrichten), identisch zu L und M. Sechs neue Züge bis Warden, Questabrechnung und Trennung.",
+  "prefix": "I22: erste 60 von 61 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
   "savedMessages": 72,
   "requests": 19,
   "costUSD": "0.0449816",
@@ -45,6 +45,8 @@
     "requests.jsonl.gz": "e22ebc9d6654e3cdc5318e297ee41e27161fbb7499c9295acae66f763e5dd98e",
     "st.log.gz": "04b2711cb9cc87242bfce65dc447c563460f141d977a4d863825f5db0a75c877",
     "turns.jsonl.gz": "df24a855997085133f9841fc5c81c103202e8b408cfffd2e31856e3991bebd22",
-    "visible.json.gz": "d65be042b2713e1c7e1d74432bfeb60ec9c397a16cdff1de38a8155663a998c6"
-  }
+    "visible.json.gz": "d65be042b2713e1c7e1d74432bfeb60ec9c397a16cdff1de38a8155663a998c6",
+    "PREFIX.json": "5a4881ea255260e5a188e9c56576fd02168137a4c13713c96a789e38553055c1"
+  },
+  "prefixAudit": "PREFIX.json"
 }

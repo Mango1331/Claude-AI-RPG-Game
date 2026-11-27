@@ -33,6 +33,8 @@
     "requests.jsonl.gz": "20ecf57467803244b5b29d84101c685fb9e062953d526b1607afbf0d05dacadc",
     "st.log.gz": "dab51e5bbf0cd593aea9aee2d6bd4c634816f539084c63c1304e399ad84f1181",
     "turns.jsonl.gz": "c8ee6ef3ae36e49be7ce1651e005a5f600b47fc32b537f3fdb4525c180135531",
-    "visible.json.gz": "461ebea8e60b13bc1cf2cbe6041e9964cd72d0c4a2ba9aba2ed5d2b703689528"
-  }
+    "visible.json.gz": "461ebea8e60b13bc1cf2cbe6041e9964cd72d0c4a2ba9aba2ed5d2b703689528",
+    "PREFIX.json": "ad66a48a9916fc02da5311452d15a7f224cc173fc5fce369262c82174925ad20"
+  },
+  "prefixAudit": "PREFIX.json"
 }

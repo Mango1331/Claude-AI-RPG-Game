@@ -6,7 +6,7 @@
   "provider": "openai",
   "reasoning": null,
   "st": "1.19.0",
-  "prefix": "Identischer I22-Stand. Ein tatsächlicher Vormarsch mit zwei Extractorantworten und fehlgeschlagenem Weltabgleich.",
+  "prefix": "I22: erste 60 von 61 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
   "savedMessages": 62,
   "requests": 4,
   "costUSD": "0.0076948",
@@ -30,6 +30,8 @@
     "raw-188.gz": "d23086ee41a778fb6d1a4dd85bd5961deffbbd5e7bfa8885aecd5f8c5d6833f9",
     "requests.jsonl.gz": "f057bfea36199a68446f16df3bfa94246f82da88348fa79974c36c9a045e7e86",
     "st.log.gz": "e0352a120c1d5f42247ce36a7bb9846479854c572cbb255279f766cc14894d53",
-    "visible.json.gz": "8703ead396a48d7202ba848f059944588691a1eeb5251e3a1511c2d77bc82e3b"
-  }
+    "visible.json.gz": "8703ead396a48d7202ba848f059944588691a1eeb5251e3a1511c2d77bc82e3b",
+    "PREFIX.json": "5a4881ea255260e5a188e9c56576fd02168137a4c13713c96a789e38553055c1"
+  },
+  "prefixAudit": "PREFIX.json"
 }

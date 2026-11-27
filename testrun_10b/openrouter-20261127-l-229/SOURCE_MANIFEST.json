@@ -6,7 +6,7 @@
   "provider": "openai",
   "reasoning": null,
   "st": "1.19.0",
-  "prefix": "Echte Party aus I nach Zug 22, bereits zwei Encounter abgeschlossen. Drei fortlaufende Gehentscheidungen auf .229.",
+  "prefix": "I22: erste 60 von 61 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
   "savedMessages": 66,
   "requests": 9,
   "costUSD": "0.0200484",
@@ -35,6 +35,8 @@
     "requests.jsonl.gz": "a95a43c3bd4232a05fb636bbd18f64a3a6100c16a2367f6074990942076eaa85",
     "st.log.gz": "7add73b59e5d4b0826e5b7d46b9f57cf2bf090a6ac849f329ab898ab69629be6",
     "turns.jsonl.gz": "e1efde8f2083d7cbc98d95dbcb42f04ff6763c85e46cc2083f18c03fce6c4710",
-    "visible.json.gz": "da6574ca9e0d55807f023f4243828803d69ec4bc68c525ee0efa1f6a6e83f7fc"
-  }
+    "visible.json.gz": "da6574ca9e0d55807f023f4243828803d69ec4bc68c525ee0efa1f6a6e83f7fc",
+    "PREFIX.json": "5a4881ea255260e5a188e9c56576fd02168137a4c13713c96a789e38553055c1"
+  },
+  "prefixAudit": "PREFIX.json"
 }

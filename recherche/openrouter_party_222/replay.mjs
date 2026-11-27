@@ -53,3 +53,28 @@ assert.ok(!after.quests['quest.clear_the_old_crown_catacombs_level_1'].ready);
 assert.equal(after.entities.pc.sheet.xp,90);
 assert.equal(after.entities['npc.ossen'].sheet.xp,90);
 console.log('H membership and two negative controls, I partial floor, M canonical arrival verified.');
+
+for (const run of ['q-232','r-232']) {
+    const prefix = messages(run).slice(0,39);
+    const report = host.rec(prefix.at(-1)).extraction.raw;
+    const state = await extract(prefix,JSON.stringify(report));
+    const slot = state.dungeons['loc.mossback_warrens'].run.floors[1].slots[0];
+    assert.equal(new Set(slot.entities).size,2,run);
+    assert.equal(state.scene.at,'loc.east_fold_below_the_moss_grown_hill',run);
+}
+for (const [run,mode] of [['ac-234','left'],['z-234','left'],['x-233','follow']]) {
+    const chat = messages(run);
+    const requests = source(run,'requests.jsonl.gz').trim().split('\n').map(JSON.parse);
+    const planner = requests.find(r => r.kind === 'end' && r.turn === 1 && r.role === 'planner');
+    const first = requests.find(r => r.kind === 'start' && r.id === planner.id);
+    const actions = source(run,'actions.jsonl.gz').trim().split('\n').map(JSON.parse);
+    const playerText = actions[0].text;
+    const i = chat.findLastIndex(m => m.is_user && m.mes === playerText);
+    assert.ok(i>=0 && first,run);
+    const prefix = chat.slice(0,i+1);
+    prefix[i] = {is_user:true, mes:playerText, extra:{}};
+    const answer = JSON.parse(source(run,path.basename(planner.rawFile))).choices[0].message.content;
+    await runtime.prepareGenerationAsync(prefix,content,{llm: async () => answer});
+    assert.equal(host.foldChat(prefix).state.party.members['npc.ossen'].mode,mode,run);
+}
+console.log('Q/R original visual reports and AC/Z/X original departure decisions verified.');

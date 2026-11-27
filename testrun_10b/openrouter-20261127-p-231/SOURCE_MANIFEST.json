@@ -6,7 +6,7 @@
   "provider": "openai",
   "reasoning": null,
   "st": "1.19.0",
-  "prefix": "Tatsächliches Ende von O, keine Dammar-Erwähnung durch den Testspieler. Erinnerungsziele stammen aus dem gekennzeichneten Offline-User16-Präfix.",
+  "prefix": "O3: erste 42 von 43 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
   "savedMessages": 48,
   "requests": 9,
   "costUSD": "0.0227148",
@@ -35,6 +35,8 @@
     "requests.jsonl.gz": "29cb27bf82676028e76871b43d006ace034b6fabc32beb1ac41978e1c6d2addf",
     "st.log.gz": "5db02d1b48558e9d932cdc093dc1259916f55acf087bbd8ecf4bf7f941fcd5a2",
     "turns.jsonl.gz": "8858095776664e0aca99ad1ce7caa2e5a22019eccc3718658fc94f316b78b2c8",
-    "visible.json.gz": "a8fa1b8be31d8903453305f74b86092f4445d9ba23911955d44a4fa650bb120f"
-  }
+    "visible.json.gz": "a8fa1b8be31d8903453305f74b86092f4445d9ba23911955d44a4fa650bb120f",
+    "PREFIX.json": "1e660d8a94b7df3d3130220dabb11c5b1a401b03e42cec6aa6bdc333dcabb625"
+  },
+  "prefixAudit": "PREFIX.json"
 }

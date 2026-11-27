@@ -1,0 +1,37 @@
+{
+  "build": "4.3.0-c.6.6.234",
+  "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "N4: erste 67 von 68 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
+  "savedMessages": 71,
+  "requests": 4,
+  "costUSD": "0.01936350",
+  "usage": {
+    "prompt_tokens": 56958,
+    "completion_tokens": 1242,
+    "total_tokens": 58200
+  },
+  "sha256": {
+    "actions.jsonl.gz": "4d18281eff6b344974adf91eff1e8b5af958c5553d708b058ea2f65d42689f5d",
+    "chat.jsonl.gz": "827f983fae45e38e1804e70eb0fb86cce5e2cb8e71be4cee3b39c9ea74efe739",
+    "decisions.log.gz": "c624da1ac6027e0fd8977482c74c03530441c826217dad547726d6df75ef4553",
+    "events.json.gz": "416d01c00d9cfd668dba2d0c602622cd94009bd020703f8cc3e4af03d6637421",
+    "last-verified-world.json.gz": "b89f2fb63d267f4bc62acf69bc9f7a7f6a07b74d08ef7d1e19527b58b330a7cc",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "d32f8cb7cb7cec6342e06864c2a6a13e6f798e1b515f48c7325827c0ca34b58b",
+    "raw-291.gz": "992dfb673221c5b1eea88dbf14f778020d34bb8feb5c20c7e6b1c7a61c01102b",
+    "raw-292.gz": "60fa7fa44a6113a2221af0d673586e972ae988aee6535b8a732247a855eb0c56",
+    "raw-293.gz": "6a5b2cdd4d62d62810522acbb40c820e4e6926e0446f60efaaec25621993d5c8",
+    "raw-294.gz": "1275edca7948fa1c25a9b1499f4c4d80c29d052edf9659d5ec0fc9f159ef1381",
+    "requests.jsonl.gz": "db9678d1d93d64372c648e3f97deea8088743e82359d084026768a92ba87810b",
+    "st.log.gz": "dc76da94931b5ac6e1dcd585090b9a18b401ad8356f3809c15ae543b97d7a633",
+    "turns.jsonl.gz": "5e17c64c74e3627f248863f4b9851212aa4ba5b119357c9dc793f5599e379d4c",
+    "visible.json.gz": "f200333f15727842c1a630298061d0b50a70c7172a92ea6f0ea0a015f3c376fd",
+    "PREFIX.json": "cda02d5544605891a99268c7e620e9fa352b752d979f00d18ed5de1820a8959a"
+  },
+  "prefixAudit": "PREFIX.json"
+}

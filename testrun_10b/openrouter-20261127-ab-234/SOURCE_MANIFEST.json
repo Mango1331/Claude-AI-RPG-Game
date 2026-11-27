@@ -1,0 +1,35 @@
+{
+  "build": "4.3.0-c.6.6.234",
+  "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
+  "seed": 3042268705,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "User15 vor T38, ursprüngliche Reise bis zur tatsächlichen Jagdpopulation.",
+  "savedMessages": 93,
+  "requests": 4,
+  "costUSD": "0.02648385",
+  "usage": {
+    "prompt_tokens": 55809,
+    "completion_tokens": 2171,
+    "total_tokens": 57980
+  },
+  "sha256": {
+    "actions.jsonl.gz": "016e340caf716ce76acaa92c64e3cb537df9147e1dab95b05f5883adb1ceded5",
+    "chat.jsonl.gz": "460c6276922e721e9389f8eb298488d3a7f9bb3c0444f9c20c13238ce9068ace",
+    "decisions.log.gz": "47602ff46889d482cd1740809c558269c12dcd258df0694e55ec366adae709cd",
+    "events.json.gz": "20fde1daca2f0894ce940acc83b905006e2256fc9fe5b0e1716f14cefe28e833",
+    "last-verified-world.json.gz": "c4ab4d76ae320ee77c4d0013cfcf68dd1e452040c67d72bcf0feaba9078cbf95",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "73921f2c7bb4f9d99cdf33cbc7224b5bd45591d959046b95b58b2a819fd3abb6",
+    "raw-287.gz": "d20568a504a9c3d835cd01ff87851706c1b6f8cc4dfadc18ded6c2175519e6d7",
+    "raw-288.gz": "d2f7d750bcd66a15d8c1f81703875901c49923b68f5cca25bc81762b0f5b71f1",
+    "raw-289.gz": "42e560ec3200553c5baf73e5c2d1c82dbe742ec1597ac9083015a4e28a4d6565",
+    "raw-290.gz": "e5c902a108f4559a61013c78448035a1005d6c20021b4c52e5ef99db3971eb91",
+    "requests.jsonl.gz": "a74be905f67b8212832a8dc67cf36e16b486ca2a3489403d6cef006cd3b2cf2c",
+    "st.log.gz": "249e632a4bf1e4536f1562f0c30caffb7e248d81314b6ef7177adfd0f0710920",
+    "turns.jsonl.gz": "f565d72eadd99f0fc86adddc3e091317fe66998b8dc23f7af28e829776b3e3b5",
+    "visible.json.gz": "c876778802f45cffc843ad123f8793f39d475a41167bbc6a4fc22edcafb4a5bc"
+  }
+}

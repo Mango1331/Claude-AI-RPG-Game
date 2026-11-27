@@ -1,0 +1,11 @@
+{
+  "parent": "AB",
+  "parentTurn": 2,
+  "parentMessages": 93,
+  "usedMessages": 92,
+  "lastUsedRole": "player",
+  "parentAt": "loc.reed_bank",
+  "startAt": "loc.reed_bank",
+  "differentStateKeys": [],
+  "startWorldSHA256": "cc66ce56526a7b11aedddc4fb7e86d43e0e496a1766874c51fd89183f793f961"
+}

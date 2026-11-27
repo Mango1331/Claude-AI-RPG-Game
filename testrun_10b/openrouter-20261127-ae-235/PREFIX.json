@@ -1,0 +1,16 @@
+{
+  "parent": "N",
+  "parentTurn": 4,
+  "parentMessages": 68,
+  "usedMessages": 67,
+  "lastUsedRole": "player",
+  "parentAt": "loc.old_crown_catacombs.l1_s4",
+  "startAt": "loc.old_crown_catacombs.l1_s4",
+  "differentStateKeys": [
+    "facts",
+    "memories",
+    "objects",
+    "quests"
+  ],
+  "startWorldSHA256": "5cb26043753534fb924e18de96f144d99494a34e76bb5bd6d76dbfbfed49ba95"
+}

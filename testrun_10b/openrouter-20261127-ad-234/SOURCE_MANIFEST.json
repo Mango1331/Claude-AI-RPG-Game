@@ -1,0 +1,39 @@
+{
+  "build": "4.3.0-c.6.6.234",
+  "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
+  "seed": 3042268705,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "AB2: erste 92 von 93 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollständigen Elternzug siehe PREFIX.json.",
+  "savedMessages": 96,
+  "requests": 6,
+  "costUSD": "0.03780825",
+  "usage": {
+    "prompt_tokens": 75299,
+    "completion_tokens": 1804,
+    "total_tokens": 77103
+  },
+  "sha256": {
+    "actions.jsonl.gz": "0b952390c25348f3815c8421aa845670dce56d2c55c35fa275d81d110760ea8a",
+    "chat.jsonl.gz": "5c56bfb0bb5f6b6aaf395d088dcf0d69935a21c0e4d9b7e5f4df841e3db16d62",
+    "decisions.log.gz": "abebc639804193e112c30eb3713e446d05e1659ff95ce8878b6a52382d1fe859",
+    "events.json.gz": "ac9ed1dccf1ebf7eb474ded6158e10710d1f2f1db1dccee8dd94855eeb6b3019",
+    "last-verified-world.json.gz": "b72205d7a97b234b4a4f4247335e8721d25531187b6fb364163262bf97deff52",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "308b470451ab0f1d9c8d5616c56a060cc6901d4305f245e32725ce5ef21e7354",
+    "raw-295.gz": "789adb0a267b594ba05242632c9da07f452565e2e86f4c1fff8f39e19316fdb8",
+    "raw-296.gz": "27382c3c4d7cb49c9164c5b77de8aaf77b43abae9d1ad38579be6f93142ccf43",
+    "raw-297.gz": "69ca588f8aa1e3080fdb512cfa3674032bfd271f4087fab3a1de1f7bfce306dc",
+    "raw-298.gz": "2eaf92e34d6079dd8a3f81efe20388bd1a48a3cd63331b15d996292e486043f1",
+    "raw-299.gz": "d924d32b84dd42af36653aaff48b588da925cb4ea09b6b837d0edcb1ccb65bf5",
+    "raw-300.gz": "52a7c8f2579509d950127a41c13091b8ed95369bd51b9ef7cc7274ea0431aef7",
+    "requests.jsonl.gz": "850ab46d034055897ef6f44d6bb6a7790438bc7eaa271fbd4e5dda143d7f6838",
+    "st.log.gz": "f78f85b230ddde69f7f0bb2122d4c2bf497d09daa670fc890cee566c87d5a676",
+    "turns.jsonl.gz": "8482e49058f25ca8f21aaf04d11d5b2a87af39f879aef98ab53e4febca882c58",
+    "visible.json.gz": "61f30fd79d8bdec7b93002406392b87aac9a7c73b019291c9c22b6ec8ceb1c67",
+    "PREFIX.json": "19680489c6d1b920fa2f687eef2093245ac11b8dc2c45be590385669493bb7a3"
+  },
+  "prefixAudit": "PREFIX.json"
+}

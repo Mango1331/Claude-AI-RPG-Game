@@ -4,7 +4,6 @@ import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { loadProductContent } from '../helpers.js';
 import { applyWorld } from '../../src/v4/world.js';
-import { sceneIssues } from '../../src/v4/extract.js';
 import { applyEvent } from '../../src/state.js';
 
 const content = await loadProductContent();
@@ -12,11 +11,9 @@ const { start, prose, reports } = JSON.parse(gunzipSync(readFileSync(new URL('./
 const farm = 'loc.halloran_steading';
 const farmer = 'npc.marta_halloran';
 const apply = (report, state = start) => applyWorld(state, content, report, { msg:48, prose });
-const issues = report => sceneIssues(report, start.scene.at, start, content, true);
 
 test('C19 follow-up: an explicitly situated encounter survives a late arrival declaration, the original evidence and source order remain intact', () => {
     const original = structuredClone(reports[1]);
-    assert.deepEqual(issues(original), []);
     const r = apply(original);
     assert.equal(r.state.scene.at, farm);
     assert.ok(r.state.scene.present.includes(farmer));
@@ -31,8 +28,8 @@ test('C19 follow-up: an explicitly situated encounter survives a late arrival de
     assert.deepEqual(persisted, r.state);
 });
 
-test('earlier observations with no explicit scene remain ambiguous, and no arrival means no encounter at the destination', () => {
-    assert.ok(issues(reports[0]).length > 0);
+test('earlier observations inherit their chronological scene, and no arrival means no encounter at the destination', () => {
+    assert.equal(apply(reports[0]).state.scene.at,farm);
     const absent = structuredClone(reports[1]);
     absent.deltas = absent.deltas.filter(d => d.type !== 'arrive');
     absent.expected = {};
@@ -45,8 +42,8 @@ test('an already visited scene and an intervening mechanical delta preserve the 
     const enter = reports[1].deltas.find(d => d.type === 'enter');
     const arrival = reports[1].deltas.find(d => d.type === 'arrive');
     const altered = middle => ({scene:farm, expected:{}, deltas:[{...enter,seq:1}, ...middle, {...arrival,seq:5}]});
-    assert.ok(issues(altered([{seq:2,type:'time',minutes:5}])).some(x => x.seq === 1));
-    assert.ok(issues(altered([{...arrival,seq:2},{...arrival,seq:3,at:start.scene.at}])).some(x => x.seq === 1));
+    assert.ok(apply(altered([{seq:2,type:'time',minutes:5}])).rejected.some(x => x.seq === 1 && x.rule === 'scene_context'));
+    assert.ok(apply(altered([{...arrival,seq:2},{...arrival,seq:3,at:start.scene.at}])).rejected.some(x => x.seq === 1 && x.rule === 'scene_context'));
 });
 
 test('a report can describe two encounters before their respective arrivals without moving the origin or expenditure', () => {
@@ -60,7 +57,7 @@ test('a report can describe two encounters before their respective arrivals with
         {seq:5,type:'enter',who:'npc.watchman',scene:destination,evidence:'The watchman greeted him.'},
         {seq:6,type:'arrive',at:destination},
     ]};
-    assert.deepEqual(issues(report), []);
+    assert.ok(!apply(report).rejected.some(x => x.seq === 2 && x.rule === 'scene_context'));
     const denied = structuredClone(start);
     denied.last.outcome = {c:true, auth:{c:true,gos:[],timeCap:5}, expected_keys:{}};
     denied.last.input = 'I stay here. I only want directions.';

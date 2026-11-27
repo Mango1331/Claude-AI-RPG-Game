@@ -62,7 +62,7 @@ test('Martin M11 currency ellipse and ambiguity',()=>{
 test('valid independent information survives an invalid fact',()=>{
     const p=parseExtraction(JSON.stringify({scene:'here',expected:{},deltas:[
         {seq:1,type:'fact',s:'pc',o:'incomplete'},
-        {seq:2,type:'memory',text:'The held lantern is blue.',imp:3,who:['pc']},
+        {seq:2,type:'memory',text:'The held lantern is blue.',imp:6,who:['pc']},
     ]}),content.deltaVocab,{},{});
     assert.ok(p.valid);
     assert.deepEqual(p.value.deltas.map(d=>d.seq),[2]);
@@ -84,3 +84,30 @@ for(const [input,target] of [
         });
     }
 }
+
+test('rejected declarations retain their dependencies and audit at commit',()=>{
+    const s=campaign(), ids={places:Object.keys(s.places)};
+    s.objects.old={id:'old',name:'Bronze cup',qty:1,holder:{loc:s.scene.at}};
+    const p=parseExtraction(JSON.stringify({expected:{},deltas:[
+        {seq:1,type:'object.new',name:'Bronze cup',kind:'unsupported',holder:'here'},
+        {seq:2,type:'object.move',object:{new:'Bronze cup'},to:'pc'},
+        {seq:3,type:'fact',s:'pc',p:'observation',o:'A faded red sign hangs here.'},
+    ]}),content.deltaVocab,ids,{});
+    assert.equal(p.valid,true);
+    const r=applyWorld(s,content,p.value,{invalid:p.rejected});
+    assert.equal(r.rejected.find(x=>x.seq===1)?.rule,'schema');
+    assert.ok(r.rejected.find(x=>x.seq===2));
+    assert.ok(r.events.some(e=>e.t==='fact.asserted'));
+    assert.deepEqual(r.state.objects.old.holder,{loc:s.scene.at});
+});
+
+test('a malformed purchase receipt leaves that action open and preserves independent facts',()=>{
+    const p=parseExtraction(JSON.stringify({expected:{1:{priced:'yes',taken_anyway:false}},deltas:[
+        {seq:1,type:'fact',s:'pc',p:'observation',o:'The shop has a red door.'}
+    ]}),content.deltaVocab,{}, {1:'buy'});
+    assert.equal(p.valid,true);
+    assert.equal(p.complete,false);
+    assert.deepEqual(p.missing,['1']);
+    assert.equal(p.value.deltas.length,1);
+    assert.deepEqual(p.value.expected,{});
+});

@@ -8,7 +8,7 @@ import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
 import { allowedArrival, stepsOf, reportedEndpoints, newPlaceScope, gateAlias } from './movement.js';
 import { reportedContinuation } from './travel_continuation.js';
 import { sectionsOf, sectionId } from './sections.js';
-import { sceneIssues, sceneSteps, localSceneDelta } from './extract.js';
+import { sceneSteps, localSceneDelta } from './extract.js';
 import { privateQuestsOf, questVisible } from '../content.js';
 // Runtime V4: applying the extractor's world deltas (docs/RUNTIME_V4_PLAN.md §5.2). After the narrator's reply the
 // extractor reported, in story order, what the reply established (src/v4/extract.js); the domain/authority firewall
@@ -276,7 +276,7 @@ function noRoleWords(answer) {
     return { ...answer, deltas: answer.deltas.map((d) => (roleless(d) ? { ...d, role: null } : d)) };
 }
 
-export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null } = {}) {
+export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null, invalid = [] } = {}) {
     answer = noRoleWords(newPlaceScope(answer, state));
     const s = clone(state);
     const dice = Dice.from(s);
@@ -359,8 +359,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     };
     const expected = answer.expected || {};
     const steps = sceneSteps(answer.deltas, s.scene.at, s, content, explicitTravel);
-    const chronology = new Map(explicitTravel ? sceneIssues(answer, s.scene.at, s, content, explicitTravel, steps).map(x => [answer.deltas[x.index], x.why]) : []);
-    const sceneOf = d => cPath && rulesetOf(s) >= 2 ? d?.scene ?? answer.scene : null;
+    const finalArrival = steps.findLast(x => x.d.type === 'arrive')?.d.seq ?? -Infinity;
+    const sceneOf = d => cPath && rulesetOf(s) >= 2
+        ? (d?.type === 'person.new' ? d.at : null) ?? d?.scene ?? (!explicitTravel || d?.seq >= finalArrival ? answer.scene : null) : null;
     const tag = msg !== null && msg !== undefined ? msg : s.turn;
 
     // Preserve the historical Rule-1 first-contact exception; Rule 2 checks every reached Dungeon.
@@ -1118,7 +1119,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const inside = dungeonOf(s, startAt);
     const outsideLeg = firstLeg && !['local', 'within'].includes(firstLeg.mode) && !(inside && inside === firstLeg.enter?.dungeon);
     const stopRoad = outsideLeg && explicitTravel && pulse?.exposure === 'travel' && pulse.open === true && (auth.gos || []).length
-        && !(answer.deltas || []).some((d) => d?.type === 'arrive') && !arrivesAnyway ? realmOf(s, startAt) : null;
+        && !invalid.some(x => x.delta?.type === 'arrive') && !(answer.deltas || []).some((d) => d?.type === 'arrive') && !arrivesAnyway ? realmOf(s, startAt) : null;
     let roadStop = !!stopRoad && stopRoad !== startAt && s.places[stopRoad]?.kind === 'realm' && !auth.gos.some((g) => g.to === stopRoad);
     const atStart = (d) => { const at = d.scene ?? answer.scene; return at != null && at !== 'here' && samePlace(s, at, startAt, content); };
     const bookRoadStop = () => {
@@ -1137,7 +1138,25 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     };
 
     const allowed = new Set(fw.accept);
+    // Apply schema rejections at their place in the same chronology as World rejections.
+    const rejectedSteps = invalid.slice().sort((a,b) => (a.delta?.seq || 0)-(b.delta?.seq || 0));
+    function rejectThrough(seq) {
+        while (rejectedSteps.length && (Number(rejectedSteps[0].delta?.seq) || 0) <= seq) {
+            const {delta,why} = rejectedSteps.shift();
+            reject(delta, 'schema', why);
+            refusedArrival(delta);
+            if (delta?.type === 'object.new' && typeof delta.name === 'string') {
+                objectsNew.set(normText(delta.name),null);
+                for (const [k,name] of Object.entries(auth.takeNames || {}))
+                    if (normText(name) === normText(delta.name)) refusedDuplicateTake.add(k);
+            }
+            if (delta?.type === 'object.move' && typeof delta.object === 'string') refusedMoves.add(delta.object);
+            if (delta?.type === 'person.new' && typeof delta.ref === 'string') blockedPeople.add(normText(delta.ref));
+            if (delta?.type === 'creature.new' && typeof delta.ref === 'string') blockCreature(delta);
+        }
+    }
     for (const {d} of steps) {
+        rejectThrough(d.seq);
         if (!allowed.has(d)) continue;
         const nextScene = d.scene ?? answer.scene;
         if (roadStop && localSceneDelta(d) && !atStart(d)) bookRoadStop();
@@ -1174,9 +1193,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             reject(d, 'npc_continuity', 'dependent claim about a rejected person reintroduction');
             continue;
         }
-        if (cPath && rulesetOf(s) >= 2 && localSceneDelta(d) && (chronology.has(d) || ((travel.filter(x => x.seq < d.seq).sort((a, b) => a.seq - b.seq).at(-1)?.ok === false) && (d.scene == null || d.scene === 'here')))) {
+        if (cPath && rulesetOf(s) >= 2 && localSceneDelta(d) && travel.filter(x => x.seq < d.seq).sort((a,b) => a.seq-b.seq).at(-1)?.ok === false && (sceneOf(d) == null || sceneOf(d) === 'here')) {
             refusedScene = true;
-            reject(d, 'scene_context', chronology.get(d) || 'ambiguous local scene after an unconfirmed arrival; here is not evidence');
+            reject(d, 'scene_context', 'ambiguous local scene after an unconfirmed arrival');
             continue;
         }
         const origin = sceneOf(d);
@@ -1193,7 +1212,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         if (cPath && rulesetOf(s) >= 2 && ['quest.ready', 'quest.progress', 'quest.close'].includes(d.type)
             && ((refusedScene && !d.depends_on?.length) || d.depends_on?.some(seq => (!acceptedSteps.has(String(seq)) && !pendingSeq(seq))
-                || Number(seq) >= d.seq || answer.deltas.filter(source => String(source.seq) === String(seq)).length !== 1))) {
+                || Number(seq) >= d.seq || (answer.deltas.filter(source => String(source.seq) === String(seq)).length + invalid.filter(x => String(x.delta?.seq) === String(seq)).length) !== 1))) {
             reject(d, 'quest_dependency', 'a cited supporting step was not accepted before this quest claim');
             continue;
         }
@@ -1302,7 +1321,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     (s.places[at.id]?.parent !== camp.origin || normText(s.places[at.id]?.name) !== normText(camp.name))) {
                     unmake(); reject(d, 'passage', 'this camp approach reaches only the nearby site he inspected'); refusedArrival(d); break;
                 }
-                if (at.id === s.scene.at && !(explicitTravel && s.places[at.id]?.kind === 'realm' && auth.gos?.length)) { travel.push({ seq: d.seq, ok: true }); break; }
+                if (at.id === s.scene.at && !(explicitTravel && s.places[at.id]?.kind === 'realm' && auth.gos?.length)) {
+                    const k = goStepAt(at.id);
+                    if (k != null && !d.forced_by) reachedGoals.set(k,at.id);
+                    travel.push({ seq:d.seq, ok:true }); break;
+                }
                 const forcedHere = !!String(d.forced_by || '').trim() && !unprovenForced.has(d);
                 // .190 (A2): the movement proof – the place his step may end at, decided by the GO, not by the reply
                 if (explicitTravel) {
@@ -1996,6 +2019,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (acceptedSteps.has(String(d.seq)) && ['arrive', 'enter', 'person.new'].includes(d.type)) settleCanonicalPurchases();
         if (acceptedSteps.has(String(d.seq)) && d.type === 'arrive' && s.scene.at !== atBefore) refusedScene = false;
     }
+    rejectThrough(Infinity);
     // a hand-over whose offer never came to be (refused) stands as the story told it
     settleDeferred();
 
@@ -2024,7 +2048,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const e = expected[k];
         if (!e) continue;
         if (type === 'approach' && String(auth.approach?.seq) === k) standpoint = e.standpoint;
-        if (explicitTravel && type === 'go' && e.arrived === true && !answer.deltas.some(d => d.type === 'arrive' && samePlace(s, d.at, e.at, content))) {
+        if (explicitTravel && type === 'go' && e.arrived === true && !reachedGoals.has(k)) {
             reject({ seq: Number(k), type: 'expected' }, 'arrival_evidence', 'reported arrival has no corresponding arrive delta; movement was not booked');
             corrections.push('An arrival was reported without its arrive event. Use the confirmed location; no implicit travel was booked.');
         }
@@ -2249,7 +2273,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // the Living Dungeon fallback), can the existing opposed Stealth check resolve this one GO.
     const approach = auth.approach;
     const local = approach && approach.at === s.scene.at && !s.encounter && typeof standpoint === 'string'
-        && standpoint.length <= 400 && sceneMatches(answer.scene) && !travel.some(t => !t.ok)
+        && standpoint.length <= 400 && (answer.scene == null || sceneMatches(answer.scene)) && !travel.some(t => !t.ok)
         && narratedEvent(prose, standpoint).ok;
     if (local) {
         emit({t:'scene.focus', d:{text:standpoint}});
@@ -2536,7 +2560,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     /** The GO step an actual arrival at this place answers (the first not yet met one, by its place). */
     function goStepAt(id) {
-        return Object.entries(outcome.expected_keys || {}).filter(([k, type]) => type === 'go' && !reachedGoals.has(k)).map(([k]) => k)
+        return [...endpoints.keys()].filter(k => !reachedGoals.has(k))
             .sort((a, b) => Number(a) - Number(b)).find((k) => {
                 const endpoint = endpoints.get(k);
                 return endpoint && (typeof endpoint === 'string' ? endpoint === id : samePlace(s,id,endpoint,content));

@@ -8,9 +8,7 @@ import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard
 import { hasPartyTerms } from '../party.js';
 import { partyControl } from './party_actions.js';
 import { nativeAction } from './native_actions.js';
-import { movementEvidence } from './narration_evidence.js';
 import { ordinaryChoice, localApproach } from './travel_continuation.js';
-import { placeKey } from './place_refs.js';
 import { worldVocab } from './extract.js';
 // Runtime V4 on a chat transcript (docs/RUNTIME_V4_PLAN.md §3): the host side of a V4 campaign. The same message
 // records as V3 (src/host.js): the events of a player message on that message, the events of a reply on its swipe. The
@@ -1189,14 +1187,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
             const p = req.negotiation ? parseNegotiation(req.state,content,response.content,chat[id].mes)
                 : parseExtraction(response.content, vocab, req.ids, req.expectedKeys,
                 { sceneRequired: req.sceneRequired, startScene: req.startScene, state: req.state, content, explicitArrivals: req.sceneRequired, reply: chat[id].mes, previous: parsed?.value });
-            if (p.valid && emptyAnswers && !movementReviewed && attempt < 2
-                && Object.entries(req.expectedKeys).some(([k,t]) => t === 'go' && p.value.expected?.[k]?.arrived === false)
-                && !p.value.deltas.some(d => d.type === 'arrive')
-                && p.value.scene && placeKey(req.state,p.value.scene,content) !== req.startScene
-                && movementEvidence(chat[id].mes)) {
-                movementReviewed = true;
-                p.issues = [...(p.issues || []), { why: 'Movement completeness: the reported scene differs from the starting scene, the reply narrates actual movement, but no arrival is reported. Recheck the ORIGINAL REPLY. Report only actual authorized arrivals in story order, or retain arrived:false if not reached; never infer arrival from the GO goal. Preserve independent valid deltas.' }];
-            }
+            if (emptyAnswers && p.issues?.some(x => req.expectedKeys?.[x.seq] === 'go')) movementReviewed = true;
             if (p.valid && (!parsed || ((p.issues?.length || 0) <= (parsed.issues?.length || 0)
                 && (p.complete || p.missing.length < parsed.missing.length)))) parsed = p;
             if (p.valid && p.complete && !p.issues?.length) break;
@@ -1206,7 +1197,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
             // An empty/transport answer never discards the last repairable candidate.
             if (++invalidAnswers >= 2) break;
         }
-        if (attempt === 2) break;
+        if (attempt === 2 || (!req.negotiation && !Object.keys(req.expectedKeys).length)) break;
         // .127: no repair request on a record that broke while the answer was out
         const broke = blockedAt();
         if (broke) return { changed: false, foldBlocked: broke };
@@ -1277,7 +1268,7 @@ export function applyExtraction(chat, id, content, parsed, { hash, ms = null, re
             system,extraction:{status:'applied',version:EXTRACTOR_VERSION,ms,repaired,raw:reaction,llm:calls}});
         return {changed:true,applied:true};
     }
-    const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired, chronicle: state.encounter || state.last?.outcome?.kind === 'combat' ? combatChronicle(chat.slice(0, id), messageEvents) : null });
+    const res = replyTurnV4(state, content, parsed.value, { msg: id, prose: msg.mes, ms, repaired, invalid:parsed.rejected, chronicle: state.encounter || state.last?.outcome?.kind === 'combat' ? combatChronicle(chat.slice(0, id), messageEvents) : null });
     const corrections = [...res.corrections];
     if (movementReviewed && !res.events.some(e=>e.t === 'scene.moved')) corrections.push(`Movement was rechecked after empty extraction; no arrival was confirmed. ${stillAt(state) || ''}`);
     if (!parsed.complete) corrections.push(`Your last reply left open what happened to: ${parsed.missing.map((k) => `action ${k}`).join(', ')}; the engine treats it as not done.`);

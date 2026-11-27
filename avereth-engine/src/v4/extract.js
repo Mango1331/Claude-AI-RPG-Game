@@ -1,7 +1,7 @@
-import { visualDetail } from './narration_evidence.js';
+import { movementEvidence } from './narration_evidence.js';
 import { thresholdSlot } from './living.js';
 import { placeKey } from './place_refs.js';
-import { newPlaceScope } from './movement.js';
+import { newPlaceScope, reportedEndpoints } from './movement.js';
 import { privateQuestsOf } from '../content.js';
 // Runtime V4: the world-delta extractor (docs/RUNTIME_V4_PLAN.md §5, D2 = A). After every story reply a separate call
 // reads the reply and reports, as typed deltas in story order, what it established in the world; the engine answers
@@ -13,9 +13,9 @@ import { privateQuestsOf } from '../content.js';
 // valid answer decides the domain/authority firewall (src/v4/firewall.js), not this module.
 import { O, S, B, I, E, A, N, validate } from './schema.js';
 import { extractJsonObject } from './json.js';
-import { saleOfferLines, purchaseLines, bidAnchor } from './trade.js';
-import { normText } from '../util.js';
-import { commercialAnchor, findQuote, moneyLiteral, openConditionNear } from './finance_evidence.js';
+import { purchaseLines } from './trade.js';
+
+
 import { creatureContract } from './population.js';
 
 /** Preserve the historical wire vocabulary; new campaigns have only Guild quests. */
@@ -89,7 +89,11 @@ function fieldSchema(spec, refs) {
 const EXPECTED_SHAPES = {
     // NPC E2-A: met (who of KNOWN AT the reply shows there, with its own words) and handled_by (the Guild person the
     // reply shows handling a desk step) are checked by World; a missing or malformed one is null (never a repair)
-    go: (refs) => O({ arrived: B(), at: N(refs.place), with: N(A(S())), met: N(A(O({ who: S(), evidence: S() }))) }),
+    go: (refs, supplied = {}) => O({ arrived:B(),
+        ...(Object.hasOwn(supplied,'at') ? {at:N(refs.place)} : {}),
+        ...(Object.hasOwn(supplied,'with') ? {with:N(A(S()))} : {}),
+        ...(Object.hasOwn(supplied,'met') ? {met:N(A(O({who:S(),evidence:S()})))} : {}),
+    }),
     desk: () => O({ handled_by: N(O({ who: S(), evidence: S() })) }),
     approach: () => O({ standpoint: N(S()) }),
     activity: () => O({ minutes: I(0), done: B() }),
@@ -105,7 +109,7 @@ const EXPECTED_SHAPES = {
  * @param {{places?: string[], quests?: string[], objects?: string[]}} ids the catalog's ids for the references
  * @param {Record<string,string>} expectedKeys {"2": "go", …}: seq of the PLAYER ACTION → its command type
  */
-export function deltaSchema(vocab, ids = {}, expectedKeys = {}) {
+export function deltaSchema(vocab, ids = {}, expectedKeys = {}, supplied = {}) {
     const refs = {
         place: placeRef(ids.places || []),
         quest: (ids.quests || []).length ? { anyOf: [E(ids.quests), O({ new: S() })] } : O({ new: S() }),
@@ -114,7 +118,7 @@ export function deltaSchema(vocab, ids = {}, expectedKeys = {}) {
         scene: { anyOf: [E(['here']), placeRef(ids.places || [])] },
     };
     const expected = {};
-    for (const [k, t] of Object.entries(expectedKeys)) expected[k] = (EXPECTED_SHAPES[t] || (() => O({ done: B() })))(refs);
+    for (const [k, t] of Object.entries(expectedKeys)) expected[k] = (EXPECTED_SHAPES[t] || (() => O({ done: B() })))(refs, supplied[k]);
     const variants = vocab.deltas.map((d) => {
         const props = { seq: I(1), type: E([d.type]), scene: N(refs.scene) };
         for (const [k, spec] of Object.entries(d.fields)) props[k] = fieldSchema(spec, refs);
@@ -146,8 +150,7 @@ const fieldList = (d) => Object.entries(d.fields).map(([k, spec]) => `${k}:${fie
 // 26 % valid, with them 100 %
 export const FORMAT_RULES = [
     'Fields shown with |null may be omitted when unknown; the engine fills them with null before validation. Other fields are required unless the delta description says otherwise.',
-    'scene is the actual narrative setting at the end of this reply: a place-ref, or "here" ONLY when it is the current engine scene. It never authorizes arrival. Every delta may override scene with a place-ref or "here" (null/omitted inherits the answer scene); use this for earlier scenes in a reply with multiple arrivals. Do not label an unreached camp as here merely because the engine still lists a shop. Local changes need the actual scene; distant reports remain reports. A new scene label creates no place by itself.',
-    'TRAVEL: Every actual arrival, including a road or intermediate stop, MUST have its own arrive delta in chronological order. expected.arrived:true requires that matching arrive; expected, time and scene never move Alaric. Local introductions and exchanges follow the arrival at their scene; actions before departure keep the earlier scene. In a Living Dungeon (DUNGEON lines) its parts, ways and levels belong to the engine: report the part he reached as arrive {new: {name, kind: "interior", parent: null}} with the name the story gives it, never a passage, room or level of it.',
+    'Report physical stops with arrive in story order. Local deltas without scene belong to the current stop, or the starting place before any arrival. Name scene only for a different location, including a remote sighting. In a Living Dungeon use the authorized section.',
     'SALES: Report an actual buyer price with bid (buyer, exact item ids and quantities, price, said). expected.sold is only a summary, never an independent payment. A current minimum-price instruction can accept a matching bid; a promise or appraisal is not an actual final bid.',
     'Trade evidence: said is required for every NEW financial claim, including each offer line and coin.gift; missing or unlocatable said leaves it unverified. pricing.quote/money.quote must occur inside its own said, never in unrelated narration. For offer/bid said copy one continuous clause from the party who actually offers, with the total, without ellipses. Report conditions only for prerequisites that must still be met before the offer binds. Explanations about resale or demand and the customer’s choice are compatible with a firm offer. Third-party price advice is fact/place.reported, not an offer or bid of the speaker. Price ranges, possible future prices and unaccepted discounts are not fixed prices. A price binds only as ONE total for exactly the line or the whole bid, in the reply\'s own words; a price per piece for several pieces, part prices without their sum or a count the reply leaves open is no binding price (pricing unknown, phase unclear). Never compute a total yourself. Never invent a seller commitment from a recommendation.',
     'string[] is always a JSON array, even when it contains only one value.',
@@ -203,7 +206,7 @@ export function extractorSystem(vocab) {
     ].join('\n');
 }
 
-export const EXTRACT_PLAIN_FORMAT = 'Return only one JSON object, no prose before or after it, no code fences: {"scene": <place-ref or "here">, "expected": {<every key asked>}, "deltas": [{"seq": 1, "type": "<delta>", <required fields; fields marked |null may be omitted when unknown>}]}.';
+export const EXTRACT_PLAIN_FORMAT = 'Return only one JSON object, no prose before or after it, no code fences: {"scene": <optional place-ref>, "expected": {<every key asked>}, "deltas": [{"seq": 1, "type": "<delta>", <required fields; fields marked |null may be omitted when unknown>}]}.';
 
 export function extractorUser({ catalog, actions, player = null, expectedKeys, vocab, reply }) {
     return [
@@ -216,8 +219,6 @@ export function extractorUser({ catalog, actions, player = null, expectedKeys, v
         expectedText(vocab, expectedKeys),
         '',
         `REPLY:\n${reply}`,
-        '',
-        'TRAVEL CHRONOLOGY: expected.arrived answers whether the final chosen destination was reached. If the reply actually stops at an intermediate place on an authorized journey, report its existing arrive BEFORE local events there, even if final arrived is false. Scene labels alone do not move anyone. Annotate events before the final arrival with their earlier scene; never invent travel for a question or WAIT.',
         '',
         'QUEST OUTCOME CHECK: Before answering, compare this reply with every active Guild contract\'s desired end state in the CATALOG. For contracts judged by story outcomes, if one is clearly achieved in this reply, quest.ready is required even when arrival/facts/memory are also reported; fact or memory alone is not enough.',
     ].join('\n');
@@ -236,7 +237,7 @@ export function repairForm(vocab, expectedKeys, errors) {
         return e ? `{${Object.entries(e.shape).map(([f, v]) => `"${f}": ${v}`).join(', ')}}` : '{"done": true|false}';
     };
     const keys = Object.entries(expectedKeys || {});
-    const form = `{"scene": <place-ref or "here">, "expected": {${keys.map(([k, t]) => `"${k}": ${shape(t)}`).join(', ')}}, "deltas": [{"seq": 1, "type": "<one listed delta type>", <only that type's fields>}]}`;
+    const form = `{"scene": <optional place-ref>, "expected": {${keys.map(([k, t]) => `"${k}": ${shape(t)}`).join(', ')}}, "deltas": [{"seq": 1, "type": "<one listed delta type>", <only that type's fields>}]}`;
     const notes = [];
     const top = errors.map((e) => /^\$: unexpected property "([^"]+)"/.exec(e)?.[1]).filter(Boolean);
     const misplaced = top.filter((k) => keys.some(([x]) => x === k));
@@ -408,27 +409,6 @@ function softSeq(deltas) {
     if (before + 1 < after) missing[0].seq = before + 1;
 }
 
-/** Build .138: a coin.gift that is the price of things Alaric sells now, with no bid of that buyer in the same answer. */
-function saleProceeds(state, value, d) {
-    if (d.repeat_of != null || d.relation === 'recount' || typeof d.from !== 'string' || state.entities[d.from]?.kind !== 'npc') return false;
-    const bids = (value.deltas || []).filter((x) => x?.type === 'bid' && x.buyer === d.from);
-    const sold = Object.values(value.expected || {}).some((e) => e && typeof e === 'object' && e.sold === true);
-    // Build .142 (§7.2): reported as proceeds of a sale, the sale needs its bid (the trade pays, not the gift)
-    if (d.relation === 'trade_settlement') return sold && !bids.length;
-    const why = normText(`${d.why || ''}`);
-    if (!/\b(?:sale|sold|sells?|selling|price|proceeds|payment for|paid for|pays? for|buys?|bought)\b/.test(why) || /\b(?:thanks|thank|tip|bonus|gift|extra|reward|wage|wages)\b/.test(why)) return false;
-    const bidFor = new Set(bids.flatMap((x) => (x.lines || []).map((l) => l.object)));
-    const held = Object.values(state.objects || {}).filter((o) => o.holder?.entity === 'pc');
-    const words = (t) => normText(t).split(/[^a-z0-9]+/).filter((w) => w.length > 3);
-    const named = held.filter((o) => { const n = words(o.name || ''); return n.length && n.filter((w) => words(why).includes(w)).length >= Math.min(2, n.length); });
-    // a hint for the repair only: the coin names held goods that no bid of this buyer covers
-    if (named.length) return named.some((o) => !bidFor.has(o.id));
-    return !bids.length && sold;
-}
-
-/** Local semantic diagnostics, also enforced by World against its actually reached state.
- * These are not malformed JSON; one repair may clarify them without losing independent information.
- */
 export const localSceneDelta = d => !['time', 'arrive', 'overreach', 'place.reported', 'dungeon', 'area', 'guild.branch'].includes(d.type)
     && !(['person.new', 'creature.new'].includes(d.type) && d.present === false);
 // Keep the extractor's sequence numbers as audit and dependency identities. For a single visit,
@@ -464,38 +444,6 @@ export function sceneSteps(deltas, start, state, content, explicit) {
         }
     }
     return steps;
-}
-
-export function sceneIssues(value, startScene, state = null, content = null, explicitArrivals = false,
-    ordered = sceneSteps(value.deltas, startScene, state, content, explicitArrivals)) {
-    const sceneKey = ref => placeKey(state, ref, content);
-    const issues = [];
-    const arrivals = ordered.filter(x => x.d.type === 'arrive');
-    const last = arrivals.at(-1)?.d;
-    if (explicitArrivals) for (const [seq, e] of Object.entries(value.expected || {})) {
-        if (e?.arrived === true && !arrivals.some(x => (!e.at || sceneKey(x.d.at) === sceneKey(e.at))))
-            issues.push({ index: -1, seq: Number(seq), why: `expected.${seq}.arrived:true requires a corresponding arrive delta in story order; expected and scene cannot move the player` });
-    }
-    const implicitMove = !last && Object.values(value.expected || {}).some(e => e?.arrived === true
-        && sceneKey(e.at ?? value.scene) !== sceneKey(startScene));
-    const implicit = implicitMove && ordered.some(x => localSceneDelta(x.d)
-        && sceneKey(x.d.scene) === sceneKey(startScene));
-    const reached = new Set([sceneKey(startScene)]);
-    for (const {d, i} of ordered) {
-        if (d.type === 'arrive') reached.add(sceneKey(d.at));
-        if (!localSceneDelta(d)) continue;
-        // In an Expected-only move, explicit "here" does not identify either temporal scene.
-        if ((d.scene === 'here' && implicitMove) || ((d.scene == null || d.scene === 'here')
-            && ((last && d.seq < last.seq && sceneKey(last.at) !== sceneKey(startScene)) || implicit))) {
-            issues.push({index: i, seq: d.seq, why: `$.deltas[${i}].scene: explicitly name this earlier scene before the later arrival; here/final scene does not establish chronology`});
-            continue;
-        }
-        const at = sceneKey(d.scene ?? value.scene);
-        if (!['person.new', 'creature.new', 'enter'].includes(d.type) || at === sceneKey(startScene)) continue;
-        if (!reached.has(at) && arrivals.some(x => x.d.seq > d.seq && sceneKey(x.d.at) === at))
-            issues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: arrival must come before this local introduction in the REPLY's order; correct scene and seq; remote sightings use present:false`});
-    }
-    return issues;
 }
 
 // Repair diagnostics only: never resolve an ID, change the report, or relax its schema.
@@ -615,17 +563,12 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             exp[pending.seq] = { taken:false };
         }
     }
-    // Read legacy GO receipts. Only arrived is required on the new wire contract.
-    for (const [k, t] of Object.entries(expectedKeys || {})) if (t === 'go' && exp[k] && typeof exp[k] === 'object') {
-        exp[k].at ??= null;
-        exp[k].with ??= null;
-    }
     // NPC E2-A: met and handled_by are optional evidence, never a reason for a repair call: a missing or malformed one
     // is null (a malformed item of met is left out), a desk step the answer leaves out is answered "no handler shown"
     const pair = (x) => x && typeof x === 'object' && !Array.isArray(x) && typeof x.who === 'string' && typeof x.evidence === 'string' ? { who: x.who, evidence: x.evidence } : null;
     for (const [k, t] of Object.entries(expectedKeys || {})) {
-        if (t === 'go' && exp[k] && typeof exp[k] === 'object') exp[k].met = Array.isArray(exp[k].met) && exp[k].met.map(pair).filter(Boolean).length ? exp[k].met.map(pair).filter(Boolean) : null;
-        if (t === 'desk') exp[k] = { handled_by: pair(exp[k]?.handled_by) };
+        if (t === 'go' && exp[k] && Object.hasOwn(exp[k], 'met')) exp[k].met = Array.isArray(exp[k].met) && exp[k].met.map(pair).filter(Boolean).length ? exp[k].met.map(pair).filter(Boolean) : null;
+        if (t === 'desk' && exp[k] && typeof exp[k] === 'object' && !Array.isArray(exp[k])) exp[k] = { handled_by: pair(exp[k].handled_by) };
     }
     // A new dungeon section already has an engine ID in the authorized step. Its
     // name becomes a place reference in this report only alongside its reported arrival.
@@ -649,9 +592,24 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     }
     const missing = want.filter((k) => !exp[k] || typeof exp[k] !== 'object');
     // A missing expected answer may remain incomplete, but a schema-valid partial extraction is still useful state.
-    const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));
+    const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))), exp);
     const clean = missing.length ? { ...value, expected: Object.fromEntries(Object.entries(exp).filter(([k]) => !missing.includes(k))) } : value;
-    const errors = validate(clean, schema);
+    const errors = [];
+    const invalid = new Map();
+    for (const reason of validate(clean, schema)) {
+        const entry = /^\$\.deltas\[(\d+)\]/.exec(reason);
+        const step = /^\$\.expected\.(\d+)\b/.exec(reason);
+        if (entry) {
+            const index = Number(entry[1]), delta = value.deltas[index];
+            if (!invalid.has(index)) invalid.set(index,{delta, why:reason +
+                (delta ? fieldRepairHint(reason,delta,index,ids,vocab.deltas.find(x => x.type === delta.type)) : '')});
+        } else if (step) {
+            if (!missing.includes(step[1])) missing.push(step[1]);
+            delete exp[step[1]];
+        } else errors.push(reason);
+    }
+    value.expected = exp;
+    if (invalid.size) value.deltas = value.deltas.filter((_,index) => !invalid.has(index));
     // Optional receipts participate in strict validation. Keep legacy arrival/event payloads identical afterwards.
     if (!errors.length) for (const d of value.deltas) if (d.type === 'arrive') {
         if (d.evidence === null) delete d.evidence;
@@ -663,107 +621,9 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     }
     if (!errors.length) for (const d of value.deltas) if (d.type === 'creature.new' && d.across === null) delete d.across;
     const semanticIssues = [];
-    let placeHintAdded = false;
-    for (const [errorIndex,error] of [...errors].entries()) {
-        const match = /^\$\.deltas\[(\d+)\]/.exec(error);
-        const d = match ? value.deltas[Number(match[1])] : null;
-        const spec = vocab.deltas.find(x => x.type === d?.type);
-        if (d) errors[errorIndex] += fieldRepairHint(error, d, Number(match[1]), ids, spec);
-        const fields = spec ? Object.entries(spec.fields).filter(([key, field]) => field.ref === 'place' && error.includes(`.${key}:`)).map(([key]) => key) : [];
-        if (/^\$\.scene:/.test(error) || error.includes('.scene:') || fields.length) {
-            if (placeHintAdded) continue;
-            placeHintAdded = true;
-            errors[errorIndex] += `; Place reference at ${match ? `deltas[${match[1]}].${fields[0] || 'scene'}` : 'scene'}: use a known place id or {"new":{"name":"exact name","kind":"interior","parent":"known parent id"}}; a new parent uses the same full shape. No {"new":"name"} shorthand. Preserve already valid scene and expected fields; never invent an arrival.`;
-        }
-    }
     let stepAt = startScene;
-    const entered = new Map();
-    const present = new Set(state?.scene?.present || []), introduced = new Set();
-    if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const { d, i } of value.deltas.map((d, i) => ({ d, i })).sort((a, b) => a.d.seq - b.d.seq)) {
-        if (d?.type === 'creature.new' && d.ref && d.ref === thresholdSlot(state)?.ref && (!d.across || !d.present)) {
-            semanticIssues.push({index:i,seq:d.seq,why:'This reserved encounter cannot be created as a separate remote group. If the observer sees these individuals, use present:true and across copied literally from the reply, one literal distinguishing phrase per individual in desc and the observed range. If only heard or reported, use a clue.'});
-        }
-        if (d?.type === 'creature.new' && d.across && reply &&
-            (findQuote(reply,d.across).state !== 'found' || (d.desc || []).some(words=>!visualDetail(reply,words)))) {
-            semanticIssues.push({index:i,seq:d.seq,why:'For individuals seen through an opening copy across and each identifying desc as separate contiguous literal excerpts. Keep the observer at the current site. Report only a clue if they are not individually visible.'});
-        }
-        if (d?.type === 'party' && reply && findQuote(reply,d.quote).state !== 'found') {
-            semanticIssues.push({index:i,seq:d.seq,why:'party.quote: copy ONE verbatim, continuous decision by this speaker. Do not join separate passages or omit new conditions; if the decision is unclear, omit this delta.'});
-        }
-        if (d?.type === 'party' && d.agreement && !state.party?.agreements?.[d.agreement]) {
-            const open = Object.values(state.party?.agreements || {}).filter(a => a.who === d.who && a.phase === 'open');
-            semanticIssues.push({index:i,seq:d.seq,why:'party.agreement must be a stored ID, never dialogue. New proposal: null. Open for this NPC: '+
-                (open.map(a=>a.id).join(', ') || 'none')+'. Only report an actual attributed decision; quote its exact words.'});
-        }
-        if (d?.type === 'arrive') {
-            const section = state.last?.outcome?.auth?.gos?.find(g =>
-                g.section?.from === d.at && value.expected?.[g.seq]?.arrived === true && (!value.expected[g.seq].at || value.expected[g.seq].at === d.at));
-            if (section) {
-                semanticIssues.push({index:i,seq:d.seq,why:'GO '+section.seq+' reported arrival but both places name its departure room. If they entered the next chamber use {new:{name:"'+section.section.name+'",kind:"interior",parent:"'+section.section.root+'"}} in arrive.at; otherwise report arrived:false and omit the move.'});
-            }
-            stepAt = placeKey(state, d.at, content);
-            present.clear();
-            for (const id of d.with || []) present.add(id);
-        }
-        // A prior local enter may explain the reintroduction. World still validates that event.
-        if (d?.type === 'enter' && state.entities[d.who]?.kind === 'npc'
-            && placeKey(state, d.scene ?? value.scene, content) === stepAt) {
-            entered.set(d.who, stepAt);
-            present.add(d.who);
-        }
-        if (d?.type === 'leave') present.delete(d.who);
-        if (d?.type === 'person.new' && d.present !== false) introduced.add(d.ref);
-        if (d?.type === 'offer' && saleOfferLines(state, d.seller, d.lines || []).length)
-            semanticIssues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: these are current PC sale goods; use bid with buyer, held object ids and price_cp, not offer/seller`});
-        // Build .138 (batch 20 crystal shard T26–T32, seven plates T58): the buyer's coin for things Alaric sells, reported
-        // as coin.gift without the buyer's bid, is never paid; the existing repair asks for the bid. Nothing is converted:
-        // a separate thanks or tip stays a gift, and a recount (repeat_of) stays a recount.
-        if (['quest.ready','quest.progress','quest.close'].includes(d?.type) && Array.isArray(d.depends_on)) {
-            if (d.depends_on.some(seq => Number(seq) >= d.seq
-                || value.deltas.filter(source => String(source.seq) === String(seq)).length !== 1))
-                semanticIssues.push({index:i,seq:d.seq,why:`$.deltas[${i}].depends_on: cite only unique, earlier supporting deltas. A quest claim cannot be its own evidence.`});
-        }
-        if (d?.type === 'coin.gift' && saleProceeds(state, value, d))
-            semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}]: this coin pays for goods Alaric sells; report the buyer's price as bid (buyer, his held object ids and units, price_cp, phase, pricing), and give this coin relation "trade_settlement". A sale pays only through that bid; keep coin.gift relation "independent" only for a separate gift or thanks` });
-        // Build .142 (§4.4): a finance report without its phase, pricing or relation is unclear, never firm or paid;
-        // the existing bounded repair is asked once for the missing meaning
-        if (d?.type === 'bid' || d?.type === 'offer') {
-            const items = d.type === 'bid' ? [d] : (Array.isArray(d.lines) ? d.lines : []);
-            items.forEach((x, k) => {
-                if (!x || typeof x !== 'object') return;
-                const where = d.type === 'bid' ? `$.deltas[${i}]` : `$.deltas[${i}].lines[${k}]`;
-                const gear = d.type === 'offer' && (x.base != null || x.equipment === true);
-                const anchor = reply ? (d.type === 'bid' && content ? bidAnchor(reply, d, state, content, { present })
-                    : commercialAnchor(reply, x.said, x.pricing)) : null;
-                if (!gear && (!x.said || (reply && anchor.state !== 'found')))
-                    semanticIssues.push({ index: i, seq: d.seq, why: anchor?.state === 'contradicted'
-                        ? `${where}.said: the evidence mixes speakers or prices. Quote the named buyer's own continuous clause for these goods and this price, or omit the bid.`
-                        : `${where}.said: provide the exact complete commercial clause from this reply; without its own located action anchor the price stays unverified` });
-                if (reply && !gear && x.said) {
-                    const quotes = [x.pricing?.quote];
-                    if (anchor.state === 'found' && quotes.some(q=>q && findQuote(reply,q,anchor).state === 'missing'))
-                        semanticIssues.push({ index: i, seq: d.seq, why: `${where}.pricing: every money quote must belong to this same said, not another sentence or purse` });
-                }
-                if (x.phase == null) semanticIssues.push({ index: i, seq: d.seq, why: `${where}.phase: say whether this price binds now ("firm"), waits for something ("conditional" with condition) or is "unclear"` });
-                else if (x.phase === 'firm' && x.condition) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: "firm" with a condition; a price that waits for "${String(x.condition).slice(0, 40)}" is "conditional"` });
-                if (!gear && Number.isInteger(x.price_cp) && x.price_cp > 0 && (!x.pricing || x.pricing.basis === 'unknown') && x.phase === 'firm')
-                    semanticIssues.push({ index: i, seq: d.seq, why: `${where}.pricing: a firm price needs the reply's one total for it (basis total with its money words); a price per piece for several pieces or part prices without their total are basis "unknown" with phase "unclear"` });
-                if (x.phase === 'firm' && !x.condition && reply && typeof x.said === 'string') {
-                    const money = anchor.state === 'found' && x.pricing?.quote ? findQuote(reply, x.pricing.quote, anchor) : null;
-                    const at = money?.state === 'found' ? money : anchor;
-                    const word = at.state === 'found' ? openConditionNear(reply, at.start, at.end, anchor) : null;
-                    const priced = gear || (word && x.price_cp > 0 && content && moneyLiteral(reply,x.pricing?.quote,{content,within:anchor}).state === 'verified');
-                    if (word && priced) semanticIssues.push({ index: i, seq: d.seq, why: `${where}: the reply names an open condition next to this price ("${word}"); "firm" only if the price binds now regardless, else "conditional" with condition` });
-                }
-            });
-        }
-        if (d?.type === 'coin.gift' && !privateQuestsOf(state)) {
-            const anchor = reply && d.said ? findQuote(reply,d.said) : null;
-            if (!d.said || (reply && (anchor?.state !== 'found' || (d.money?.quote && findQuote(reply,d.money.quote,anchor).state === 'missing'))))
-                semanticIssues.push({ index:i, seq:d.seq, why:`$.deltas[${i}].said: quote the complete actual handover with its own money; no amount from elsewhere in the reply` });
-            if (d.phase == null || d.relation == null) semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}]: say phase ("transferred" only for coin handed over now) and relation ("independent", "trade_settlement" or "recount")` });
-            else if (d.phase === 'transferred' && !d.money) semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}].money: quote the exact words of the coin handed over, with the full amount` });
-        }
+    if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const d of [...value.deltas].sort((a,b) => a.seq-b.seq)) {
+        if (d.type === 'arrive') stepAt = placeKey(state,d.at,content);
         // Package C (.132): population and life stage of a new creature, at the place of its event (a remote sighting:
         // the place its scene names, else none), by the rule World enforces (src/v4/population.js)
         if (d?.type === 'creature.new') {
@@ -781,14 +641,24 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                     d.population = prior[0].population;
             }
             const c = creatureContract(state, content, state.places[at] ? at : state.places[parent] ? parent : null, d);
-            if (c.why) semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}].${c.why}` });
-            else if (c.population) d.population = c.population;
+            if (!c.why && c.population) d.population = c.population;
         }
-        if (d?.type === 'person.new' && d.present !== false) {
-            const exact = Object.values(state.entities).filter(e => e.kind === 'npc' && d.name && normText(e.name || e.known_name || '') === normText(d.name));
-            const known = state.entities[d.ref] || (exact.length === 1 ? exact[0] : null);
-            if (known?.kind === 'npc' && !state.scene.present.includes(known.id) && known.at !== stepAt && entered.get(known.id) !== stepAt)
-                semanticIssues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: ${known.id} is known, last at ${known.at || 'an unknown place'}; preserve identity/history. Report an actual newly established local arrival as enter, otherwise present:false. Do not repeat an old predicament or infer presence merely from the PC’s arrival.`});
+    }
+    if (!errors.length && sceneRequired) {
+        const arrivals = value.deltas.filter(d => d.type === 'arrive' && !d.forced_by);
+        const ends = state ? reportedEndpoints(value,state,content) : new Map();
+        for (const [key,type] of Object.entries(expectedKeys || {})) {
+            if (type !== 'go') continue;
+            const g = state?.last?.outcome?.auth?.gos?.find(g => String(g.seq) === key) || {seq:key};
+            const end = ends.get(key) || exp[key]?.at;
+            const section = g.section;
+            const match = arrivals.some(d => (end && placeKey(state,end,content) === placeKey(state,d.at,content))
+                || (section && d.at?.new?.kind === 'interior' && d.at.new.parent === section.root));
+            if (exp[g.seq]?.arrived === true && !match)
+                semanticIssues.push({seq:g.seq,why:`GO ${g.seq} reports its objective reached without its corresponding arrive delta. Report the actual stop or correct the objective answer.`});
+            else if (!arrivals.length && exp[g.seq]?.arrived === false && reply && movementEvidence(reply) &&
+                value.scene && placeKey(state,value.scene,content) !== startScene && value.scene !== 'here')
+                semanticIssues.push({seq:g.seq,why:'The reply describes movement to another scene. Report its actual stop or confirm that no travel occurred.'});
         }
     }
     // .185 (Z3.1; natural batch 13.11.2026, Rogue T38: "four copper the pair" answered priced: true with no offer, the
@@ -802,12 +672,6 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             semanticIssues.push({ index: -1, seq: Number(k), why: `expected.${k}.priced is true, but no offer reports that price: if this reply has the seller name one binding total in coin for ${String(dec.what).slice(0, 60)}, report that offer (seller, lines with price_cp, said and pricing in the reply's own words); otherwise priced is false. Never make up an offer or a price` });
         }
     }
-    // Schema errors must describe the supported link, never guess which object an invented id meant.
-    for (const [i, d] of (Array.isArray(value.deltas) ? value.deltas : []).entries()) {
-        if (typeof d?.object !== 'string' || (ids?.objects || []).includes(d.object)) continue;
-        const names = value.deltas.filter(x => x?.type === 'object.new' && x.seq < d.seq && typeof x.name === 'string').map(x => x.name);
-        if (names.length) errors.push(`$.deltas[${i}].object: unknown catalog id; object.new has no ref. Use {new:exact earlier name}, e.g. ${JSON.stringify({ new: names[0] })}; never invent an obj.* id`);
-    }
-    if (sceneRequired && value.scene == null && (Object.values(expectedKeys || {}).includes('go') || (Array.isArray(value.deltas) && value.deltas.some(d => !['time', 'overreach', 'place.reported', 'dungeon', 'area', 'guild.branch'].includes(d?.type))))) errors.push('$.scene: actual narrative setting required for world changes');
-    return { value, issues: [...semanticIssues, ...(sceneRequired && startScene ? sceneIssues(value, startScene, state, content, explicitArrivals) : [])], valid: errors.length === 0, complete: missing.length === 0, errors: [...errors.slice(0, 8), ...missing.map((k) => `expected key "${k}" not answered`)], missing, raw };
+    return {value, rejected:[...invalid.values()], issues:semanticIssues, valid:!errors.length, complete:!missing.length,
+        errors:[...errors.slice(0,8), ...missing.map(k => `expected key "${k}" not answered or invalid`)], missing, raw};
 }

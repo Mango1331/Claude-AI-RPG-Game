@@ -77,7 +77,9 @@ export async function partyControl(before,content,{act,ref='',source,revision,pr
     }
     if(act!=='invite' || member) return result('No available party action.');
     if(open.length) return result('An offer is already pending: '+open.map(a=>a.terms.text).join(' / '));
-    const situation=JSON.stringify([s.scene.at,person.status,person.sheet?.level,Object.values(s.quests).filter(q=>q.status==='active').map(q=>q.id).sort()]);
+    const situation=JSON.stringify([s.scene.at,person.status,person.sheet?.level,
+        Object.values(s.quests).filter(q=>q.status==='active').map(q=>q.id).sort(),
+        ...(proposal?[proposal.quest,proposal.amount,proposal.share,proposal.due,proposal.goods]:[])]);
     if(agreementsOf(s).some(a=>a.who===who && a.phase==='declined' && a.situation===situation))
         return result(person.name+' has already declined this invitation.');
     let offered;
@@ -95,7 +97,9 @@ export async function partyControl(before,content,{act,ref='',source,revision,pr
         {role:'user',content:JSON.stringify({invitation:id,who,name:person.name,traits:person.descriptors,occupation:truth(s,who,'occupation').map(f=>f.o),role:person.sheet?.class || person.role,temperament:person.sheet?.generated?.temperament,place:s.places[s.scene.at]?.name,terms:offered?.terms || standard,source,quests})}];
     const answer=await ask(messages);call=answer.call;
     let d;
-    try {d=JSON.parse(answer.content);} catch {}
+    const text=String(answer.content || '').trim();
+    const fence=/^```(?:json)?\s*\n([\s\S]*?)\n```$/i.exec(text);
+    try {d=JSON.parse(fence ? fence[1] : text);} catch {}
     if(!d || d.invitation!==id || d.who!==who || !['accept','decline','counter'].includes(d.decision) ||
         Object.keys(d).some(k=>!['invitation','who','decision',...(d.decision==='counter'?['quest','cp']:[])].includes(k)))
         {events.length=0;return result('The partner’s decision could not be recorded. The invitation can be tried again.');}

@@ -4,6 +4,7 @@ import {extractJsonObject} from './json.js';
 import { activeMessage, bindGeneratedReply, previousRevision, reconcileRevisions, rememberRevision } from './revisions.js';
 import { plannedNegotiation, actionInputOf, actionInputHash, actionPrefix, validateActionSelection, reconcileHudPlan } from '../action_input.js';
 import { boardRepairGuidance, boardSlotRepair, parseBoardSlot, parseInitialBoard } from './guild.js';
+import { hasPartyTerms } from '../party.js';
 import { partyControl } from './party_actions.js';
 import { nativeAction } from './native_actions.js';
 import { movementEvidence } from './narration_evidence.js';
@@ -420,7 +421,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         (!before.party?.members[pc.who] || before.party.members[pc.who].mode==='left'));
     if(pc?.type==='party' && (recruitment || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who]?.standard)){
         const local=await partyControl(before,content,{act:recruitment?'invite':pc.act==='leave'?'remove':pc.act,ref:pc.who,source:msg.mes,revision:actionPrefix(chat,u),
-            proposal:recruitment && (pc.act==='offer' || pc.quest || pc.amount || pc.due || pc.share || pc.loot) ? pc : null},
+            proposal:recruitment && (pc.act==='offer' || hasPartyTerms(msg.mes,content,pc)) ? pc : null},
             messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}));
         return {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),plan,interp,...local};
     }

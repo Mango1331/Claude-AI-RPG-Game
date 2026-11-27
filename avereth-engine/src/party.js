@@ -160,6 +160,13 @@ function splitPot(text, sum, payout) {
     return /\b(?:split|divide|share)\s+(?:(?:the|our)\s+)?(?:guild['’]s\s+)?$/i.test(before)
         && /^\s+(?:evenly|equally|in half|half each)\b/i.test(after);
 }
+// A simple invitation may mention the adventure. The planner cannot import a fee from earlier dialogue.
+export function hasPartyTerms(words,content,command) {
+    return halfShare.test(words) || coinEvidence(words,content).sums.length>0 ||
+        (command.goods && words.toLowerCase().includes(command.goods.toLowerCase())) ||
+        qualified.test(words) || /\b(?:payment|advance|fee|loot|proceeds)\b/i.test(words);
+}
+
 function termsFrom(s, content, c, words, actor) {
     if (c.quest && s.quests[c.quest]?.status !== 'active') return null;
     const terms = { quest:c.quest || null, combat:c.combat === true, text:c.quote };

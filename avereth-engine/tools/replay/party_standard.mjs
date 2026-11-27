@@ -101,3 +101,18 @@ for(const variant of ['accept','wrong person','expired invitation','extra terms'
     }
 }
 console.log('AI/AJ original invitation and planner output: bound half, wrong person/revision, invalid or extended decision, stale and regenerate passed.');
+
+// Ember, real player intent and planner reply shape. The native NPC reply used one JSON fence.
+{
+    const text='Ossen, join my party. We can tackle the catacombs and travel together on future adventures.';
+    const ch=[...structuredClone(prefix),{is_user:true,mes:text,extra:{}}];
+    const result=await runtime.prepareGenerationAsync(ch,content,{llm:async req=>{
+        if(req.purpose.startsWith('plan'))return JSON.stringify({travel_frame:'local',commands:[{type:'party',act:'invite',who,seq:1,quote:'Ossen, join my party',quest:Object.values(host.foldChat(prefix).state.quests).find(q=>q.status==='active').id,share:'half'}]});
+        const {invitation}=JSON.parse(req.messages.at(-1).content);
+        return '```json\n'+JSON.stringify({invitation,who,decision:'accept'})+'\n```';
+    }});
+    const state=host.foldChat(ch).state;
+    assert.equal(result.action,'panels');assert.equal(state.party.members[who].mode,'follow');
+    assert.equal(state.party.agreements[state.party.members[who].agreement].terms.quest,null);
+}
+console.log('Ember: current invitation excludes inherited fee; complete fenced decision resolves.');

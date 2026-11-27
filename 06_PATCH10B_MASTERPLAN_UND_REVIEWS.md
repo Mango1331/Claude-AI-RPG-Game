@@ -4,7 +4,7 @@ Nur **abgeschlossene Entwicklungs-/Forschungsetappen** werden hier aufgenommen; 
 
 | Etappe | Fachlicher Abschluss und Gegenreview | Originale / Abnahmen |
 |---|---|---|
-| **.222–.235 · R1 und echte Party-Spielserie** | [Fachbericht und Entscheidung zu User17](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) | [Prüfbare Originalarchive je Versuch](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) |
+| **.222–.235 · R1 und echte Party-Spielserie** | [Fachbericht und Entscheidung zu User17](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) · [Gegenreview R1–R4 und Party-Entscheidungsvorlage](recherche/AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md) | [Prüfbare Originalarchive je Versuch](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) |
 | **.221 · Szene, Wahrnehmung, Erinnerung und Rast** | [Fachbericht und Abnahme](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md) | [Originalfall User16](testrun_10b/user-20261126-233937-220/README.md) |
 | **.220 · Usertest 16 und Ortsarchitektur** | [Codex-Gegenreview](testrun_10b/user-20261126-233937-220/CODEX_GEGENREVIEW.md) · [Fachliche Entscheidungsvorlage](recherche/AVERETH_USER16_ORTS_UND_SZENENARCHITEKTUR_ENTSCHEIDUNGSVORLAGE.md) | [Originale und GPT-Review](testrun_10b/user-20261126-233937-220/README.md) |
 | **.220 · Reisezeit nach GPT-Diffreview** | [Runtime-Gegenproben und Korrektur](recherche/AVERETH_220_REISEZEIT_UND_MITREISENDE.md) | [Diff .219 → .220](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/0a7a91b90d204e01c49747829308abf940343449...cc327a1ae44b0aac3605f416078c693b2600ffff) |

@@ -1,6 +1,6 @@
 # Avereth Engine – aktueller Projektstand
 
-**Build .235 liegt zum unabhängigen GPT-Gesamtreview vor.** Die OpenRouter-Serie belegt unter anderem den gezielten Angriff am Türpfosten, Ossens gemeinsame Dungeonquest, die Auszahlung bei Anwesenheit und die offene Schuld nach dem Austritt. Im frischen .235-Lauf scheiterte Ossens Aufnahme trotz zweier hörbarer Zusagen. Codex empfiehlt, Usertest 17 bis zur Entscheidung über die Sprecher- und Gruppenbindung zurückzustellen. [Abnahme, offene Befunde, Installation und Archive](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md)
+**.235 ist geprüft. Usertest 17 bleibt zurückgestellt.** Die OpenRouter-Serie bestätigt den gemeinsamen Dungeonauftrag bei gebuchter Mitgliedschaft. Der Gegenreview reproduziert zwei getrennte Hürden bei der Aufnahme, das Warteproblem, den zu früh beendeten Dungeonzutritt und den falschen Gegnerbestand im Narratorprompt. Nutzer und GPT entscheiden als Nächstes über die Standardorganisation der Party und die Vergütung künftiger Gruppenaufträge. [Gegenreview R1–R4 und Party-Entscheidungsvorlage](recherche/AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md) · [Serienabnahme und Archive](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md)
 
 ## Aktuelle Referenzen
 

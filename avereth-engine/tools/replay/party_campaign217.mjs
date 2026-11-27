@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {engineAt} from './replay.mjs';
 import {playerTurnV4,replyTurnV4} from '../../src/v4/turn.js';
+import {partyControl} from '../../src/v4/party_actions.js';
+import {applyEvent} from '../../src/state.js';
 import {playerTurn} from '../../src/engine.js';
 import {validateActionSelection,availableActions} from '../../src/action_input.js';
 import {assertOwnership} from '../../src/v4/world.js';
@@ -17,15 +19,23 @@ const turn=(text,commands,i)=> {
     assert(r.outcome,JSON.stringify(r.command));return r;
 };
 const reply=(prose,raw,i)=>{const r=replyTurnV4(state,content,raw,{msg:i,prose});state=r.state;return r;};
+const standard=process.argv.includes('--standard');
 for(let i=13;i<=21;i+=2) {
     const a=chat[i].extra.avereth;
     const commands=structuredClone(a.events.find(e=>e.t==='cmd.interpreted').d.commands);
-    if(i===15) commands.push({type:'party',seq:1,act:'accept',who,agreement:Object.keys(state.party.agreements)[0],quote:'And Sure its always good to have someone to have ones back.'});
+    if(i===15 && !standard) commands.push({type:'party',seq:1,act:'accept',who,agreement:Object.keys(state.party.agreements)[0],quote:'And Sure its always good to have someone to have ones back.'});
     turn(chat[i].mes,commands,i);
     const next=chat[i+1], raw=structuredClone(next.extra.avereth.extraction.raw);
-    if(i===13) raw.deltas.push({seq:8,type:'party',act:'offer',who,quest,combat:true,share:'half',quote:'two of us, half each, and I know where the stairs are.'});
+    if(i===13 && !standard) raw.deltas.push({seq:8,type:'party',act:'offer',who,quest,combat:true,share:'half',quote:'two of us, half each, and I know where the stairs are.'});
     const x=reply(next.mes,raw,i+1);
-    if(i===13) assert(state.party,JSON.stringify(x.rejected));
+    if(i===15 && standard){
+        const local=await partyControl(state,content,{act:'invite',ref:who,source:'#party invite Ossen',revision:'user14'},async messages=>{
+            const {who,invitation}=JSON.parse(messages.at(-1).content);
+            return {content:JSON.stringify({who,invitation,decision:'accept'})};
+        });
+        local.events.forEach(e=>applyEvent(state,e));
+    }
+    if(i===13 && !standard) assert(state.party,JSON.stringify(x.rejected));
 }
 assert.equal(state.entities[who].sheet.class,'rogue');
 assert(state.scene.present.includes(who));
@@ -106,6 +116,20 @@ assert.equal(state.quests[quest].status,'completed',JSON.stringify(done.outcome)
 assert.equal(state.entities.pc.sheet.coin_cp-cash,45+advance);
 assert.equal(state.entities[who].sheet.coin_cp-before,45-advance);
 assert.deepEqual(done.events.filter(e=>e.t==='xp.changed').map(e=>e.d.amount),[225,225]);
+if(standard){
+    assert.equal(state.party.members[who].mode,'follow');
+    assert.equal(Object.values(state.party.agreements).length,1);
+    assert.equal(state.party.claims[quest+'/'+who].agreement,null);
+    const other=Object.values(state.quests).find(q=>q.status==='listed' && q.id!==quest && q.rank==='Novice');
+    assert(other);
+    reply('The clerk closes the contract.',{scene:'here',expected:{},deltas:[]});
+    const second=turn('I take '+other.title+'.',[{seq:1,type:'quest.accept',quest:other.id,quote:'I take '+other.title+'.'}]);
+    if(state.quests[other.id].status!=='active')throw Error(JSON.stringify(second.outcome).slice(0,700));
+    assert.equal(state.party.members[who].mode,'follow');
+    assert.equal(Object.values(state.party.agreements).length,1);
+    console.log('Standard party retained into second quest '+other.title+' after one joint clear, 225/225 XP and 45/45 cp.');
+    process.exit(0);
+}
 if (advance) {
     assert.equal(Object.values(state.party.claims).find(r=>r.who===who && r.source===quest).paid,45);
     console.log('20 cp before the first fight, joint clear, 225/225 XP, then only 25 of 45 cp still due.');

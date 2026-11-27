@@ -75,3 +75,29 @@ const checkpoint=structuredClone(state);
 settleQuest(state,emit,q);
 assert.deepEqual(state,checkpoint);
 console.log('Three-person odd payout, vested absence, partial payment and idempotent settlement passed.');
+
+const actualInvite=records[16];
+const originalText=actualInvite.mes, originalPlan=actualInvite.extra.avereth.plan.raw[0];
+for(const variant of ['accept','wrong person','expired invitation','extra terms','invalid','stale host']){
+    const chat=structuredClone(prefix);
+    chat.push({is_user:true,mes:originalText,extra:{}});
+    let current=true, count=0;
+    const run=await runtime.prepareGenerationAsync(chat,content,{isCurrent:()=>current,llm:async req=>{
+        if(req.purpose==='plan')return originalPlan;
+        assert.equal(req.purpose,'party_decision');count++;
+        const {who,invitation}=JSON.parse(req.messages.at(-1).content);
+        if(variant==='stale host')current=false;
+        return variant==='invalid'?'??':JSON.stringify({who:variant==='wrong person'?'npc.other':who,
+            invitation:variant==='expired invitation'?'prior':invitation,decision:'accept',...(variant==='extra terms'?{extra:'also his bow'}:{})});
+    }});
+    assert.equal(count,1,variant+' '+JSON.stringify(run).slice(0,180));
+    const joined=host.foldChat(chat).state.party?.members[who];
+    assert.equal(!!joined,variant==='accept',variant);
+    if(variant==='accept'){
+        const s=host.foldChat(chat).state;
+        assert.equal(s.party.agreements[joined.agreement].terms.half,true);
+        await runtime.prepareGenerationAsync(chat,content,{type:'regenerate',llm:()=>assert.fail('repeated recruitment')});
+        assert.deepEqual(host.foldChat(chat).state,s);
+    }
+}
+console.log('AI/AJ original invitation and planner output: bound half, wrong person/revision, invalid or extended decision, stale and regenerate passed.');

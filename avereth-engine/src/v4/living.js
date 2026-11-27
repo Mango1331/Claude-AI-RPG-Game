@@ -1019,7 +1019,7 @@ export function catalogLines(s, { extractor = false } = {}) {
         for (const a of [x.ahead, x.ahead.next].filter(Boolean)) {
             const sl = x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
             // PULSE package B: a wandering minion comes to him where he is, it is not met where he arrives
-            if (sl?.entities.length) L.push('Established encounter: '+encounterRoster(s,sl)+'. Use existing IDs; no new group.');
+            if (sl?.entities.length) L.push('ENGINE ENCOUNTER '+sl.ref+': '+encounterRoster(s,sl)+'. Use existing IDs; no new group.');
             else if (sl && !slotMet(sl) && !resolved(s, sl)) L.push(`ENGINE ENCOUNTER (level ${a.floor}): when the reply shows ${sl.name ? titled(sl.name) : `the ${sl.species}${sl.count > 1 ? 's' : ''}`} ${a.wander ? 'coming to him here' : 'where he arrives'}, report creature.new ref "${sl.ref}", species "${sl.species}", anchor "${sl.anchor}", count ${sl.count}`);
         }
     }

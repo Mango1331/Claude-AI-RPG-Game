@@ -1,5 +1,6 @@
 import { materialise } from '../engine.js';
 import { applyEvent } from '../state.js';
+import { truth } from '../knowledge.js';
 import { Dice } from '../rng.js';
 import { agreementsOf, membersOf, partyDecision, bindPartyEquipment } from '../party.js';
 import { vestQuest } from '../party_rewards.js';
@@ -28,7 +29,7 @@ export function partyControls(s) {
     return actions;
 }
 
-export async function partyControl(before,content,{act,ref='',source,revision},ask) {
+export async function partyControl(before,content,{act,ref='',source,revision,proposal},ask) {
     const s=structuredClone(before),events=[],dice=Dice.from(s);
     const emit=e=>{applyEvent(s,e);events.push(e);};
     let call;
@@ -79,25 +80,41 @@ export async function partyControl(before,content,{act,ref='',source,revision},a
     const situation=JSON.stringify([s.scene.at,person.status,person.sheet?.level,Object.values(s.quests).filter(q=>q.status==='active').map(q=>q.id).sort()]);
     if(agreementsOf(s).some(a=>a.who===who && a.phase==='declined' && a.situation===situation))
         return result(person.name+' has already declined this invitation.');
-    const id='party.'+who+'.'+hash32(revision+'|'+source);
+    let offered;
+    if(proposal){
+        const checked=partyDecision(s,content,{...proposal,act:'offer'},source,'pc',e=>{
+            if(e.t==='party.agreement' && e.d.phase==='open') e={...e,d:{...e.d,standard:true}};
+            emit(e);
+        },contractReady);
+        if(!checked.done) return result(checked.line);
+        offered=agreementsOf(s).find(a=>a.who===who && a.phase==='open');
+    }
+    const id=offered?.id || 'party.'+who+'.'+hash32(revision+'|'+source);
     const quests=Object.values(s.quests).filter(q=>q.status==='active' && q.payout_cp>0).map(q=>({id:q.id,title:q.title,cp:q.payout_cp}));
-    const messages=[{role:'system',content:'Decide for the named NPC alone, using the supplied situation. Return one JSON object with invitation, who, decision (accept, decline or counter). Accept means the exact standard terms. For a counter only, add quest (one listed ID) and cp (positive fixed fee from that quest reward). Never promise equipment or act for another speaker. If the character needs an unsupported condition, decline.'},
-        {role:'user',content:JSON.stringify({invitation:id,who,name:person.name,traits:person.descriptors,role:person.role,place:s.places[s.scene.at]?.name,terms:standard,source,quests})}];
+    const messages=[{role:'system',content:'Decide for the named NPC alone, using the supplied situation. Return one JSON object with invitation, who, decision (accept, decline or counter). Accept means exactly the supplied terms and ordinary party membership. For a counter only, add quest (one listed ID) and cp (positive fixed fee from that quest reward). Never promise equipment or act for another speaker. If the character needs an unsupported condition, decline.'},
+        {role:'user',content:JSON.stringify({invitation:id,who,name:person.name,traits:person.descriptors,occupation:truth(s,who,'occupation').map(f=>f.o),role:person.sheet?.class || person.role,temperament:person.sheet?.generated?.temperament,place:s.places[s.scene.at]?.name,terms:offered?.terms || standard,source,quests})}];
     const answer=await ask(messages);call=answer.call;
     let d;
     try {d=JSON.parse(answer.content);} catch {}
     if(!d || d.invitation!==id || d.who!==who || !['accept','decline','counter'].includes(d.decision) ||
         Object.keys(d).some(k=>!['invitation','who','decision',...(d.decision==='counter'?['quest','cp']:[])].includes(k)))
-        return result('The partner’s decision could not be recorded. The invitation can be tried again.');
+        {events.length=0;return result('The partner’s decision could not be recorded. The invitation can be tried again.');}
     const counter=d.decision==='counter';
     const quest=counter && quests.find(q=>q.id===d.quest);
     if(counter && (!quest || !Number.isSafeInteger(d.cp) || d.cp<1 || d.cp>quest.cp))
-        return result('The proposed condition could not be booked.');
+        {events.length=0;return result('The proposed condition could not be booked.');}
+    if(offered && d.decision==='accept'){
+        const resultOfAnswer=partyDecision(s,content,{act:'accept',who,agreement:id,quote:offered.terms.text},
+            offered.terms.text,who,emit,contractReady,true);
+        if(!resultOfAnswer.done){events.length=0;return result(resultOfAnswer.line);}
+        equip();
+        return result(person.name+' joined the party. '+offered.terms.text);
+    }
     const terms=counter ? {combat:true,quest:quest.id,cp:d.cp,text:person.name+' requests '+d.cp+' cp from '+quest.title+'.'} :
-        {combat:true,quest:null,text:standard};
+        offered?.terms || {combat:true,quest:null,text:standard};
     emit({t:'party.agreement',d:{id,who,phase:counter?'open':d.decision==='accept'?'accepted':'declined',
         standard:true,terms,situation,proposer:counter?who:'pc',source:{actor:'pc',quote:source,at:s.scene.at,turn:s.turn},
-        answer:{actor:who,decision:d.decision},previous:0}});
-    if(d.decision==='accept'){equip();memberEvent(who,'follow',{agreement:id,standard:true,combat:true,priority:null,watch:false,formation:null});}
+        answer:{actor:who,decision:d.decision},previous:offered?.revision || 0}});
+    if(d.decision==='accept'){memberEvent(who,'follow',{agreement:id,standard:true,combat:true,priority:null,watch:false,formation:null});equip();}
     return result(counter?terms.text+' Offer open.':person.name+(d.decision==='accept'?' joined the party.':' declined the invitation.'));
 }

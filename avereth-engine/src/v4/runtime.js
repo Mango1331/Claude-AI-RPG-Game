@@ -416,8 +416,11 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const guarded = guardCommands(msg.mes, pl.commands.filter(c=>!hud?.bound.includes(c.seq)), guardContext(before, content, catalog));
     if(hud)guarded.kept=[...guarded.kept,...pl.commands.filter(c=>hud.bound.includes(c.seq))].sort((a,b)=>a.seq-b.seq);
     const pc=guarded.kept.length===1 && !guarded.dropped.length && !actionInput && guarded.kept[0];
-    if(pc?.type==='party' && (pc.act==='invite' || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who]?.standard)){
-        const local=await partyControl(before,content,{act:pc.act==='leave'?'remove':pc.act,ref:pc.who,source:msg.mes,revision:actionPrefix(chat,u)},
+    const recruitment=pc?.type==='party' && (pc.act==='invite' || pc.act==='offer' && !pc.agreement &&
+        (!before.party?.members[pc.who] || before.party.members[pc.who].mode==='left'));
+    if(pc?.type==='party' && (recruitment || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who]?.standard)){
+        const local=await partyControl(before,content,{act:recruitment?'invite':pc.act==='leave'?'remove':pc.act,ref:pc.who,source:msg.mes,revision:actionPrefix(chat,u),
+            proposal:recruitment && (pc.act==='offer' || pc.quest || pc.amount || pc.due || pc.share || pc.loot) ? pc : null},
             messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}));
         return {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),plan,interp,...local};
     }

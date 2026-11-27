@@ -373,7 +373,7 @@ function splitPartyDeparture(state, input, commands) {
     const follow = /^([^,]+),\s*(?:please\s+)?(?:follow me|come (?:along )?with me)(?: again)?$/i.exec(prefix);
     if (follow) {
         const matches = Object.values(state.party?.members || {}).filter(m => m.mode !== 'left' &&
-            state.scene.present.includes(m.who) && state.entities[m.who]?.name.toLowerCase() === follow[1].trim().toLowerCase());
+            state.scene.present.includes(m.who) && state.entities[m.who]?.name?.toLowerCase() === follow[1].trim().toLowerCase());
         if (matches.length !== 1) return commands;
         act = 'follow';
         who = matches[0].who;

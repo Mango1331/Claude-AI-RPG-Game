@@ -3147,6 +3147,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     }
 
     function arrive(id, party = [], voluntary = true) {
+        const returning = voluntary && s.scene.history?.at(-1) === id &&
+            sameSettlement(s, s.scene.at, id) && !trueDungeonOf(s, id) &&
+            !trueDungeonOf(s, s.scene.at);
         const routes=(auth.gos || []).filter(go=>go.to===id && go.followers);
         if (voluntary && routes.length===1) {
             const route=routes[0];
@@ -3214,9 +3217,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         // who travelled with him arrives with him
         for (const who of party) emit({ t: 'scene.entered', d: { id: who, band: 'SHORT' } });
-        for (const m of Object.values(s.party?.members || {})) if (m.mode==='wait' && m.at===id &&
-            !m.lastContact?.danger?.length && s.entities[m.who]?.status!=='dead' && !s.scene.present.includes(m.who))
-            emit({t:'scene.entered',d:{id:m.who,band:'SHORT'}});
+        for (const member of Object.values(s.party?.members || {})) {
+            const npc = s.entities[member.who];
+            if (!npc || npc.status === 'dead' || member.lastContact?.danger?.length ||
+                s.scene.present.includes(member.who)) continue;
+            const waiting = member.mode === 'wait' && member.at === id;
+            // A companion left in the public room is encountered there on the direct return.
+            // The saved location and the observed separation must still agree.
+            const stayed = returning && member.standard && member.mode === 'follow' &&
+                npc.at === id && member.lastSeen?.at === id;
+            if (waiting || stayed) emit({t:'scene.entered', d:{id:member.who, band:'SHORT'}});
+        }
         // and the creatures he went to in a part of the place he was in are there with him, as he knew them
         for (const n of near) {
             emit({ t: 'scene.entered', d: { id: n.id, band: 'SHORT' } });

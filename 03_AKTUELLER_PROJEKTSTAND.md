@@ -1,6 +1,6 @@
 # Avereth Engine – aktueller Projektstand
 
-**Build .220 steht für den unabhängigen GPT-Diffreview bereit.** Die beiden Befunde aus dem .219-Review sind im Produktpfad bestätigt und behoben. Ereigniszeit und Reiseminuten werden getrennt gebucht. Bei einem Wechsel unterwegs erhält jedes Mitglied MP nur für den eigenen Weg. Der persönliche Usertest 16 folgt nach unauffälligem Review und Nutzerentscheidung. [Reproduktion und Abnahme](recherche/AVERETH_220_REISEZEIT_UND_MITREISENDE.md) · [Produktdiff .219 → .220](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/0a7a91b90d204e01c49747829308abf940343449...cc327a1ae44b0aac3605f416078c693b2600ffff)
+**Der persönliche Usertest 16 auf .220 endete nach zwei erfolglosen Annäherungen an den Dungeoneingang.** Beide Reviews liegen vor. Nutzer und GPT entscheiden als Nächstes über die Grenze zwischen lokaler Szenenhandlung und mechanischem Ortswechsel. Der Produktstand bleibt bei `cc327a1a`. [User16 mit Originalquellen und Gegenreview](testrun_10b/user-20261126-233937-220/README.md) · [Entscheidungsvorlage](recherche/AVERETH_USER16_ORTS_UND_SZENENARCHITEKTUR_ENTSCHEIDUNGSVORLAGE.md)
 
 ## Aktuelle Referenzen
 
@@ -13,6 +13,8 @@
 `main` ist die separate Dokumentations- und Originalarchivlinie. Diese Tabelle ist ein Snapshot, keine Garantie für spätere HEADs. Vor neuer Arbeit aktuelle Remote-Refs prüfen.
 
 ## Letzte abgeschlossene Entwicklungsarbeit
+
+- .220 bindet Reisezeit und Mitreisende an den tatsächlich zurückgelegten Abschnitt. [Fachbericht, Abnahme und Produktdiff](recherche/AVERETH_220_REISEZEIT_UND_MITREISENDE.md)
 
 - .219 setzte das User15-Paket in sieben Etappen einschließlich Reisemana und lokaler Handlungsdurchführung um. Der GPT-Diffreview bestätigte die Etappe grundsätzlich und führte zum gezielten Folgepaket .220. [User15-Fachbericht](recherche/AVERETH_219_USER15_FACH_UND_ABNAHME.md)
 

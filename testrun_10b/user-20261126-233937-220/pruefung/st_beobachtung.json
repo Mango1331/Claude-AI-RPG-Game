@@ -1,0 +1,387 @@
+{
+  "produkt": "cc327a1ae44b0aac3605f416078c693b2600ffff",
+  "sillytavern": {
+    "version": "1.19.0",
+    "commit": "7e8663cd9c184a550b37238218bdd32c6efc68e9"
+  },
+  "chromium": "156.0.8078.79",
+  "quelle": "Markierte ST-Sandbox mit lokalem P/N/X-Mock. Eigene DOM-Messung, kein persönliches Klickprotokoll. calls umfasst den Vorlauf des Hostrunners.",
+  "phases_spalten": [
+    "restButton.disabled",
+    "actionStatus.dataset.blocked",
+    "actionStatus.textContent",
+    "letzter X-Status"
+  ],
+  "beobachtungen": [
+    {
+      "tag": "active encounter reference",
+      "hidden": true,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Bereit",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 7,
+      "x": "applied",
+      "calls": 18
+    },
+    {
+      "tag": "creation",
+      "hidden": true,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Bereit",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 1,
+      "calls": 18
+    },
+    {
+      "tag": "exterior with visible lookout",
+      "hidden": false,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Bereit",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 29,
+      "x": "applied",
+      "calls": 18
+    },
+    {
+      "tag": "after selecting action and target",
+      "hidden": false,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Bereit",
+      "chip": true,
+      "chipLabel": "Flame Lance → Goblin Lookout A · 16 MP",
+      "armed": true,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 29,
+      "x": "applied",
+      "calls": 18
+    },
+    {
+      "tag": "rest with prepared selection",
+      "hidden": false,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Offene Eingabe oder Aktion zuerst abschließen.",
+      "chip": true,
+      "chipLabel": "Flame Lance → Goblin Lookout A · 16 MP",
+      "armed": true,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 29,
+      "x": "applied",
+      "calls": 18
+    },
+    {
+      "tag": "original M38 after new X and save",
+      "hidden": false,
+      "disabled": true,
+      "blocked": "false",
+      "status": "Gespeichert",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 39,
+      "x": "applied",
+      "calls": 21
+    },
+    {
+      "tag": "original M37-38 mock roles",
+      "roles": [
+        "plan",
+        "narrator",
+        "extract"
+      ],
+      "rules": [
+        "passage",
+        "scene_context",
+        "scene_context",
+        "scene_context",
+        "scene_context",
+        "scene_context",
+        "travel_time"
+      ]
+    },
+    {
+      "tag": "original end after reload",
+      "hidden": false,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Bereit",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 39,
+      "x": "applied",
+      "calls": 21
+    },
+    {
+      "tag": "rest with typed input",
+      "hidden": false,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Offene Eingabe oder Aktion zuerst abschließen.",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "Existing draft",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 39,
+      "x": "applied",
+      "calls": 21
+    },
+    {
+      "tag": "invalid duration",
+      "hidden": false,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Eine Rastdauer von 1 bis 1440 Minuten wählen.",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 39,
+      "x": "applied",
+      "calls": 21
+    },
+    {
+      "tag": "after normal N X and save before refresh",
+      "hidden": false,
+      "disabled": true,
+      "blocked": "false",
+      "status": "Gespeichert",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 55,
+      "x": "applied",
+      "calls": 24
+    },
+    {
+      "tag": "phases",
+      "roles": [
+        "plan",
+        "narrator",
+        "extract"
+      ],
+      "samples": [
+        [
+          false,
+          "false",
+          "Bereit",
+          "applied"
+        ],
+        [
+          false,
+          "false",
+          "Bereit",
+          null
+        ],
+        [
+          false,
+          "false",
+          "Speichern",
+          null
+        ],
+        [
+          false,
+          "false",
+          "Aktion wird aufgelöst",
+          null
+        ],
+        [
+          false,
+          "false",
+          "Speichern",
+          null
+        ],
+        [
+          true,
+          "false",
+          "Gespeichert",
+          null
+        ],
+        [
+          true,
+          "true",
+          "Weltabgleich offen – Abschluss prüfen / fortsetzen",
+          "pending"
+        ],
+        [
+          true,
+          "true",
+          "Weltabgleich läuft; Text bleibt als Entwurf erhalten",
+          "pending"
+        ],
+        [
+          true,
+          "true",
+          "Weltabgleich läuft; Text bleibt als Entwurf erhalten",
+          "applied"
+        ],
+        [
+          true,
+          "false",
+          "Gespeichert",
+          "applied"
+        ]
+      ]
+    },
+    {
+      "tag": "before reopen",
+      "hidden": false,
+      "disabled": true,
+      "blocked": "false",
+      "status": "Gespeichert",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 55,
+      "x": "applied",
+      "calls": 24
+    },
+    {
+      "tag": "after close/open",
+      "hidden": false,
+      "disabled": true,
+      "blocked": "false",
+      "status": "Gespeichert",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 55,
+      "x": "applied",
+      "calls": 24
+    },
+    {
+      "tag": "after reload",
+      "hidden": false,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Bereit",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 55,
+      "x": "applied",
+      "calls": 24
+    },
+    {
+      "tag": "rest submitted",
+      "hidden": false,
+      "disabled": false,
+      "blocked": "false",
+      "status": "Gespeichert",
+      "chip": false,
+      "chipLabel": "",
+      "armed": false,
+      "text": "",
+      "readOnly": false,
+      "fieldDisabled": false,
+      "messages": 57,
+      "x": "applied",
+      "calls": 24
+    },
+    {
+      "tag": "rest outcome",
+      "roles": [],
+      "events": [
+        [
+          "turn.begun",
+          null
+        ],
+        [
+          "cmd.interpreted",
+          null
+        ],
+        [
+          "pulse.rolled",
+          null
+        ],
+        [
+          "time.advanced",
+          30
+        ],
+        [
+          "resource.changed",
+          null
+        ],
+        [
+          "resource.changed",
+          null
+        ],
+        [
+          "cmd.resolved",
+          null
+        ],
+        [
+          "dungeon.booked",
+          null
+        ],
+        [
+          "outcome.recorded",
+          null
+        ]
+      ]
+    }
+  ],
+  "gildenrueckkehr_request": {
+    "spielerfrage": "I greet the clerk and ask what is new in town.",
+    "nachrichten_im_request": 13,
+    "engine_abschnitt_zeichen": 6603,
+    "verbliebene_spielertexte": [
+      "I stretch my fingers.",
+      "I adjust my cloak.",
+      "I head back along the quarry road to the Adventurers' Guild hall in Ashbridge.",
+      "I greet the clerk and ask what is new in town."
+    ],
+    "treffer_ueber_alle_nachrichten": {
+      "Dammar": 0,
+      "Wenna": 0,
+      "forage rights": 0,
+      "sinkhole": 0
+    },
+    "pruefung": "Erfasst am lokalen Modellendpunkt nach ST-Historyprojektion."
+  }
+}

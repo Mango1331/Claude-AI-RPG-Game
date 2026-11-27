@@ -4,6 +4,7 @@ Nur **abgeschlossene Entwicklungs-/Forschungsetappen** werden hier aufgenommen; 
 
 | Etappe | Fachlicher Abschluss und Gegenreview | Originale / Abnahmen |
 |---|---|---|
+| **.220 · Usertest 16 und Ortsarchitektur** | [Codex-Gegenreview](testrun_10b/user-20261126-233937-220/CODEX_GEGENREVIEW.md) · [Fachliche Entscheidungsvorlage](recherche/AVERETH_USER16_ORTS_UND_SZENENARCHITEKTUR_ENTSCHEIDUNGSVORLAGE.md) | [Originale und GPT-Review](testrun_10b/user-20261126-233937-220/README.md) |
 | **.220 · Reisezeit nach GPT-Diffreview** | [Runtime-Gegenproben und Korrektur](recherche/AVERETH_220_REISEZEIT_UND_MITREISENDE.md) | [Diff .219 → .220](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/0a7a91b90d204e01c49747829308abf940343449...cc327a1ae44b0aac3605f416078c693b2600ffff) |
 | **.219 · Usertest 15** | [Fachbericht und technische Abnahme](recherche/AVERETH_219_USER15_FACH_UND_ABNAHME.md) | [Originalrun](testrun_10b/user-20261126-085419-218/) · [Produktdiff](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/a729d3606f55cd1b71c57726befa80f897c946d3...0a7a91b90d204e01c49747829308abf940343449) |
 | **.218 · Party-Korrekturpaket** | [Codex-Gegenreview R1–R6 und technische Abnahme](recherche/AVERETH_218_PARTY_GEGENREVIEW.md) | [Produktdiff gegenüber .217](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/d42621682d19cbd8819ca27594614e04a79ed0d1...a729d3606f55cd1b71c57726befa80f897c946d3) |

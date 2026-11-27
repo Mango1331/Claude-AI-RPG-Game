@@ -42,7 +42,11 @@ function adapted(i, raw, at) {
         const standpoint = i === 36 ? "worked his way along the hill's flank toward the burnt doorway and the voices above it" :
             "Alaric crossed the last stretch in a crouch, from slab shadow to the blackened jamb of the doorway";
         const observations = raw.deltas.filter(d => d.type === 'thread' && (i === 36 || !d.id));
-        if (i === 38) observations[0].text = 'Alaric overheard two goblins speaking of a rusted chain, Tolmag and new arrivals. The captive itself was out of sight.';
+        if (i === 38) {
+            observations[0].text = 'Alaric overheard two goblins speaking of a rusted chain, Tolmag and new arrivals. The captive itself was out of sight.';
+            observations.push({type:'thread',id:null,kind:'sign',status:'open',who:[],
+                text:'From outside the doorway Alaric saw two goblins at a crate near the bend, one with a crooked knife and one with a stone maul.'});
+        }
         return {scene:at, expected:{1:{standpoint}}, deltas:observations.map((d,n) => anchored({...d, seq:n+1},at))};
     }
     return raw;
@@ -133,6 +137,22 @@ const crossed = await branch(chat,enter,go(dungeon,enter),entry,{scene:room,expe
     {seq:1,type:'arrive',at:room,evidence:entry,with:null}]});
 assert.notEqual(crossed.next.scene.at,outside,JSON.stringify(crossed.events));
 assert(!crossed.next.scene.focus && crossed.next.dungeons[dungeon]);
+const more = 'I follow the passage around the bend.';
+const around = {new:{name:'Bend beyond the adit',kind:'interior',parent:dungeon}};
+const nextRoom = 'Alaric walks around the bend and enters the next passage.';
+const first = crossed.next.dungeons[dungeon].run.floors[1].slots[0];
+const population = {type:'creature.new',seq:2,ref:first.ref,species:first.species,count:first.count,anchor:first.anchor,
+    desc:['one scout carries a knife, another a stone maul'],present:true,band:'SHORT',scene:around};
+const further = await branch(crossed.run,more,go({new:'the passage around the bend'},more),nextRoom+' Two goblin lookouts crouch at a crate in this passage.',
+    {scene:around,expected:{1:{arrived:true,at:around,with:null,met:null}},deltas:[{seq:1,type:'arrive',at:around,evidence:nextRoom,with:null},population]});
+const scouts = further.next.dungeons[dungeon].run.floors[1].slots[0];
+assert.equal(crossed.next.scene.at,dungeon+'.l1_s1');
+assert.equal(further.next.scene.at,dungeon+'.l1_s2');
+assert.deepEqual(scouts.levels,[3,4]);
+assert.equal(scouts.entities.length,first.count);
+assert.deepEqual(further.next.scene.present.filter(id => id !== 'pc').sort(),[...scouts.entities].sort());
+assert.equal(further.events.filter(e => e.t === 'dungeon.slot').length,1);
+assert.match(current.threads['thread.t16.2'].text,/crooked knife.*stone maul/);
 const attack = 'I cast Flame Lance at the goblin with the knife.';
 const shot = await branch(chat,attack,[{seq:1,type:'use_skill',skill:'mage.flame_lance',target:{new:'goblin with the knife'},quote:attack}]);
 assert(!shot.next.encounter && shot.next.scene.at===outside);

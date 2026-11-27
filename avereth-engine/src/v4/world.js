@@ -54,7 +54,7 @@ import { freeObjectId, itemTraits, useOf, itemProfile, priceAudit, gearRetailPri
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, speciesAnchor, templateFor, npcTemplate, rulesetOf } from '../content.js';
-import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, clearDone, livingOf, floorAt, slotMet, resolved, nextSlot, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
+import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, clearDone, livingOf, floorAt, slotMet, resolved, nextSlot, thresholdSlot, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
 import { knownAt } from './catalog.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
@@ -1483,6 +1483,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
             case 'creature.new': {
                 if (d.across == null) {
+                    if (d.ref && d.ref === thresholdSlot(s)?.ref) {
+                        reject(d, 'dungeon_sight', 'The reserved encounter needs a witnessed sighting before entry.');
+                        blockCreature(d);
+                        break;
+                    }
                     newEntity(d, 'creature');
                     break;
                 }

@@ -975,16 +975,22 @@ export function contextLines(s, content = null) {
     return L;
 }
 
+/** The reserved group across an approached threshold, before Alaric enters. */
+export function thresholdSlot(s) {
+    if (!s?.scene?.approaching || trueDungeonOf(s, s.scene.at)) return null;
+    const slot = livingOf(s, s.scene.approaching)?.run.floors[1]?.slots[0];
+    return slot && !slotMet(slot) && !slot.taken && slot.role === 'minion' ? slot : null;
+}
+
 /** The catalog's lines (planner and extractor): the level's state; the extractor also the encounter the engine placed. */
 export function catalogLines(s, { extractor = false } = {}) {
     const root = trueDungeonOf(s, s.scene.at);
     const x = livingOf(s, root);
     if (!x) {
         if (!extractor) return [];
-        const entrance = livingOf(s, s.scene.approaching);
-        const slot = entrance?.run.floors[1]?.slots[0];
-        if (!slot || slotMet(slot) || slot.taken || slot.role !== 'minion') return [];
-        return ['If individually visible across the threshold: creature.new ref "'+slot.ref+'", anchor "'+slot.anchor+'", count '+slot.count+', population "independent", across and separate desc quoted literally, actual band. Sounds alone are clues.'];
+        const slot = thresholdSlot(s);
+        if (!slot) return [];
+        return ['If individually visible across the threshold: creature.new ref "'+slot.ref+'", anchor "'+slot.anchor+'", count '+slot.count+', present:true, population "independent", life_stage "adult" unless juvenile, across: one verbatim clause showing them, desc: one short contiguous quote per individual, band: observed distance. This reserved ref is never an independent remote group. Sounds alone are clues.'];
     }
     const mine = Math.max(1, floorAt(s, s.scene.at));
     const L = [floorText(s, x, mine)];

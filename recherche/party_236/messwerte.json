@@ -1,0 +1,1197 @@
+[
+  {
+    "run": "openrouter-20261127-ember-241",
+    "messagesAtEntry": 15,
+    "messagesSaved": 19,
+    "inputs": 2,
+    "seed": 3509323178,
+    "start": "loc.alderwatch.guild_hall",
+    "end": "loc.alderwatch.guild_hall",
+    "partyBefore": {},
+    "partyAfter": {},
+    "physical": 2,
+    "costUSD": "0.000640082",
+    "byRole": {
+      "party_decision": {
+        "requests": 1,
+        "promptTokens": 247,
+        "completionTokens": 38,
+        "medianRequestMs": 722
+      },
+      "planner": {
+        "requests": 1,
+        "promptTokens": 14406,
+        "completionTokens": 96,
+        "medianRequestMs": 1832
+      }
+    },
+    "events": {},
+    "encounters": [],
+    "xp": [],
+    "questStatus": [],
+    "payments": [],
+    "medianTurnWithReloadMs": 3175.5,
+    "uiMedianMs": {}
+  },
+  {
+    "run": "openrouter-20261127-vale-242",
+    "messagesAtEntry": 15,
+    "messagesSaved": 45,
+    "inputs": 15,
+    "seed": 3509323178,
+    "start": "loc.alderwatch.guild_hall",
+    "end": "loc.old_crown_catacombs.l1_s3",
+    "partyBefore": {},
+    "partyAfter": {
+      "npc.ossen": "follow"
+    },
+    "physical": 41,
+    "costUSD": "0.026057520",
+    "byRole": {
+      "extractor": {
+        "requests": 16,
+        "promptTokens": 256444,
+        "completionTokens": 8713,
+        "medianRequestMs": 4093.5
+      },
+      "narrator": {
+        "requests": 12,
+        "promptTokens": 146648,
+        "completionTokens": 6196,
+        "medianRequestMs": 6543.0
+      },
+      "party_decision": {
+        "requests": 1,
+        "promptTokens": 261,
+        "completionTokens": 37,
+        "medianRequestMs": 1140
+      },
+      "planner": {
+        "requests": 12,
+        "promptTokens": 154139,
+        "completionTokens": 1033,
+        "medianRequestMs": 1149.5
+      }
+    },
+    "events": {
+      "career.recorded": 2,
+      "cmd.interpreted": 8,
+      "cmd.resolved": 7,
+      "delta.rejected": 10,
+      "dungeon.ahead": 3,
+      "dungeon.booked": 5,
+      "dungeon.established": 1,
+      "dungeon.part": 3,
+      "dungeon.party": 2,
+      "dungeon.slot": 2,
+      "encounter.ended": 2,
+      "encounter.started": 2,
+      "encounter.updated": 2,
+      "entity.created": 6,
+      "entity.sheet_set": 1,
+      "entity.status": 4,
+      "entity.updated": 31,
+      "extract.applied": 12,
+      "fact.asserted": 14,
+      "feature.set": 1,
+      "item.equipped": 2,
+      "knowledge.gained": 11,
+      "level.up": 3,
+      "link.set": 3,
+      "memory.recorded": 12,
+      "object.created": 8,
+      "offer.created": 1,
+      "outcome.recorded": 12,
+      "party.agreement": 1,
+      "party.member": 3,
+      "place.created": 4,
+      "place.updated": 4,
+      "pulse.outcome": 6,
+      "pulse.rolled": 5,
+      "quest.party_work": 2,
+      "relation.set": 1,
+      "resource.changed": 19,
+      "scene.awareness": 9,
+      "scene.entered": 13,
+      "scene.left": 1,
+      "scene.moved": 6,
+      "scene.position": 6,
+      "scene.tactical": 1,
+      "skill.progress": 5,
+      "stat.assigned": 3,
+      "thread.set": 4,
+      "time.advanced": 8,
+      "turn.begun": 12,
+      "xp.changed": 4
+    },
+    "encounters": [
+      {
+        "defeated": [
+          "mon.old_crown_catacombs_c1_l1_e1_1",
+          "mon.old_crown_catacombs_c1_l1_e1_2"
+        ],
+        "escaped": [],
+        "xp_awarded": 90,
+        "xp_pool": 180,
+        "xp_shares": {
+          "pc": 90,
+          "npc.ossen": 90
+        },
+        "reason": "resolved",
+        "agreements": [],
+        "pc_dead": false,
+        "pc_escaped": false,
+        "pp": [
+          {
+            "id": "pc",
+            "skill": "mage.flame_lance",
+            "gained": 18,
+            "from": {
+              "prof": 1,
+              "pp": 0
+            },
+            "to": {
+              "prof": 1,
+              "pp": 18
+            },
+            "need": 75
+          },
+          {
+            "id": "npc.ossen",
+            "skill": "mage.flame_lance",
+            "gained": 18,
+            "from": {
+              "prof": 1,
+              "pp": 0
+            },
+            "to": {
+              "prof": 1,
+              "pp": 18
+            },
+            "need": 75
+          }
+        ]
+      },
+      {
+        "defeated": [
+          "mon.old_crown_catacombs_c1_l1_e2_1",
+          "mon.old_crown_catacombs_c1_l1_e2_2"
+        ],
+        "escaped": [],
+        "xp_awarded": 270,
+        "xp_pool": 540,
+        "xp_shares": {
+          "pc": 270,
+          "npc.ossen": 270
+        },
+        "reason": "resolved",
+        "agreements": [],
+        "pc_dead": false,
+        "pc_escaped": false,
+        "pp": [
+          {
+            "id": "pc",
+            "skill": "mage.flame_lance",
+            "gained": 18,
+            "from": {
+              "prof": 1,
+              "pp": 18
+            },
+            "to": {
+              "prof": 1,
+              "pp": 36
+            },
+            "need": 75
+          },
+          {
+            "id": "npc.ossen",
+            "skill": "mage.arcane_ward",
+            "gained": 18,
+            "from": {
+              "prof": 1,
+              "pp": 0
+            },
+            "to": {
+              "prof": 1,
+              "pp": 18
+            },
+            "need": 50
+          },
+          {
+            "id": "npc.ossen",
+            "skill": "mage.flame_lance",
+            "gained": 18,
+            "from": {
+              "prof": 1,
+              "pp": 18
+            },
+            "to": {
+              "prof": 1,
+              "pp": 36
+            },
+            "need": 75
+          }
+        ]
+      }
+    ],
+    "xp": [
+      [
+        31,
+        "pc",
+        90,
+        null
+      ],
+      [
+        31,
+        "npc.ossen",
+        90,
+        null
+      ],
+      [
+        39,
+        "pc",
+        270,
+        null
+      ],
+      [
+        39,
+        "npc.ossen",
+        270,
+        null
+      ]
+    ],
+    "questStatus": [],
+    "payments": [],
+    "medianTurnWithReloadMs": 16493,
+    "uiMedianMs": {
+      "firstProse": {
+        "n": 5,
+        "median": 9761
+      },
+      "worldCommit": {
+        "n": 12,
+        "median": 16169
+      },
+      "confirmedSave": {
+        "n": 12,
+        "median": 16438
+      },
+      "ready": {
+        "n": 12,
+        "median": 16443
+      }
+    }
+  },
+  {
+    "run": "openrouter-20261127-moss-242",
+    "messagesAtEntry": 45,
+    "messagesSaved": 77,
+    "inputs": 16,
+    "seed": 3509323178,
+    "start": "loc.old_crown_catacombs.l1_s3",
+    "end": "realm.valedorn_crown.the_millpond_sluice_and_shallows_below_alderwatchs_mill",
+    "partyBefore": {
+      "npc.ossen": "follow"
+    },
+    "partyAfter": {
+      "npc.ossen": "wait"
+    },
+    "physical": 38,
+    "costUSD": "0.023407236",
+    "byRole": {
+      "extractor": {
+        "requests": 12,
+        "promptTokens": 192284,
+        "completionTokens": 5152,
+        "medianRequestMs": 3619.0
+      },
+      "narrator": {
+        "requests": 11,
+        "promptTokens": 138039,
+        "completionTokens": 6167,
+        "medianRequestMs": 6115
+      },
+      "planner": {
+        "requests": 15,
+        "promptTokens": 178895,
+        "completionTokens": 1371,
+        "medianRequestMs": 1221
+      }
+    },
+    "events": {
+      "board.refreshed": 1,
+      "career.recorded": 2,
+      "cmd.completed": 1,
+      "cmd.interpreted": 5,
+      "cmd.resolved": 6,
+      "coin.changed": 3,
+      "combat.intent": 2,
+      "delta.rejected": 8,
+      "dungeon.ahead": 1,
+      "dungeon.booked": 4,
+      "dungeon.cleared": 1,
+      "dungeon.part": 1,
+      "dungeon.slot": 1,
+      "encounter.ended": 2,
+      "encounter.started": 2,
+      "encounter.updated": 5,
+      "entity.created": 4,
+      "entity.status": 4,
+      "entity.updated": 20,
+      "extract.applied": 11,
+      "fact.asserted": 10,
+      "growth.noted": 1,
+      "intent.set": 4,
+      "knowledge.gained": 14,
+      "level.up": 3,
+      "link.set": 1,
+      "memory.recorded": 7,
+      "object.created": 3,
+      "object.marked": 2,
+      "outcome.recorded": 12,
+      "party.claim": 2,
+      "party.member": 1,
+      "place.created": 1,
+      "place.updated": 2,
+      "proof.checked": 1,
+      "pulse.outcome": 2,
+      "pulse.rolled": 3,
+      "quest.detailed": 3,
+      "quest.party_work": 3,
+      "quest.ready": 1,
+      "quest.status": 2,
+      "resource.changed": 28,
+      "scene.awareness": 6,
+      "scene.entered": 8,
+      "scene.moved": 3,
+      "scene.position": 6,
+      "skill.progress": 4,
+      "stat.assigned": 8,
+      "thread.set": 1,
+      "time.advanced": 5,
+      "transaction.completed": 2,
+      "turn.begun": 12,
+      "xp.changed": 5
+    },
+    "encounters": [
+      {
+        "defeated": [
+          "mon.old_crown_catacombs_c1_l1_e3"
+        ],
+        "escaped": [],
+        "xp_awarded": 270,
+        "xp_pool": 540,
+        "xp_shares": {
+          "pc": 270,
+          "npc.ossen": 270
+        },
+        "reason": "resolved",
+        "agreements": [],
+        "pc_dead": false,
+        "pc_escaped": false,
+        "pp": [
+          {
+            "id": "pc",
+            "skill": "mage.flame_lance",
+            "gained": 18,
+            "from": {
+              "prof": 1,
+              "pp": 36
+            },
+            "to": {
+              "prof": 1,
+              "pp": 54
+            },
+            "need": 75
+          },
+          {
+            "id": "pc",
+            "skill": "mage.basic_attack",
+            "gained": 18,
+            "from": {
+              "prof": 1,
+              "pp": 0
+            },
+            "to": {
+              "prof": 1,
+              "pp": 18
+            },
+            "need": 50
+          },
+          {
+            "id": "npc.ossen",
+            "skill": "mage.flame_lance",
+            "gained": 18,
+            "from": {
+              "prof": 1,
+              "pp": 36
+            },
+            "to": {
+              "prof": 1,
+              "pp": 54
+            },
+            "need": 75
+          }
+        ],
+        "noted": {
+          "skills": [
+            "mage.flame_lance"
+          ],
+          "pairs": [
+            "mage.basic_attack+mage.flame_lance"
+          ]
+        }
+      },
+      {
+        "defeated": [
+          "mon.creaturemillpond_snappers_2",
+          "mon.creaturemillpond_snappers_3"
+        ],
+        "escaped": [],
+        "xp_awarded": 0,
+        "xp_pool": 560,
+        "xp_shares": {
+          "npc.ossen": 560
+        },
+        "reason": "pc_dead",
+        "agreements": [],
+        "pc_dead": true,
+        "pc_escaped": false,
+        "pp": [
+          {
+            "id": "npc.ossen",
+            "skill": "mage.arcane_ward",
+            "gained": 18,
+            "from": {
+              "prof": 1,
+              "pp": 18
+            },
+            "to": {
+              "prof": 1,
+              "pp": 36
+            },
+            "need": 50
+          }
+        ]
+      }
+    ],
+    "xp": [
+      [
+        51,
+        "pc",
+        270,
+        null
+      ],
+      [
+        51,
+        "npc.ossen",
+        270,
+        null
+      ],
+      [
+        54,
+        "pc",
+        225,
+        null
+      ],
+      [
+        54,
+        "npc.ossen",
+        225,
+        null
+      ],
+      [
+        75,
+        "npc.ossen",
+        560,
+        null
+      ]
+    ],
+    "questStatus": [
+      [
+        54,
+        "quest.clear_the_old_crown_catacombs_level_1",
+        "completed"
+      ],
+      [
+        55,
+        "quest.cull_the_millpond_snapping_turtles",
+        "active"
+      ]
+    ],
+    "payments": [
+      {
+        "to": "pc",
+        "from": "guild",
+        "cp": 90,
+        "for": "Clear the Old Crown Catacombs, Level 1",
+        "quest": "quest.clear_the_old_crown_catacombs_level_1",
+        "at": "loc.alderwatch.guild_hall"
+      },
+      {
+        "from": "pc",
+        "to": "npc.ossen",
+        "cp": 45,
+        "for": "Shared quest reward quest.clear_the_old_crown_catacombs_level_1",
+        "at": "loc.alderwatch.guild_hall",
+        "claim": "quest.clear_the_old_crown_catacombs_level_1/npc.ossen"
+      }
+    ],
+    "medianTurnWithReloadMs": 13428.0,
+    "uiMedianMs": {
+      "firstProse": {
+        "n": 2,
+        "median": 8092
+      },
+      "worldCommit": {
+        "n": 11,
+        "median": 12470
+      },
+      "confirmedSave": {
+        "n": 11,
+        "median": 12765
+      },
+      "ready": {
+        "n": 11,
+        "median": 12769
+      }
+    }
+  },
+  {
+    "run": "openrouter-20261127-slate-242",
+    "messagesAtEntry": 43,
+    "messagesSaved": 45,
+    "inputs": 1,
+    "seed": 526138360,
+    "start": "loc.east_fold_below_the_moss_grown_hill",
+    "end": "loc.mossback_warrens",
+    "partyBefore": {},
+    "partyAfter": {},
+    "physical": 3,
+    "costUSD": "0.002150010",
+    "byRole": {
+      "extractor": {
+        "requests": 1,
+        "promptTokens": 15378,
+        "completionTokens": 1949,
+        "medianRequestMs": 16988
+      },
+      "narrator": {
+        "requests": 1,
+        "promptTokens": 11345,
+        "completionTokens": 454,
+        "medianRequestMs": 10824
+      },
+      "planner": {
+        "requests": 1,
+        "promptTokens": 13546,
+        "completionTokens": 90,
+        "medianRequestMs": 1438
+      }
+    },
+    "events": {
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "delta.rejected": 3,
+      "dungeon.booked": 1,
+      "entity.updated": 1,
+      "extract.applied": 1,
+      "fact.asserted": 1,
+      "memory.recorded": 1,
+      "outcome.recorded": 1,
+      "place.updated": 1,
+      "pulse.outcome": 1,
+      "resource.changed": 1,
+      "scene.moved": 1,
+      "thread.set": 1,
+      "time.advanced": 1,
+      "turn.begun": 1
+    },
+    "encounters": [],
+    "xp": [],
+    "questStatus": [],
+    "payments": [],
+    "medianTurnWithReloadMs": 32606,
+    "uiMedianMs": {
+      "firstProse": {
+        "n": 1,
+        "median": 13155
+      },
+      "worldCommit": {
+        "n": 1,
+        "median": 30386
+      },
+      "confirmedSave": {
+        "n": 1,
+        "median": 30556
+      },
+      "ready": {
+        "n": 1,
+        "median": 30560
+      }
+    }
+  },
+  {
+    "run": "openrouter-20261127-flint-243",
+    "messagesAtEntry": 43,
+    "messagesSaved": 47,
+    "inputs": 2,
+    "seed": 526138360,
+    "start": "loc.east_fold_below_the_moss_grown_hill",
+    "end": "loc.mossback_warrens.l1_s1",
+    "partyBefore": {},
+    "partyAfter": {},
+    "physical": 7,
+    "costUSD": "0.004547406",
+    "byRole": {
+      "extractor": {
+        "requests": 3,
+        "promptTokens": 46970,
+        "completionTokens": 1670,
+        "medianRequestMs": 5010
+      },
+      "narrator": {
+        "requests": 2,
+        "promptTokens": 23117,
+        "completionTokens": 866,
+        "medianRequestMs": 5846.5
+      },
+      "planner": {
+        "requests": 2,
+        "promptTokens": 27232,
+        "completionTokens": 195,
+        "medianRequestMs": 1459.5
+      }
+    },
+    "events": {
+      "check.recorded": 1,
+      "cmd.interpreted": 2,
+      "cmd.resolved": 2,
+      "delta.rejected": 1,
+      "dungeon.ahead": 1,
+      "dungeon.booked": 2,
+      "dungeon.part": 1,
+      "dungeon.slot": 1,
+      "entity.updated": 2,
+      "extract.applied": 2,
+      "fact.asserted": 3,
+      "link.set": 1,
+      "memory.recorded": 2,
+      "outcome.recorded": 2,
+      "place.created": 1,
+      "place.updated": 1,
+      "pulse.outcome": 1,
+      "resource.changed": 1,
+      "scene.awareness": 1,
+      "scene.entered": 1,
+      "scene.moved": 1,
+      "thread.set": 1,
+      "time.advanced": 2,
+      "turn.begun": 2
+    },
+    "encounters": [],
+    "xp": [],
+    "questStatus": [],
+    "payments": [],
+    "medianTurnWithReloadMs": 21416.0,
+    "uiMedianMs": {
+      "firstProse": {
+        "n": 1,
+        "median": 11245
+      },
+      "worldCommit": {
+        "n": 2,
+        "median": 16992
+      },
+      "confirmedSave": {
+        "n": 2,
+        "median": 17344
+      },
+      "ready": {
+        "n": 2,
+        "median": 17353
+      }
+    }
+  },
+  {
+    "run": "openrouter-20261127-hearth-243",
+    "messagesAtEntry": 53,
+    "messagesSaved": 89,
+    "inputs": 18,
+    "seed": 3509323178,
+    "start": "loc.old_crown_catacombs.l1_s4",
+    "end": "loc.alderwatch.the_slaked_lime.upstairs_room_at_the_slaked_lime",
+    "partyBefore": {
+      "npc.ossen": "follow"
+    },
+    "partyAfter": {
+      "npc.ossen": "left"
+    },
+    "physical": 41,
+    "costUSD": "0.027707628",
+    "byRole": {
+      "extractor": {
+        "requests": 15,
+        "promptTokens": 240589,
+        "completionTokens": 10633,
+        "medianRequestMs": 3952
+      },
+      "narrator": {
+        "requests": 11,
+        "promptTokens": 138490,
+        "completionTokens": 5331,
+        "medianRequestMs": 4898
+      },
+      "planner": {
+        "requests": 15,
+        "promptTokens": 210535,
+        "completionTokens": 2136,
+        "medianRequestMs": 1250
+      }
+    },
+    "events": {
+      "cmd.completed": 1,
+      "cmd.interpreted": 12,
+      "cmd.resolved": 14,
+      "coin.changed": 2,
+      "decision.closed": 2,
+      "decision.opened": 3,
+      "delta.rejected": 23,
+      "dungeon.booked": 6,
+      "dungeon.party": 1,
+      "entity.created": 3,
+      "entity.updated": 9,
+      "extract.applied": 11,
+      "fact.asserted": 6,
+      "fact.ended": 1,
+      "intent.set": 4,
+      "knowledge.gained": 2,
+      "level.up": 1,
+      "memory.recorded": 13,
+      "object.marked": 1,
+      "offer.closed": 1,
+      "offer.created": 4,
+      "outcome.recorded": 12,
+      "overreach.noted": 1,
+      "party.claim": 1,
+      "party.member": 3,
+      "place.created": 3,
+      "place.updated": 3,
+      "proof.checked": 1,
+      "pulse.outcome": 10,
+      "pulse.rolled": 9,
+      "quest.status": 1,
+      "resource.changed": 16,
+      "scene.awareness": 1,
+      "scene.entered": 10,
+      "scene.left": 1,
+      "scene.moved": 7,
+      "scene.position": 2,
+      "scene.tactical": 2,
+      "service.granted": 1,
+      "stat.assigned": 3,
+      "thread.set": 3,
+      "time.advanced": 9,
+      "transaction.completed": 2,
+      "turn.begun": 12,
+      "xp.changed": 2
+    },
+    "encounters": [],
+    "xp": [
+      [
+        58,
+        "pc",
+        225,
+        null
+      ],
+      [
+        58,
+        "npc.ossen",
+        225,
+        null
+      ]
+    ],
+    "questStatus": [
+      [
+        58,
+        "quest.clear_the_old_crown_catacombs_level_1",
+        "completed"
+      ]
+    ],
+    "payments": [
+      {
+        "to": "pc",
+        "from": "guild",
+        "cp": 90,
+        "for": "Clear the Old Crown Catacombs, Level 1",
+        "quest": "quest.clear_the_old_crown_catacombs_level_1",
+        "at": "loc.alderwatch.guild_hall"
+      },
+      {
+        "offer": "offer.t76.6",
+        "lines": [
+          "l2"
+        ],
+        "cp": 10,
+        "seller": "npc.madge"
+      }
+    ],
+    "medianTurnWithReloadMs": 13736.5,
+    "uiMedianMs": {
+      "firstProse": {
+        "n": 7,
+        "median": 7376
+      },
+      "worldCommit": {
+        "n": 11,
+        "median": 12532
+      },
+      "confirmedSave": {
+        "n": 11,
+        "median": 12881
+      },
+      "ready": {
+        "n": 11,
+        "median": 12885
+      }
+    }
+  },
+  {
+    "run": "openrouter-20261127-rowan-244",
+    "messagesAtEntry": 61,
+    "messagesSaved": 87,
+    "inputs": 13,
+    "seed": 3509323178,
+    "start": "loc.alderwatch.market_square",
+    "end": "loc.alderwatch.guild_hall",
+    "partyBefore": {
+      "npc.ossen": "wait"
+    },
+    "partyAfter": {
+      "npc.ossen": "left"
+    },
+    "physical": 37,
+    "costUSD": "0.024417000",
+    "byRole": {
+      "extractor": {
+        "requests": 15,
+        "promptTokens": 239438,
+        "completionTokens": 7741,
+        "medianRequestMs": 4437
+      },
+      "narrator": {
+        "requests": 9,
+        "promptTokens": 110920,
+        "completionTokens": 3861,
+        "medianRequestMs": 3689
+      },
+      "planner": {
+        "requests": 13,
+        "promptTokens": 182870,
+        "completionTokens": 1496,
+        "medianRequestMs": 1056
+      }
+    },
+    "events": {
+      "board.shown": 1,
+      "cmd.interpreted": 9,
+      "cmd.resolved": 10,
+      "coin.changed": 5,
+      "decision.closed": 1,
+      "decision.opened": 1,
+      "delta.rejected": 9,
+      "dungeon.booked": 5,
+      "entity.created": 1,
+      "entity.updated": 1,
+      "extract.applied": 9,
+      "fact.asserted": 5,
+      "knowledge.gained": 1,
+      "memory.recorded": 11,
+      "note": 2,
+      "object.moved": 1,
+      "offer.closed": 1,
+      "offer.created": 3,
+      "outcome.recorded": 9,
+      "party.claim": 2,
+      "party.member": 2,
+      "pulse.outcome": 9,
+      "pulse.rolled": 8,
+      "resource.changed": 7,
+      "scene.entered": 5,
+      "scene.left": 1,
+      "scene.moved": 5,
+      "scene.tactical": 1,
+      "thread.set": 1,
+      "time.advanced": 6,
+      "transaction.completed": 3,
+      "turn.begun": 9
+    },
+    "encounters": [],
+    "xp": [],
+    "questStatus": [],
+    "payments": [
+      {
+        "from": "pc",
+        "to": "npc.ossen",
+        "cp": 20,
+        "for": "Shared quest reward quest.clear_the_old_crown_catacombs_level_1",
+        "at": "loc.alderwatch.market_square",
+        "claim": "quest.clear_the_old_crown_catacombs_level_1/npc.ossen"
+      },
+      {
+        "from": "pc",
+        "to": "npc.ossen",
+        "cp": 25,
+        "for": "Shared quest reward quest.clear_the_old_crown_catacombs_level_1",
+        "at": "loc.alderwatch.market_square",
+        "claim": "quest.clear_the_old_crown_catacombs_level_1/npc.ossen"
+      },
+      {
+        "to": "pc",
+        "from": "npc.npcbonetrader",
+        "cp": 4,
+        "for": "F-Rank Risen Bones Bone ×1",
+        "at": "loc.alderwatch.market_square",
+        "offer": "offer.t76.4"
+      }
+    ],
+    "medianTurnWithReloadMs": 16535,
+    "uiMedianMs": {
+      "firstProse": {
+        "n": 7,
+        "median": 7194
+      },
+      "worldCommit": {
+        "n": 9,
+        "median": 15021
+      },
+      "confirmedSave": {
+        "n": 9,
+        "median": 15697
+      },
+      "ready": {
+        "n": 9,
+        "median": 15723
+      }
+    }
+  },
+  {
+    "run": "openrouter-20261127-lantern-244",
+    "messagesAtEntry": 79,
+    "messagesSaved": 87,
+    "inputs": 4,
+    "seed": 3509323178,
+    "start": "loc.alderwatch.the_slaked_lime.upstairs_room_at_the_slaked_lime",
+    "end": "loc.alderwatch.market_square",
+    "partyBefore": {
+      "npc.ossen": "follow"
+    },
+    "partyAfter": {
+      "npc.ossen": "follow"
+    },
+    "physical": 15,
+    "costUSD": "0.009880346",
+    "byRole": {
+      "extractor": {
+        "requests": 7,
+        "promptTokens": 110342,
+        "completionTokens": 3857,
+        "medianRequestMs": 3559
+      },
+      "narrator": {
+        "requests": 4,
+        "promptTokens": 47163,
+        "completionTokens": 1625,
+        "medianRequestMs": 3732.0
+      },
+      "planner": {
+        "requests": 4,
+        "promptTokens": 55896,
+        "completionTokens": 406,
+        "medianRequestMs": 932.5
+      }
+    },
+    "events": {
+      "cmd.interpreted": 4,
+      "cmd.resolved": 4,
+      "delta.rejected": 11,
+      "dungeon.booked": 2,
+      "entity.updated": 1,
+      "extract.applied": 4,
+      "fact.asserted": 1,
+      "memory.recorded": 4,
+      "offer.created": 1,
+      "outcome.recorded": 4,
+      "pulse.outcome": 4,
+      "pulse.rolled": 4,
+      "resource.changed": 1,
+      "scene.entered": 1,
+      "scene.moved": 1,
+      "time.advanced": 2,
+      "turn.begun": 4
+    },
+    "encounters": [],
+    "xp": [],
+    "questStatus": [],
+    "payments": [],
+    "medianTurnWithReloadMs": 18040.5,
+    "uiMedianMs": {
+      "firstProse": {
+        "n": 3,
+        "median": 5854
+      },
+      "worldCommit": {
+        "n": 4,
+        "median": 13318
+      },
+      "confirmedSave": {
+        "n": 4,
+        "median": 13599
+      },
+      "ready": {
+        "n": 4,
+        "median": 13605
+      }
+    }
+  },
+  {
+    "run": "openrouter-20261127-quill-244",
+    "messagesAtEntry": 83,
+    "messagesSaved": 93,
+    "inputs": 5,
+    "seed": 3509323178,
+    "start": "loc.alderwatch.market_square",
+    "end": "loc.alderwatch.guild_hall",
+    "partyBefore": {
+      "npc.ossen": "left"
+    },
+    "partyAfter": {
+      "npc.ossen": "left"
+    },
+    "physical": 10,
+    "costUSD": "0.006208724",
+    "byRole": {
+      "extractor": {
+        "requests": 4,
+        "promptTokens": 62894,
+        "completionTokens": 1630,
+        "medianRequestMs": 3310.5
+      },
+      "narrator": {
+        "requests": 4,
+        "promptTokens": 48105,
+        "completionTokens": 690,
+        "medianRequestMs": 1944.0
+      },
+      "planner": {
+        "requests": 2,
+        "promptTokens": 28103,
+        "completionTokens": 235,
+        "medianRequestMs": 1155.5
+      }
+    },
+    "events": {
+      "cmd.interpreted": 4,
+      "cmd.resolved": 5,
+      "coin.changed": 2,
+      "delta.rejected": 3,
+      "dungeon.booked": 2,
+      "extract.applied": 4,
+      "fact.asserted": 2,
+      "growth.opened": 1,
+      "growth.progress": 1,
+      "growth.session": 1,
+      "memory.recorded": 4,
+      "note": 1,
+      "object.created": 1,
+      "object.moved": 1,
+      "offer.closed": 2,
+      "outcome.recorded": 4,
+      "pulse.outcome": 4,
+      "pulse.rolled": 3,
+      "resource.changed": 1,
+      "scene.entered": 1,
+      "scene.moved": 1,
+      "thread.set": 1,
+      "time.advanced": 2,
+      "transaction.completed": 2,
+      "turn.begun": 4
+    },
+    "encounters": [],
+    "xp": [],
+    "questStatus": [],
+    "payments": [
+      {
+        "to": "pc",
+        "from": "npc.npcbonetrader",
+        "cp": 3,
+        "for": "F-Rank Restless Skeleton Bone ×1",
+        "at": "loc.alderwatch.market_square",
+        "offer": "offer.t82.6"
+      },
+      {
+        "offer": "offer.manuals.localderwatchguild_hall",
+        "lines": [
+          "mend"
+        ],
+        "cp": 80,
+        "seller": "npc.npcguild_clerk_a"
+      }
+    ],
+    "medianTurnWithReloadMs": 11617,
+    "uiMedianMs": {
+      "firstProse": {
+        "n": 3,
+        "median": 4182
+      },
+      "worldCommit": {
+        "n": 4,
+        "median": 8265
+      },
+      "confirmedSave": {
+        "n": 4,
+        "median": 8839
+      },
+      "ready": {
+        "n": 4,
+        "median": 8844
+      }
+    }
+  },
+  {
+    "run": "openrouter-20261127-ash-244",
+    "messagesAtEntry": 15,
+    "messagesSaved": 19,
+    "inputs": 2,
+    "seed": 3509323178,
+    "start": "loc.alderwatch.guild_hall",
+    "end": "loc.alderwatch.guild_hall",
+    "partyBefore": {},
+    "partyAfter": {
+      "npc.ossen": "left"
+    },
+    "physical": 1,
+    "costUSD": "0.00001612",
+    "byRole": {
+      "party_decision": {
+        "requests": 1,
+        "promptTokens": 248,
+        "completionTokens": 31,
+        "medianRequestMs": 782
+      }
+    },
+    "events": {
+      "entity.sheet_set": 1,
+      "item.equipped": 2,
+      "object.created": 2,
+      "party.agreement": 1,
+      "party.member": 2
+    },
+    "encounters": [],
+    "xp": [],
+    "questStatus": [],
+    "payments": [],
+    "medianTurnWithReloadMs": 2639.0,
+    "uiMedianMs": {}
+  }
+]

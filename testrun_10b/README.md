@@ -4,6 +4,7 @@
 
 | Etappe | Runordner und Auswertung |
 |---|---|
+| **.236–.244 · Party und exploratives Spiel** | [Archivregister, Originalmessungen und Auswertung](../recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md#modellläufe-und-messwerte) |
 | **.222–.235 · automatisierte OpenRouter-Spielserie** | [Alle Originalarchive, Verzweigungen und Kosten](../recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) · [Abnahme und Grenzen](../recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) |
 | **.220 · User16** | [Originale und GPT-Review](user-20261126-233937-220/README.md) · [Codex-Gegenreview](user-20261126-233937-220/CODEX_GEGENREVIEW.md) · [Entscheidungsvorlage](../recherche/AVERETH_USER16_ORTS_UND_SZENENARCHITEKTUR_ENTSCHEIDUNGSVORLAGE.md) · [.221-Folgekandidat](../recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md) |
 | **.215 · User14 – persönlicher Spieltest** | [Quellen und GPT-Review](user-20261126-010332-215/README.md) · [Codex-Gegenreview](user-20261126-010332-215/CODEX_GEGENREVIEW.md) · [Fachplanung](../recherche/AVERETH_PARTY_SYSTEM_FACHPLANUNG.md) |

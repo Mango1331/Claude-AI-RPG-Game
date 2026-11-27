@@ -12,6 +12,17 @@ Der Kanon dokumentiert die Spielregeln des eingefrorenen Produkts `.200` und ken
 
 Die Raststeuerung zeigt die vorhandenen Ausführungssperren an und wird nach Weltabgleich und Speicherung wieder bedienbar. [Fachbericht und Abnahme](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md)
 
+## Dauerhafte Party ab der Serie .236–.244 [VERBINDLICH]
+
+Eine freiwillig gebildete Party kann zusammen reisen, kämpfen und mehrere Aufträge übernehmen. Der erfolgreiche Abschluss eines Auftrags beendet die Mitgliedschaft nicht. Spieler und NPC können die Zusammenarbeit beenden. Der Zweck der ursprünglichen Einladung ist für weitere Unternehmungen unerheblich.
+
+- Bei der ersten Einladung reagiert der anwesende NPC auf genau diesen Spieler und die aktuellen Bedingungen. Unveränderte Annahme genügt. Ein NPC-Angebot oder eine neue Forderung bedarf der Spielerentscheidung.
+- Sicheres Warten und Folgen bei tatsächlicher Wiederbegegnung sowie Entfernen und Auflösen gehören zur gewöhnlichen Organisation. Eigenes Handeln im Kampf, Rückzug, Zustimmung zur Herausgabe persönlichen Besitzes und bereits erworbene Ansprüche bleiben individuell.
+- Der gemeinsame Kampf-XP-Pool richtet sich nach der tatsächlichen Teilnahme und dem Überleben. Anrechenbare Questarbeit wird auftragsbezogen festgehalten. XP werden beim erfolgreichen Turn-in verteilt. Für gewöhnliche Aufträge teilen die Beteiligten die Gildenvergütung gleichmäßig mit stabiler Restverteilung. Echte Sonderansprüche werden vor der Verteilung des verbleibenden Betrags berücksichtigt. Abwesenheit lässt den fälligen Anteil offen, der Tod sperrt seine Auszahlung. Früher gespeicherte Zahlungen zählen weiter.
+- Münzbeute kann unter den Berechtigten aufgeteilt werden. Sachbeute hat einen konkreten Träger oder Fundort. Persönliche Entwicklung und Ausrüstung bleiben an die Figur gebunden.
+
+[Umsetzung, Abnahme und Altdaten](recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md)
+
 ## Party im Entwicklungskandidaten .217
 
 **Geltungsbereich.** Die folgenden bestätigten Regeln betreffen den Testkandidaten `4.3.0-c.6.6.217` auf dem Entwicklungsbranch. Die nachfolgenden historischen Regeln führen weiterhin ihren jeweiligen Produktstand. [Fachentscheidungen D1–D12](recherche/AVERETH_PARTY_SYSTEM_FACHPLANUNG.md#12-gemeinsame-designentscheidungen-nach-gpt-review) · [Implementierung und Abnahme](recherche/AVERETH_217_PARTY_SYSTEM.md)

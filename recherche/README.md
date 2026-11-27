@@ -4,6 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
+| **.236–.244 · Party und exploratives Spiel** | [Fachbericht und Abnahme](AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md) | [Läufe](../testrun_10b/README.md) |
 | **.222–.235 · Modellserie nach User16** | [Serienabnahme](AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) · [Gegenreview R1–R4 und Party-Entscheidungsvorlage](AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md) | [Archive und Messwerte](AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) |
 | **.221 · Szenenarchitektur** | [Fachbericht, Abnahme und Installation](AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md) | [User16 und Entscheidungsvorlage](../testrun_10b/user-20261126-233937-220/README.md) |
 | **.220 · User16** | [Orts- und Szenenarchitektur zur Entscheidung](AVERETH_USER16_ORTS_UND_SZENENARCHITEKTUR_ENTSCHEIDUNGSVORLAGE.md) | [Gegenreview, Replay und isolierte Hostmessung](../testrun_10b/user-20261126-233937-220/CODEX_GEGENREVIEW.md) |

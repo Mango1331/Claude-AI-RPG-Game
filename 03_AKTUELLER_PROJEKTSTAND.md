@@ -1,18 +1,21 @@
 # Avereth Engine – aktueller Projektstand
 
-**.235 ist geprüft. Usertest 17 bleibt zurückgestellt.** Die OpenRouter-Serie bestätigt den gemeinsamen Dungeonauftrag bei gebuchter Mitgliedschaft. Der Gegenreview reproduziert zwei getrennte Hürden bei der Aufnahme, das Warteproblem, den zu früh beendeten Dungeonzutritt und den falschen Gegnerbestand im Narratorprompt. Nutzer und GPT entscheiden als Nächstes über die Standardorganisation der Party und die Vergütung künftiger Gruppenaufträge. [Gegenreview R1–R4 und Party-Entscheidungsvorlage](recherche/AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md) · [Serienabnahme und Archive](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md)
+**.244 ist der Kandidat für den unabhängigen GPT-Gesamtreview.** Die dauerhafte Party hat den Old-Crown-Auftrag gemeinsam abgeschlossen und eine zweite Unternehmung angetreten. Der Eintritt durch das beobachtete Mossback-Tor ist mit denselben individuellen Gegnern erneut geprüft. Die offene Rückkehr aus einem separat gespeicherten Gasthauszimmer verhindert eine allgemeine GO-Empfehlung für Usertest 17. Über den persönlichen Test entscheidet der Nutzer nach dem Diffreview. [Fachbericht, Spielarchive und Installation](recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md)
 
 ## Aktuelle Referenzen
 
 | Zweck | Verifizierte Referenz |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`8750a97f`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8750a97f5a986d328db4dc98a3a93d157925158c) · Build `4.3.0-c.6.6.235` |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`630abc20`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/630abc2099b28155dae5ea573d0c8fbf08156086) · Build `4.3.0-c.6.6.244` |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
 `main` ist die separate Dokumentations- und Originalarchivlinie. Diese Tabelle ist ein Snapshot, keine Garantie für spätere HEADs. Vor neuer Arbeit aktuelle Remote-Refs prüfen.
 
 ## Letzte abgeschlossene Entwicklungsarbeit
+
+- .236–.244 führte die dauerhafte Standardparty ein. Der zusammenhängende Modelllauf belegt den ersten Questabschluss, die zweite Unternehmung und über getrennte Fortsetzungen die Auszahlung an einen zunächst abwesenden Gefährten, den Verkauf von Beute und den Lernbeginn. [Abnahme und Installation](recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md)
+- .222–.235 bildete die erste OpenRouter-Serie mit dem anschließenden kritischen Gegenreview. [Modellarchive und Serienbericht](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) · [Entscheidungsvorlage](recherche/AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md)
 
 - .221 führte den lokalen Standpunkt und gezielte Erinnerungen ein. User16 zeigte den verbleibenden Zielbefund am Türpfosten. [Ausgangsbericht](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md)
 

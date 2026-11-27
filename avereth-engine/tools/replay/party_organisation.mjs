@@ -50,3 +50,25 @@ for(const enter of [true,false]){
  assert.equal(host.foldChat(ch).state.scene.at,'loc.mossback_warrens'+(enter?'.l1_s1':''));
 }
 console.log('AA1 on complete Y checkpoint: N block and X request carry individual roster; entry and threshold have distinct end locations.');
+
+// Slate's real X identified the dungeon root as the room even though the reply crossed the threshold.
+const slate=read('slate-242'), branch=structuredClone(parent);
+const msg={mes:slate.at(-2).mes,is_user:true,extra:{}}, reply={mes:slate.at(-1).mes,is_user:false,extra:{}};
+branch.push(msg);
+const prepared=await runtime.prepareGenerationAsync(branch,content,{llm:async()=>host.rec(slate.at(-2)).plan.raw[0]});
+assert.match(prepared.context.text,/part 1 of level 1 of Mossback Warrens/i);
+branch.push(reply);runtime.processReplyAny(branch,branch.length-1,content);
+const wrong=host.rec(slate.at(-1)).extraction.raw;
+const room='loc.mossback_warrens.l1_s1';
+let attempts=0;
+await runtime.runExtraction(branch,branch.length-1,content,async req=>{
+ const delivered=req.messages.map(m=>m.content).join('\n');
+ if(!attempts++){assert.ok(delivered.includes(room));return JSON.stringify(wrong);}
+ assert.match(delivered,/departure room/i);
+ return JSON.stringify({scene:room,expected:{1:{arrived:true,at:room,with:null,met:null}},deltas:[{...wrong.deltas[0],at:room}]});
+});
+assert.equal(attempts,2);
+const reached=host.foldChat(branch).state;
+assert.equal(reached.scene.at,room);
+assert.ok(reached.scene.present.includes('mon.mossback_warrens_c1_l1_e1_2'));
+console.log('Slate: misleading root triggers repair, confirmed first room contains the surviving individual.');

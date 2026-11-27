@@ -530,7 +530,8 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx, section = null }
     const x = livingOf(s, dest);
     if (!x) return null;
     // past the gate: from the gate (or from outside) into a part of it
-    const passing = !insideOf(s, dest) && (known ? c.to !== dest : s.scene.at === dest);
+    const crossing = section?.from === dest && s.scene.approaching === dest;
+    const passing = !insideOf(s, dest) && (crossing || (known ? c.to !== dest : s.scene.at === dest));
     if (passing) {
         // he and whoever travels with him (an escort's charge) take places
         const group = 1 + (companionOf(s, envx).with || []).length;
@@ -554,7 +555,7 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx, section = null }
     const to = known ? positionOf(s, c.to) : null;
     const from = positionOf(s, s.scene.at);
     const forward = !!(to && from && to.root === dest && (to.level > from.level || (to.level === from.level && to.k > from.k)));
-    const into = (s.scene.at === dest || insideOf(s, dest)) && (!known || !!nav?.explore || fresh || forward);
+    const into = crossing || (s.scene.at === dest || insideOf(s, dest)) && (!known || !!nav?.explore || fresh || forward);
     // PULSE package B: a turn holds one encounter reference; a wandering minion reserved earlier in it keeps it (in the
     // normal flow unreachable: the danger that reserves it cut the pause short and stops this GO first)
     const reserved = into && aheadReserved(s, ctx, dest);
@@ -720,6 +721,13 @@ const HANDLERS = {
         // .190 (B5, src/v4/sections.js): in a Living Dungeon a part he has not seen is the engine's next section of the
         // level's track (previewed now, made only by the confirmed arrival); a part he knows by his words for it first
         let section = null;
+        if (envx?.c && rulesetOf(s) >= 2 && roomRoot && c.to === roomRoot && !c.gateFirst
+            && s.scene.approaching === roomRoot && entersThisDungeon(c.quote, placeName(s, roomRoot))) {
+            // He already observes this gate. Crossing it uses the same first room as entry from the gate itself.
+            const first = sectionStep({ ...s, scene: { ...s.scene, at: roomRoot } }, 'on');
+            if (first?.to) c = { ...c, to: first.to };
+            else if (first?.preview) section = first.preview;
+        }
         // at its gate only going in is a step into it (the keeper's watch-house by the gate is the gate)
         if (envx?.c && rulesetOf(s) >= 2 && typeof c.to?.new === 'string' && livingOf(s, trueDungeonOf(s, s.scene.at))
             && (s.scene.at !== trueDungeonOf(s, s.scene.at) || ENTER.test(normText(`${c.to.new} ${c.quote || ''}`)))) {

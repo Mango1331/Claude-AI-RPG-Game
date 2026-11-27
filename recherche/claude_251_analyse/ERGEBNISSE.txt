@@ -1,0 +1,191 @@
+# Offline-Gegenproben auf 4933a5f005a86a381a922981d3d7377e8ba84b5c (2026-11-27)
+
+## probe_presence.mjs
+FN  met=false enter=false [FN] | Martin orig (possessive + pronoun) — the quoted words do not name them, or not them alone
+TP  met=true  enter=true  [TP] | Martin variant: The leatherworker looked up
+TP  met=true  enter=true  [TP] | Leatherworker greets him
+FN  met=false enter=true  [TP] | Leatherworker: "she was still there" — it does not show them here now
+FN  met=false enter=true  [TP] | Leatherworker hailed him — it does not show them here now
+FN  met=false enter=true  [TP] | Leatherworker recognised him — it does not show them here now
+FN  met=false enter=false [FN] | burn-scarred woman behind stall — the quoted words do not name them, or not them alone
+FN  met=false enter=true  [TP] | Elm orig (drawing ale) — it shows a picture of them, not them
+FN  met=false enter=true  [TP] | Madge pulled a pint — it does not show them here now
+TP  met=true  enter=true  [TP] | Madge was behind the bar
+FN  met=false enter=true  [TP] | Madge ladled stew — it does not show them here now
+FN  met=false enter=true  [TP] | Madge drew him a mug — it does not show them here now
+FN  met=false enter=false [FN] | Tam orig (eel-man / old fellow) — the quote joins several places of the reply and none is evidence on its own (the quoted words do not name them, or not them alone)
+TP  met=true  enter=true  [TP] | Hilde stamped the slip
+TN  met=false enter=false [TN] | NEG empty stall — it shows their place empty or them away
+TN  met=false enter=true  [FP] | NEG left before he came — it tells what they had done before, not them here now
+TN  met=false enter=true  [FP] | NEG painted sign — it shows a picture of them, not them
+TN  met=false enter=false [TN] | NEG memory — it is remembered or imagined, not happening now
+TN  met=false enter=false [TN] | NEG hypothetical — it is planned, threatened or hypothetical, not happening
+TN  met=false enter=false [TN] | NEG hearsay — it is reported, not shown
+TN  met=false enter=false [TN] | NEG apprentice instead — the quoted words do not name them, or not them alone
+TN  met=false enter=false [TN] | NEG mentioned in dialogue — it is spoken, not narrated
+TN  met=false enter=false [TN] | NEG Madge away — the reply negates it
+
+metEvidence tally { tp: 4, fn: 10, tn: 9, fp: 0 }
+
+## probe_depicted.mjs
+false it shows a picture of them, not them       Madge stood behind the bar, carving the roast for the evening crowd.
+false it shows a picture of them, not them       Madge was drawing water at the pump in the yard.
+false it shows a picture of them, not them       Brey stood at the gate, his sword drawn.
+false it shows a picture of them, not them       Brey sat at his desk, sketching a map of the square.
+false it does not show them here now             Brey was posting a new notice on the board.
+false it shows their place empty or them away    Madge was sweeping the empty common room.
+false it shows their place empty or them away    Madge stood by the hearth, gone quiet.
+
+## probe_journey.mjs
+true  I skirt the main road and walk to the town's market to find a leatherworker.
+true  I return to the market the way I came and tell the leatherworker what I saw.
+false I walk to the market to find a leatherworker.
+false I head over to the market square.
+false I make my way to the city market.
+false Let's go to the market.
+false I go back to the market.
+false I return to the market.
+false I go downstairs to the common room.
+false I leave my room and return to the common room of The Slaked Lime.
+false Back to the inn.
+false I walk down to the docks.
+true  I go to the village's well.
+
+## tally_runs.py (openrouter-20261127-*, nur bezahlte Antworten je Arm)
+STATS {'planner_turns': 218, 'x_replies': 217, 'x_applied': 212, 'x_deltas': 645, 'x_repaired': 59, 'planner_repaired': 13, 'planner_failed': 1, 'x_failed': 4, 'x_incomplete': 1}
+
+REJECTION RULES (new messages only):
+  50  scene_context
+  24  met_evidence
+  19  party_decision
+  15  met_without_arrival
+  13  world_rule
+  13  no_go
+   8  desk_handler
+   7  offer
+   6  passage
+   6  quest
+   6  ambient
+   6  engine_owned_fact
+   5  guild_completion
+   5  time_authority
+   5  met_not_known_here
+   4  attack_commitment
+   3  guild_payout
+   3  dungeon_sight
+   3  creature_continuity
+   3  anchor_scope
+   3  anchor_first_contact
+   2  anchor_value
+   2  dungeon_foe
+   2  entity_fact
+   2  dungeon_way
+   1  guild_canon
+   1  travel_time
+   1  party_wait
+   1  engine_owned_memory
+   1  quest_dependency
+   1  anchor_absent
+   1  engine_booked
+   1  coin_already_received
+   1  pc_inventory
+
+PLANNER DROPS:
+   4  npc_actor
+   1  question
+
+## repair_triggers.py
+extractor repair/recovery requests: 67
+per request: {'schema-only': 22, 'other: No definite response to this current offer.': 1, 'semantic-only': 38, 'mixed': 6}
+  23 semantic: travel chronology/scene
+   8 schema: missing field
+   6 schema: unknown id / enum / type / place ref
+   6 semantic: trade counterparty not present
+   5 schema: extra field
+   5 semantic: price/money wording
+   4 schema: expected key missing
+   4 semantic: dungeon threshold sighting
+   3 schema: delta without type
+   3 schema: wrong value type
+   2 semantic: creature population
+   2 other
+   1 other: No definite response to this current offer.
+   1 semantic: party quote/agreement
+   1 semantic: depends_on
+
+## met_quotes.py
+openrouter-20261127-ac-234 M71 npc.npcguild_clerk_a entered_otherwise=True
+   quote: the clerk's iron-grey braids tucked over one shoulder as she looked up from her writing
+   why:   it does not show them here now
+openrouter-20261127-ae-235 M71 npc.npcguild_clerk_a entered_otherwise=True
+   quote: the clerk's iron-grey braids tied back as she bent over her ledger
+   why:   it does not show them here now
+openrouter-20261127-ak-235 M76 npc.npcguild_clerk_a entered_otherwise=True
+   quote: The clerk was still at the long counter, bent over her ledger with the same steady motion of pen on paper.
+   why:   it does not show them here now
+openrouter-20261127-birch-247 M89 npc.npcbone_merchant entered_otherwise=False
+   quote: a squat woman with a chopper's forearms sorting through a tray of long yellowed bones
+   why:   it does not show them here now
+openrouter-20261127-elm-250 M83 npc.madge entered_otherwise=True
+   quote: He nodded at the counter, where Madge was drawing ale for two carters and taking their coppers without ceremony.
+   why:   it shows a picture of them, not them
+openrouter-20261127-hearth-243 M55 npc.npcmarketpickpocket_boy entered_otherwise=False
+   quote: Near the fountain, a pickpocket-thin boy lounged with his hands in his pockets, watching the crowd, or pretending to.
+   why:   it does not show them here now
+openrouter-20261127-hearth-243 M59 npc.npcguild_clerk_a entered_otherwise=False
+   quote: broad, iron-grey braids, a ledger open under her hand
+   why:   it does not show them here now
+openrouter-20261127-hearth-243 M61 npc.npcmarketpickpocket_boy entered_otherwise=True
+   quote: the pickpocket-thin boy still lounged, or a boy very like him, now sitting up on the fountain's rim with his elbows on his knees, watching the crowd
+   why:   it does not show them here now
+openrouter-20261127-i-227 M37 npc.npcguild_clerk_a entered_otherwise=True
+   quote: Behind the polished counter sat the clerk, her iron-grey braids caught in the morning light as she glanced up.
+   why:   it does not show them here now
+openrouter-20261127-juniper-249 M83 npc.ossen entered_otherwise=False
+   quote: Ossen was where Alaric had left him, working a spoon one-handed with his bowl half gone
+   why:   it shows their place empty or them away
+openrouter-20261127-juniper-249 M89 npc.npcbone_merchant entered_otherwise=True
+   quote: The bone merchant was there still—a squat woman with a chopper's forearms, sorting trays at her trestle
+   why:   it does not show them here now
+openrouter-20261127-martin-251 M17 npc.npcleatherworker entered_otherwise=False
+   quote: The leatherworker's stall sat where he'd left it, and she looked up from a half-stitched sheath as he came level with the counter.
+   why:   it does not show them here now
+openrouter-20261127-n-231 M70 npc.npcguild_clerk_a entered_otherwise=True
+   quote: the broad woman with iron-grey braids who served as the clerk was seated behind the long counter, her fingers moving swiftly over the ledger as she glanced up at their approach
+   why:   it does not show them here now
+openrouter-20261127-oriole-251 M75 npc.npcmarketpickpocket_boy entered_otherwise=False
+   quote: A thin boy lounged near it with his hands in his pockets, watching the last carts leave
+   why:   it does not show them here now
+openrouter-20261127-quill-244 M87 npc.npcguild_clerk_a entered_otherwise=True
+   quote: The clerk was still at her counter, ledger open, and she straightened when he came up to the manual shelf.
+   why:   it does not show them here now
+openrouter-20261127-quill-244 M87 npc.npcguild_clerk_a entered_otherwise=True
+   quote: She pulled the three down again without being asked and laid them out
+   why:   it does not show them here now
+openrouter-20261127-reed-251 M21 npc.npcfisherman_bridge entered_otherwise=True
+   quote: The eel-man was there. An old fellow sat on the gunwale, wiry, forearms like knotted rope, sorting through a bucket of squirming silver
+   why:   the quote joins several places of the reply and none is evidence on its own (the quoted words do not name them, or not t
+openrouter-20261127-rowan-244 M69 npc.npcguild_clerk_a entered_otherwise=False
+   quote: the clerk with her iron-grey braids, ledger under her hand
+   why:   it does not show them here now
+openrouter-20261127-rowan-244 M83 npc.npcbonetrader entered_otherwise=True
+   quote: the trader was still at her bench under the arches, crate half-sorted, a lamp now lit at her elbow. She saw him coming and set her pliers down
+   why:   the quote joins several places of the reply and none is evidence on its own (it does not show them here now)
+openrouter-20261127-rowan-244 M87 npc.npcguild_clerk_a entered_otherwise=False
+   quote: The clerk glanced up once when the door moved him through, gave the plate on his chest a brief flick of recognition, and went back to her ledger.
+   why:   it looks back, not at them here now
+openrouter-20261127-vale-242 M25 npc.npcguild_clerk_a entered_otherwise=True
+   quote: The clerk at the counter was stamping something; she glanced over once and went back to it
+   why:   it does not show them here now
+openrouter-20261127-willow-247 M81 npc.madge entered_otherwise=True
+   quote: Madge ladled out bowls with the ease of long practice. 'Sit there. Two bowls?'
+   why:   its words are not in the reply
+openrouter-20261127-willow-247 M85 npc.npcbone_merchant entered_otherwise=True
+   quote: under it worked a squat woman with forearms like a chopper's, sorting through a shallow tray of bones on the counter
+   why:   it does not show them here now
+openrouter-20261127-x-233 M71 npc.npcguild_clerk_a entered_otherwise=False
+   quote: The iron-grey-braided clerk looked up from her ledger when Alaric came in
+   why:   it does not show them here now
+openrouter-20261127-x-233 M71 npc.garrick entered_otherwise=False
+   quote: Around them, the hall kept moving—paper rustling, a low exchange at another desk, boots crossing the floor
+   why:   the quoted words do not name them, or not them alone

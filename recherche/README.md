@@ -4,7 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
-| **.251 · Validierungsarchitektur (offene Analyse)** | [Diskussionsgrundlage für Claude](AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md) | [Originalfälle und frühere Forschung](AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md#2-warum-die-frage-gerade-jetzt-wieder-aufkam) |
+| **.251 · Validierungsarchitektur (offene Analyse)** | [Diskussionsgrundlage für Claude](AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md) · [Claude-Analyse und Plan](AVERETH_251_CLAUDE_VALIDIERUNGSARCHITEKTUR_ANALYSE_UND_PLAN.md) | [Originalfälle und frühere Forschung](AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md#2-warum-die-frage-gerade-jetzt-wieder-aufkam) |
 | **.245–.251 · Bekannte Wege und gemeinsame Ortswechsel** | [Fachbericht, Abnahme und Installation](AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md) | [Prüfprogramm](ortssteuerung_245/verify_series.mjs) |
 | **.236–.244 · Party und exploratives Spiel** | [Fachbericht und Abnahme](AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md) | [Läufe](../testrun_10b/README.md) |
 | **.222–.235 · Modellserie nach User16** | [Serienabnahme](AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) · [Gegenreview R1–R4 und Party-Entscheidungsvorlage](AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md) | [Archive und Messwerte](AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) |

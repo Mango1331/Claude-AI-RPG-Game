@@ -1029,8 +1029,8 @@ export function extractionRequest(chat, id, content) {
         actions += '\nVoluntary assistance: if he was actually carried to the requested place, report arrive with the participants and forced_by:null. A request or promise alone is not an arrival.';
     for (const go of o.auth?.gos || []) {
         if (!go.section) continue;
-        const {root, from, name} = go.section;
-        actions += '\nGO '+go.seq+' from '+from+' to '+name+': if the reply takes him there, use {"new":{"name":"'+name+'","kind":"interior","parent":"'+root+'"}} or its narrated room name in expected.at AND arrive.at. If still at the departure point answer arrived:false.';
+        const {id, from, name} = go.section;
+        actions += '\nGO '+go.seq+' from '+from+' to '+name+': if the reply takes him there, use the engine room ID "'+id+'" in expected.at AND arrive.at. The final scene may then use the same ID. If still at the departure point answer arrived:false.';
     }
     if (state.scene.approaching && Object.values(o.expected_keys || {}).includes('approach'))
         actions += '\nAfter recording the standpoint, separately account for what is visible: individually distinguishable creatures at the threshold must be addressable via creature.new with across, desc per individual and band. A fact about the observer cannot record the individuals. For signs or voices alone use ordinary observations.';

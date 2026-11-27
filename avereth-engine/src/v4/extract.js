@@ -622,6 +622,17 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         if (t === 'go' && exp[k] && typeof exp[k] === 'object') exp[k].met = Array.isArray(exp[k].met) && exp[k].met.map(pair).filter(Boolean).length ? exp[k].met.map(pair).filter(Boolean) : null;
         if (t === 'desk') exp[k] = { handled_by: pair(exp[k]?.handled_by) };
     }
+    // A new dungeon section already has an engine ID in the authorized step. Its
+    // name becomes a place reference in this report only alongside its reported arrival.
+    for (const go of state?.last?.outcome?.auth?.gos || []) {
+        const section = go.section, at = exp[go.seq]?.at;
+        if (!section || !exp[go.seq]?.arrived || expectedKeys?.[go.seq] !== 'go') continue;
+        if (at !== section.id && !(at?.new?.kind === 'interior' && at.new.parent === section.root)) continue;
+        if (Array.isArray(value.deltas) && value.deltas.some(d =>
+            d?.type === 'arrive' && placeKey(state, d.at, content) === placeKey(state, at, content))) {
+            ids = {...ids, places:[...(ids.places || []), section.id]};
+        }
+    }
     const missing = want.filter((k) => !exp[k] || typeof exp[k] !== 'object');
     // A missing expected answer may remain incomplete, but a schema-valid partial extraction is still useful state.
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));

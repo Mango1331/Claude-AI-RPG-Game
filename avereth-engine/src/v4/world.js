@@ -277,7 +277,7 @@ function noRoleWords(answer) {
 }
 
 export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null, invalid = [] } = {}) {
-    answer = noRoleWords(newPlaceScope(answer, state));
+    answer = noRoleWords(newPlaceScope(answer, state, invalid));
     const s = clone(state);
     const dice = Dice.from(s);
     const events = [];
@@ -536,7 +536,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let arrivedHall = null;
     let sceneEpoch = 0;
     const deskVisits = new Map();
-    const endpoints = reportedEndpoints(answer, state, content);
+    const endpoints = reportedEndpoints(answer, state, content, invalid);
     const reachedGoals = new Map(); // GO seq → actual accepted place
     const deniedPresence = new Set();
     const arrivals = new Set();

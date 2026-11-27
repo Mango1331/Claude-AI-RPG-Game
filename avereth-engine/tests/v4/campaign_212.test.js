@@ -51,8 +51,7 @@ test('a single offline campaign connects creation, guild hunts, combat, recovery
     ]});
     assert.equal(game.state().quests[quest.id].status,'active');
     assert.ok(invalidReady.record.rejected.some(r=>r.rule==='quest_dependency'));
-    assert.equal(game.calls.at(-1).purpose,'extract_repair');
-    assert.match(game.calls.at(-1).messages.at(-1).content,/cannot be its own evidence/);
+    assert.equal(game.calls.at(-1).purpose,'extract');
 
     await walk(game,habitat,{text:'I walk to the west pasture.',prose:'A shepherd waves. Alaric reaches the west pasture and spots a giant rat.',
         deltas:[{seq:2,type:'creature.new',scene:habitat,ref:'pasture rat',species:'giant rat',anchor:'rat',

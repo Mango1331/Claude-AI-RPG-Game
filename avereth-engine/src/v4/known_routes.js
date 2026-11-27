@@ -4,19 +4,19 @@ import { resolvePlaceRef } from './place_book.js';
 import { normText } from '../util.js';
 
 // Offer only previously reached local destinations. GO still resolves obstacles, time and PULSE.
-export function knownRoutes(s) {
+export function knownRoutes(s, limit = 8) {
     const here = s.scene?.at, history = s.scene?.history || [];
     if (!here || !s.places?.[here] || s.encounter || s.pending_combat?.length) return [];
     const dungeon = trueDungeonOf(s, here), town = settlementOf(s, here);
     const nearby = id => dungeon ? id === history.at(-1) && trueDungeonOf(s,id) === dungeon
         : town && settlementOf(s,id) === town && !trueDungeonOf(s,id);
     return [...new Set([history.at(-1), s.places[here].parent, ...history.slice().reverse()])]
-        .filter(id => id && id !== here && s.places[id] && history.includes(id) && nearby(id)).slice(0,8);
+        .filter(id => id && id !== here && s.places[id] && history.includes(id) && nearby(id)).slice(0,limit);
 }
 
 /** Resolve the destination the planner selected, including a known place's room or resident. */
 export function knownRouteTarget(s, focus) {
-    const ids = knownRoutes(s);
+    const ids = knownRoutes(s, Infinity);
     const target = normText(focus.split(',')[0]).replace(/^the /,'').replace(/\s+itself$/,'');
     const book = resolvePlaceRef(s,{new:target});
     const places = ids.filter(id => {

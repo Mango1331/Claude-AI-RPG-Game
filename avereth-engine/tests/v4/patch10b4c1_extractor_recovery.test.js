@@ -8,14 +8,14 @@ import { rec, setRec, laterTurns } from '../../src/host.js';
 import { processReplyAny, runExtraction } from '../../src/v4/runtime.js';
 
 const content = await loadContent();
-const VALID = JSON.stringify({ expected: {}, deltas: [] });
+const VALID = JSON.stringify({ expected: {1:{arrived:false}}, deltas: [] });
 const EMPTY = { content: ' ', finish_reason: 'length', usage: { completion_tokens: 4000 } };
 
 async function turn() {
     const g = new Chat4(content);
     await g.player('Mage');
     await g.player('Flame Lance and Arcane Ward');
-    await g.player('I wait and listen.');
+    await g.player('I walk to the Guild hall.', [{seq:1,type:'go',to:{new:'Guild hall'},quote:'I walk to the Guild hall.'}]);
     const id = g.chat.push({ mes: 'The innkeeper nods once.', is_user: false, is_system: false, extra: {} }) - 1;
     const started = processReplyAny(g.chat, id, content);
     assert.equal(started.extract, true);

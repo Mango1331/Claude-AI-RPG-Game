@@ -57,7 +57,7 @@ export const stepsOf = (s, gos) => (gos || []).map((g) => stepOf(s, g));
  * An unnamed search among several stops needs its existing optional at reference.
  * Receipt matching and the actual place reached stay separate until World accepts the move.
  */
-export function reportedEndpoints(answer, state, content) {
+export function reportedEndpoints(answer, state, content, rejected = []) {
     const goals = stepsOf(state, state.last?.outcome?.auth?.gos);
     const arrivals = Array.isArray(answer?.deltas) ? answer.deltas.filter(d => d?.type === 'arrive' && !d.forced_by) : [];
     const ends = new Map();
@@ -68,16 +68,16 @@ export function reportedEndpoints(answer, state, content) {
     }
     const unresolved = goals.filter(g => !ends.has(String(g.seq)) && answer?.expected?.[g.seq]?.arrived === true);
     const unassigned = arrivals.filter(d => ![...ends.values()].some(ref => samePlace(state,d.at,ref,content)));
-    if (unresolved.length === 1 && unassigned.length === 1)
+    if (unresolved.length === 1 && unassigned.length === 1 && !rejected.some(r => r.delta?.type === 'arrive'))
         ends.set(String(unresolved[0].seq),unassigned[0].at);
     return ends;
 }
 
 /** The parent of a new place told on arrival for a step whose scope fixes it: the habitat, or the Dungeon. */
-export function newPlaceScope(answer, s) {
+export function newPlaceScope(answer, s, rejected = []) {
     const steps = stepsOf(s, s.last?.outcome?.auth?.gos).filter((g) => g.scope && (g.mode !== 'within' || (s.places[g.scope]?.population && lineage(s, s.scene.at).includes(g.scope))));
     if (!steps.length) return answer;
-    const ends = reportedEndpoints(answer,s);
+    const ends = reportedEndpoints(answer,s,null,rejected);
     const rewrite = (value) => {
         if (Array.isArray(value)) return value.map(rewrite);
         if (!value || typeof value !== 'object') return value;

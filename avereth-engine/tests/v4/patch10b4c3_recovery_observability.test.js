@@ -14,7 +14,7 @@ const content = await loadContent();
 const EMPTY_PLAN = { content: ' ', finish_reason: 'length', usage: { completion_tokens: 2000 } };
 const EMPTY_EXTRACT = { content: ' ', finish_reason: 'length', usage: { completion_tokens: 4000 } };
 const NOOP_PLAN = JSON.stringify({ commands: [] });
-const NOOP_EXTRACT = JSON.stringify({ expected: {}, deltas: [] });
+const NOOP_EXTRACT = JSON.stringify({ expected: {1:{arrived:false}}, deltas: [] });
 
 async function campaign() {
     const g = new Chat4(content);
@@ -24,7 +24,7 @@ async function campaign() {
 }
 async function extract(answers) {
     const g = await campaign();
-    await g.player('I wait and listen.');
+    await g.player('I walk to the Guild hall.', [{seq:1,type:'go',to:{new:'Guild hall'},quote:'I walk to the Guild hall.'}]);
     const id = g.chat.push({ mes: 'The innkeeper nods.', is_user: false, is_system: false, extra: {} }) - 1;
     assert.equal(processReplyAny(g.chat, id, content).extract, true);
     const calls = [];

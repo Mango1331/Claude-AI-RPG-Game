@@ -765,6 +765,7 @@ test('a healer search ends at its confirmed stop, independently of later travel'
         [{arrived:true}, [], false],
         [{arrived:true,at:town}, [stop,home], true],
         [{arrived:true}, [stop,home], false],
+        [{arrived:true}, [stop,{...home,at:33}], false],
     ]) {
         g.chat = structuredClone(prefix);
         await g.reply('Alaric follows the road.',{expected:{1:receipt},deltas});

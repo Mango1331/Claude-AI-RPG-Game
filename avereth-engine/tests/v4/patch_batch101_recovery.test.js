@@ -6,11 +6,11 @@ import { Chat4 } from './harness.js';
 import { rec } from '../../src/host.js';
 import { processReplyAny, runExtraction } from '../../src/v4/runtime.js';
 const content = await loadContent();
-const valid = JSON.stringify({ expected: {}, deltas: [] });
+const valid = JSON.stringify({ expected: {1:{arrived:false}}, deltas: [] });
 const invalid = JSON.stringify({ expected: {}, deltas: [], thread: 'wrong root field' });
 async function run(answers) {
     const g = new Chat4(content);
-    await g.player('Mage'); await g.player('Flame Lance and Arcane Ward'); await g.player('I listen.');
+    await g.player('Mage'); await g.player('Flame Lance and Arcane Ward'); await g.player('I walk to the Guild hall.', [{seq:1,type:'go',to:{new:'Guild hall'},quote:'I walk to the Guild hall.'}]);
     const id = g.chat.push({ mes: 'A quiet morning.', is_user: false, extra: {} }) - 1;
     processReplyAny(g.chat, id, content);
     const calls = [];

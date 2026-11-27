@@ -647,7 +647,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     }
     if (!errors.length && sceneRequired) {
         const arrivals = value.deltas.filter(d => d.type === 'arrive' && !d.forced_by);
-        const ends = state ? reportedEndpoints(value,state,content) : new Map();
+        const ends = state ? reportedEndpoints(value,state,content,[...invalid.values()]) : new Map();
         for (const [key,type] of Object.entries(expectedKeys || {})) {
             if (type !== 'go') continue;
             const g = state?.last?.outcome?.auth?.gos?.find(g => String(g.seq) === key) || {seq:key};

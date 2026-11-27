@@ -179,29 +179,6 @@ export function narratedPresence(prose, quote, labels) {
     return rest.length ? { ok: true } : { ok: false, why: 'only their name is mentioned' };
 }
 
-/**
- * A known person's arrival in this reply: the extractor's own quote (enter.evidence), or else any narrated sentence of
- * the reply that names them under the same conditions. An extractor that leaves the quote out costs no legitimate
- * return; a mention, a denial, a plan, a memory or hearsay still brings no one.
- */
-export function presenceInReply(prose, evidence, labels) {
-    const own = narratedPresence(prose, evidence, labels);
-    if (own.ok) return own;
-    for (const sentence of narrationOnly(prose).split(/[.!?…\n|]+/)) {
-        if (tokens(sentence).filter((t) => t !== ',').length >= 3 && narratedPresence(prose, sentence, labels).ok) return { ok: true };
-        // Build .110, original batch 5 T51: "Marta was behind the bar, ... a rhythm that never paused".
-        // A separate clause's negation must not erase an actual named presence. Validate each candidate against the
-        // ORIGINAL prose, so leading conditions, recollections and hearsay still frame it; never validate a detached
-        // fragment as a new story. A fragment without the person's identity cannot establish their presence either.
-        // Do not detach an apparently actual clause from a remembered/reported/conditional framing after it either.
-        if (RECALLED.test(flat(sentence)) || HEARSAY.test(flat(sentence)) || UNREAL.test(flat(sentence))) continue;
-        for (const clause of sentence.split(/[,;:\u2013\u2014]/)) {
-            if (narratedPresence(prose, clause, labels).ok) return { ok: true };
-        }
-    }
-    return own;
-}
-
 /** Only a retry trigger, never authority to book travel. */
 export function movementEvidence(prose) {
     return narrationOnly(prose).split(/[.!?\n|]+/).some(sentence =>

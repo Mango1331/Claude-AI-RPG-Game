@@ -56,9 +56,8 @@ import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, speciesAnchor, templateFor, npcTemplate, rulesetOf } from '../content.js';
 import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, clearDone, livingOf, floorAt, slotMet, resolved, nextSlot, thresholdSlot, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
-import { knownAt } from './catalog.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
-import { forcedRelocation, presenceInReply, visualDetail, narratedEvent, guildParticipationEvidence, metEvidence, deskHandlingEvidence, personProfile } from './narration_evidence.js';
+import { forcedRelocation, visualDetail, narratedEvent, guildParticipationEvidence, deskHandlingEvidence, personProfile } from './narration_evidence.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -537,7 +536,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let sceneEpoch = 0;
     const deskWitnesses = [];
     const metDone = new Set(); // NPC E2-A: the GO steps whose met was decided
-    const metEntered = new Set(); // NPC E2-A: who a met of this reply brought in (an enter of them adds nothing)
+    const deniedPresence = new Set();
     const arrivals = new Set();
     const arrivalManner = () => {
         const reached = g => (g.to && arrivals.has(g.to)) || (g.intent && s.intents[g.intent]?.status === 'done')
@@ -593,12 +592,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         return unique ? [name,first] : [name];
     };
     const mapRef = (ref) => (typeof ref === 'string' ? idOf(ref) || ref : ref);
-    // Build .107 (audit of .106: enter, position and aware brought any known living person into the scene, also one
-    // last seen in another town): a known person who is neither here nor recorded at this place arrives only by enter
-    // with a narrated clause of the reply; NPCs travel on their own, so no distance rule. Creatures keep their rules
-    // (a returning beast, reinforcements); Ruleset 1 and V3 are unchanged.
-    const absentKnown = (id) => cPath && rulesetOf(s) >= 2 && id !== 'pc' && s.entities[id]?.kind === 'npc'
-        && !s.scene.present.includes(id) && s.entities[id].at !== s.scene.at && statusOf(s, id) !== 'dead';
     const personLabels = (id) => {
         const e = s.entities[id] || {};
         const names = [e.name, e.known_name].filter(x => typeof x === 'string' && x.trim());
@@ -608,11 +601,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             .flatMap(x => [x.name, x.known_name].filter(Boolean).flatMap(name => normText(name).split(' '))));
         const short = names.flatMap(name => normText(name).split(' ')).filter(word => word.length >= 3 && !others.has(word));
         return [...names, ...short, truth(s, id, 'occupation')[0]?.o, e.role, ...(e.descriptors || [])].filter((x) => typeof x === 'string' && x.trim());
-    };
-    const notBroughtIn = (d, ids) => {
-        const away = ids.filter(absentKnown);
-        if (away.length) reject({ ...d, who: away.length === ids.length ? d.who : away }, 'npc_presence', `${away.join(', ')} ${away.length > 1 ? 'are' : 'is'} not in the scene; ${d.type} describes someone present (an arrival is enter with the reply's words for it)`);
-        return ids.filter((id) => !away.includes(id));
     };
     // Concrete entity handles must resolve to real entities; ordinary narrative
     // phrases remain free text. A rejected person.named must not leave a ghost fact.
@@ -1353,7 +1341,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     separateDestination = separateGo ? at.id : null;
                 }
                 // NPC E2-A (R1): the known people this GO step's arrival shows here
-                if (explicitTravel) { const k = goStepAt(at.id, ref); if (k !== null) metArrivals(k, at.id); }
+                if (explicitTravel) {
+                    const k = goStepAt(at.id, ref);
+                    if (k !== null) {
+                        metDone.add(k);
+                        for (const m of expected[k]?.met || [])
+                            admitPresence(m.who, {seq:Number(k),type:'expected',met:m});
+                    }
+                }
                 stealthGo = String(d.forced_by || '').trim() ? null : arrivalManner();
                 stealthAt = stealthGo ? s.scene.at : null;
                 if (explicitTravel && s.places[at.id]?.kind === 'realm') {
@@ -1523,18 +1518,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             }
             case 'enter': {
                 const who = mapRef(d.who);
-                if (metEntered.has(who) && s.scene.present.includes(who)) break;
-                if (absentKnown(who)) {
-                    const ev = presenceInReply(prose, d.evidence, personLabels(who));
-                    if (!ev.ok) {
-                        blockedPeople.add(normText(who));
-                        reject(d, 'npc_presence', `${who} is a known person elsewhere; the reply does not narrate their arrival here: ${ev.why}`);
-                        const correction = `${entityLabel(s, who)} was not booked as present: the last reply did not establish their arrival here. They may arrive when the story shows it; until then they are not in the scene.`;
-                        if (!corrections.includes(correction)) corrections.push(correction);
-                        break;
-                    }
-                }
-                enterKnown(who, d);
+                if (explicitTravel && s.entities[who]?.kind === 'npc') admitPresence(who, d);
+                else enterKnown(who, d);
                 break;
             }
             case 'leave': {
@@ -1553,7 +1538,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // Patch 7.2B: a group's ref moves all of it only with scope all
                 const r = whoOf(d, d.who);
                 if (r.kind === 'unclear') break;
-                const ids = notBroughtIn(d, r.ids);
+                const ids = r.ids.filter(who => !explicitTravel || s.entities[who]?.kind !== 'npc' || admitPresence(who, d));
                 if (!ids.length) break;
                 v3({ position: ids.map((who) => ({ who, band: d.band, cover: d.cover || undefined, ...(d.cluster ? { cluster: d.cluster } : {}) })) }, d);
                 break;
@@ -1563,7 +1548,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // unaware reached only the first of the two small kobolds); its own Ambush awareness, not perception's
                 // Patch 4: one that fought him (or watched his fight) a short while ago has not lost track of him because the
                 // story says so: no Ambush from it (rules.combat.wary_min); his own stealth check is the engine's way
-                const whos = notBroughtIn(d, whoOf(d, d.who).ids); // Patch 7.2B: a group only with scope all
+                const whos = whoOf(d, d.who).ids.filter(who => !explicitTravel || s.entities[who]?.kind !== 'npc' || admitPresence(who, d)); // Patch 7.2B: a group only with scope all
                 if (!whos.length) break;
                 const wary = d.level === 'unaware' ? whos.filter((who) => { const w = s.entities[who]?.wary; return !!w && s.clock.minute - (w.minute ?? 0) < (content.rules.combat?.wary_min ?? 360); }) : [];
                 if (wary.length) {
@@ -2343,6 +2328,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         for (let i = 0; i < corrections.length; i++) if (stale.has(corrections[i])) corrections[i] = corrections.indexOf(now) >= 0 && corrections.indexOf(now) !== i ? null : now;
         for (let i = corrections.length - 1; i >= 0; i--) if (corrections[i] === null) corrections.splice(i, 1);
     }
+    for (const who of deniedPresence) {
+        if (!s.scene.present.includes(who) && s.entities[who]?.name)
+            corrections.push(`${s.entities[who].name} is absent from the confirmed scene.`);
+    }
     return { events, rejected, corrections, system, opened, state: s, arrivedHall };
 
     // ---------------------------------------------------------------------------------------------- step helpers
@@ -2526,57 +2515,22 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         return !!e && e.kind === 'npc' && collectivePerson(e.descriptors?.[0] || e.role || '', [e.traits, ...(e.descriptors || []).slice(1)].filter(Boolean), e.name || null);
     }
 
-    /**
-     * NPC E2-A (R1): the known people the extractor says this reply shows at the place GO step k reached. Each needs
-     * the step's own arrival (he stands where the step went), an offered person (the player outcome's known_at[k]),
-     * alive and not here yet, and a narrated quote of the reply that shows exactly that person there now.
-     */
-    function metArrivals(k, reached = null) {
-        metDone.add(k);
-        const list = Array.isArray(expected[k]?.met) ? expected[k].met : [];
-        if (!list.length) return;
-        const g = (auth.gos || []).find((x) => String(x.seq) === String(k));
-        // natural batch on .191 (Rogue T13, main: testrun_10b/npc-20261115-103140Z/GEGENREVIEW_OPUS.md): a step with
-        // words for its target ({new: "Widow Hesse at the blue door"}) has no place id; the place it reached is the
-        // one this arrival answers (goStepAt), and its known people are those known there and the one person the
-        // step's own words name. A step to a known place keeps the people the player turn offered for it
-        const place = g?.to || reached;
-        const worded = !g?.to && !!reached;
-        const offered = worded ? [...new Set([...knownAt(s, content, reached).map((p) => p.id), ...namedByStep(g, reached)])] : outcome.known_at?.[k] || [];
-        const people = [...new Set([...offered, ...s.scene.present.filter((id) => s.entities[id]?.kind === 'npc')])].filter((id) => s.entities[id]).map(profileOf);
-        // .170: the reached place and what holds it or lies in it are here; every other known place is elsewhere
-        const up = new Set(lineage(s, s.scene.at));
-        const inside = (id) => lineage(s, id).includes(s.scene.at);
-        const where = { here: [...up].map((id) => s.places[id]?.name).filter(Boolean),
-            elsewhere: Object.values(s.places).filter((pl) => pl?.name && !up.has(pl.id) && !inside(pl.id)).map((pl) => pl.name) };
-        for (const m of list) {
-            const item = { seq: Number(k), type: 'expected', met: m };
-            const who = offered.includes(m?.who) ? m.who : idOf(m?.who);
-            if (expected[k]?.arrived !== true || !place || s.scene.at !== place) { reject(item, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`); continue; }
-            // someone who came along with him (arrive.with) is here already: nothing to meet
-            if (worded && who && s.scene.present.includes(who)) continue;
-            if (!who || !offered.includes(who) || s.entities[who]?.kind !== 'npc' || statusOf(s, who) === 'dead') { reject(item, 'met_not_known_here', `${m?.who} is not one of the people known at this place for step ${k}`); continue; }
-            if (s.scene.present.includes(who)) continue;
-            const ev = metEvidence(prose, m.evidence, who, people, { ...where, self: [s.entities.pc?.name, 'Alaric'].filter(Boolean) });
-            if (!ev.ok) { reject(item, 'met_evidence', `${who}: ${ev.why}`); continue; }
-            enterKnown(who, item);
-            if (s.scene.present.includes(who)) metEntered.add(who);
+    function admitPresence(who, d) {
+        const person = s.entities[who];
+        const member = s.party?.members[who];
+        const combatant = s.encounter?.combatants?.[who];
+        if (person?.kind !== 'npc' || statusOf(s, who) === 'dead' ||
+            (member?.mode === 'wait' && member.at !== s.scene.at) ||
+            (combatant && !combatant.current.escaped && !combatant.current.defeated &&
+                (s.encounter.at || person.at || s.scene.at) !== s.scene.at)) {
+            reject(d, 'npc_presence', `The recorded state does not permit ${who} here.`);
+            deniedPresence.add(who);
+            return false;
         }
+        if (!s.scene.present.includes(who)) enterKnown(who, d);
+        return s.scene.present.includes(who);
     }
-    /**
-     * The one known person a GO step's own words for its target name ("Widow Hesse at the blue door"), when the place
-     * the step reached lies in the town (or the land) where that person was last: else none
-     */
-    function namedByStep(g, reached) {
-        const words = ` ${normText(g?.newName || g?.name || '')} `;
-        if (words.trim().length < 3) return [];
-        const hits = Object.values(s.entities).filter((e) => e.kind === 'npc' && e.name && statusOf(s, e.id) !== 'dead'
-            && normText(e.name).length > 2 && words.includes(` ${normText(e.name)} `));
-        if (hits.length !== 1) return [];
-        const last = hits[0].at || hits[0].location;
-        const near = last && s.places[last] && (settlementOf(s, last) ? settlementOf(s, last) === settlementOf(s, reached) : realmOf(s, last) === realmOf(s, reached));
-        return near ? [hits[0].id] : [];
-    }
+
     /** The GO step an actual arrival at this place answers (the first not yet met one, by its place). */
     function goStepAt(id, ref) {
         return Object.entries(outcome.expected_keys || {}).filter(([k, type]) => type === 'go' && !metDone.has(k)).map(([k]) => k)

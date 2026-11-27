@@ -56,12 +56,11 @@
       "shape": { "standpoint": "literal narrated clause or null" }
     },
     "go": {
-      "summary": "did he arrive, where, and who came with him; arrived is true only when the reply ends with him at the place (seeing it ahead or passing it is false); evaluate Alaric's final location at the END of this reply: when he enters the first interior or mouth tunnel of a Dungeon and remains there, mark arrived:true even if his deeper destination remains ahead, with at set to the actual interior as a known place or {new:{name,kind:'interior',parent:Dungeon id}}; arrived:false if he only sees inside, another actor crosses, the alleged crossing is quoted, hypothetical, in the past or interrupted, or Alaric returned outside. Passing a place without staying there is not arrival. A real intermediate stop can be arrive even while arrived:false for the end goal; seeing the end goal ahead alone is still false. met: for each person of KNOWN AT this reply shows present at the reached place now (speaking, working, sitting there), who (their id) and evidence (the reply's own narrated words that name or describe them there); not someone only remembered, expected, pictured, said to be away or referred to by a pronoun; null when none.",
+      "summary": "did he arrive, where, and who came with him; arrived is true only when the reply ends with him at the place (seeing it ahead or passing it is false); evaluate Alaric's final location at the END of this reply: when he enters the first interior or mouth tunnel of a Dungeon and remains there, mark arrived:true even if his deeper destination remains ahead, with at set to the actual interior as a known place or {new:{name,kind:'interior',parent:Dungeon id}}; arrived:false if he only sees inside, another actor crosses, the alleged crossing is quoted, hypothetical, in the past or interrupted, or Alaric returned outside. Passing a place without staying there is not arrival. A real intermediate stop can be arrive even while arrived:false for the end goal; seeing the end goal ahead alone is still false.",
       "shape": {
         "arrived": "true|false",
         "at": "place id, {\"new\": …} or null",
-        "with": "ids of the people who arrived with him, or null",
-        "met": "[{\"who\": id from KNOWN AT, \"evidence\": the reply's own narrated words that show that person there now}] or null"
+        "with": "ids of the people who arrived with him, or null"
       }
     },
     "activity": {

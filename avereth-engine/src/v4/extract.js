@@ -710,14 +710,6 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         }
         if (d?.type === 'leave') present.delete(d.who);
         if (d?.type === 'person.new' && d.present !== false) introduced.add(d.ref);
-        // .146: an arrival resets co-presence. A merchant report cannot silently restore it or invent an id.
-        // Ask the existing bounded repair for the actual encounter, never synthesize enter or authorize travel.
-        if (d?.type === 'offer' || d?.type === 'bid') {
-            const field = d.type === 'offer' ? 'seller' : 'buyer', id = d[field];
-            if (!introduced.has(id) && ((state.entities[id]?.kind === 'npc' && !present.has(id))
-                || (typeof id === 'string' && id.startsWith('npc.') && !state.entities[id])))
-                semanticIssues.push({ index: i, seq: d.seq, why: `$.deltas[${i}].${field}: counterparty ${id} is not established as present at this step. Copy the exact known person id from the CATALOG. Only if this REPLY shows that person actually meeting/trading here, report enter with its reply evidence before this ${d.type}; a genuinely new person needs person.new first. Otherwise omit the local trade. Never infer presence from an offer, remembered workplace or the PC's arrival alone.` });
-        }
         if (d?.type === 'offer' && saleOfferLines(state, d.seller, d.lines || []).length)
             semanticIssues.push({index:i, seq:d.seq, why:`$.deltas[${i}]: these are current PC sale goods; use bid with buyer, held object ids and price_cp, not offer/seller`});
         // Build .138 (batch 20 crystal shard T26–T32, seven plates T58): the buyer's coin for things Alaric sells, reported

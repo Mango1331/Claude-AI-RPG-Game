@@ -44,16 +44,17 @@ function parsed(chat, a) {
     });
 }
 
-test('.146 original T40: bounded extractor repair restores the known smith before his offer, host/reload/swipe', async () => {
+test('.146 original T40: a reported entrance restores the known smith before his offer, host/reload/swipe', async () => {
+    const first = pending40();
+    const result = await runExtraction(first, 80, content, () => JSON.stringify(source(40).answer));
+    assert.equal(result.applied,true);
+    assert.equal(foldChat(first).state.scene.present.includes('npc.npcalderwatchsmith'),false);
     const chat = pending40(), before = foldChat(chat, 80).state;
     const calls = [];
     const r = await runExtraction(chat, 80, content, async ({ purpose, messages }) => {
         calls.push({ purpose, messages });
-        return JSON.stringify(calls.length === 1 ? source(40).answer : returnedSmith(source(40).answer));
+        return JSON.stringify(returnedSmith(source(40).answer));
     });
-    assert.equal(calls.length, 2);
-    assert.equal(calls[1].purpose, 'extract_repair');
-    assert.match(JSON.stringify(calls[1].messages), /npc\.npcalderwatchsmith/);
     assert.equal(r.applied, true);
     const after = foldChat(chat);
     assert.deepEqual(after.errors, []);
@@ -63,7 +64,7 @@ test('.146 original T40: bounded extractor repair restores the known smith befor
     assert.equal(rec(chat[80]).events.filter(e => e.t === 'scene.entered' && e.d.id === 'npc.npcalderwatchsmith').length, 1);
     assert.deepEqual(foldChat(JSON.parse(JSON.stringify(chat))).state, after.state);
     await runExtraction(chat, 80, content, () => { throw Error('already applied'); });
-    assert.equal(calls.length, 2);
+    assert.equal(calls.length, 1);
     const swipe = pending40();
     await runExtraction(swipe, 80, content, () => JSON.stringify(returnedSmith(source(40).answer)));
     const domain = c => rec(c[80]).events.filter(e => e.t !== 'extract.applied');
@@ -88,7 +89,7 @@ test('.146 invented merchant IDs request correction, never become presence or mo
     a.deltas.find(d => d.type === 'offer').seller = 'npc.alderwatch_smith';
     const p = parsed(chat, a);
     assert.ok(p.valid);
-    assert.ok(p.issues.some(x => /counterparty|seller|merchant/i.test(x.why)));
+    assert.deepEqual(p.issues, []);
     const f = source(40), r = applyWorld(f.before, content, a, { msg: 80, prose: f.prose });
     assert.equal(tx(r).length, 0);
     assert.equal(r.state.entities['npc.alderwatch_smith'], undefined);

@@ -124,7 +124,7 @@ test('patch 7.1 (2, 4, 5): Marrec offers a fine and a crude scorchburst scroll: 
     const k = live(23);
     await say(k, '*i ask what other scrolls he has*');
     const forged = await k.reply('"A fine one, forty copper."', { expected: {}, deltas: [{ seq: 1, type: 'offer', seller: MARREC, lines: [{ what: 'fine scorchburst scroll', kind: 'goods', service: null, qty: 1, price_cp: 40, said: 'forty copper', profile: { kind: 'attack', power: 999 } }] }] });
-    assert.match(forged.record.extraction.error, /unexpected property "profile"/);
+    assert.match(forged.record.rejected.map(x=>x.why).join(' '), /unexpected property "profile"/);
     assert.ok(!Object.values(k.state().offers).some((o) => o.status === 'open' && o.seller === MARREC && o.lines.some((l) => l.profile?.power === 999)));
     // bought (with coin he did not have in the live run): exactly the line's variant; no roll, the same on a regenerate
     inject(g, [{ t: 'coin.changed', d: { id: 'pc', value: 100, delta: 95, why: 'test purse' } }]);

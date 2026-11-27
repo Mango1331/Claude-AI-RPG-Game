@@ -537,6 +537,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let sceneEpoch = 0;
     const deskVisits = new Map();
     const endpoints = reportedEndpoints(answer, state, content, invalid);
+    const missingArrival = explicitTravel && !reportedArrivals.length &&
+        (auth.gos || []).some(g => expected[g.seq]?.arrived === true);
     const reachedGoals = new Map(); // GO seq → actual accepted place
     const deniedPresence = new Set();
     const arrivals = new Set();
@@ -1176,7 +1178,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             reject(d, 'npc_continuity', 'dependent claim about a rejected person reintroduction');
             continue;
         }
-        if (cPath && rulesetOf(s) >= 2 && localSceneDelta(d) && travel.filter(x => x.seq < d.seq).sort((a,b) => a.seq-b.seq).at(-1)?.ok === false && (sceneOf(d) == null || sceneOf(d) === 'here')) {
+        if (cPath && rulesetOf(s) >= 2 && localSceneDelta(d) && (missingArrival || travel.filter(x => x.seq < d.seq).sort((a,b) => a.seq-b.seq).at(-1)?.ok === false) && (sceneOf(d) == null || sceneOf(d) === 'here')) {
             refusedScene = true;
             reject(d, 'scene_context', 'ambiguous local scene after an unconfirmed arrival');
             continue;
@@ -2539,14 +2541,18 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     /** Attribute each actual desk step within the visit in which the Guild booked it. */
     function deskHandlers() {
         if (!hallOf(s,s.scene.at)) return;
-        for (const [k,desk] of Object.entries(outcome.desk || {})) {
+        const desks = outcome.desk ?? Object.fromEntries(conditionals
+            .filter(k => k.quest && ['accept','turn_in'].includes(k.kind))
+            .map(k => [k.seq,k]));
+        for (const [k,desk] of Object.entries(desks)) {
             const res = outcome.resolutions?.find(r => String(r.seq) === k);
             const visit = res?.status === 'resolved' ? 0 : deskVisits.get(k);
             if (visit !== sceneEpoch) continue;
             const fact = desk.kind === 'accept' ? `f.pc.accepted.${desk.quest}` : `f.pc.completed.${desk.quest}`;
             if (!s.facts[fact]) continue;
+            const {isGuildPerson} = firewallContext(s,content);
             const staff = s.scene.present.filter(who => s.entities[who]?.kind === 'npc'
-                && statusOf(s,who) !== 'dead' && firewallContext(s,content).isGuildPerson(who));
+                && statusOf(s,who) !== 'dead' && isGuildPerson(who));
             const ref = expected[k]?.handled_by;
             const who = staff.length === 1 ? staff[0] : idOf(ref?.who ?? ref);
             if (who && staff.includes(who) && !knows(s,who,fact))

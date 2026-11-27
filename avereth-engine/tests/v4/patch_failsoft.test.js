@@ -14,7 +14,7 @@ const fixtures=JSON.parse(fs.readFileSync(new URL('./fixtures/batch2_trade_peopl
 for(const key of ['004_24','005_26','005_121'])test(`failsoft: local semantics ${key} preserve valid independent events`,()=>{
  const x=structuredClone(fixtures[key]), cat=extractorCatalog(x.state,content,{c:true});
  const p=parseExtraction(JSON.stringify(x.answer),worldVocab(content.deltaVocab,x.state),cat,x.state.last.outcome.expected_keys,{sceneRequired:true,startScene:x.state.scene.at,state:x.state,content});
- assert.equal(p.valid,true);assert.ok(p.issues.length);
+ assert.equal(p.valid,true);assert.deepEqual(p.issues, []);
  const r=applyWorld(x.state,content,p.value,{prose:x.prose,msg:500});
  assert.ok(r.rejected.some(v=>['npc_continuity','trade_direction'].includes(v.rule)));
  if(key!=='005_121')assert.ok(r.events.some(e=>e.t==='scene.moved'));

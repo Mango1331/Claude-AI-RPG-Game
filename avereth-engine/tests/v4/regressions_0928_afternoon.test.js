@@ -168,7 +168,7 @@ test('interpreter contract distinguishes approaching a sound in this scene from 
 test('an engine search check cannot be re-reported: the vocabulary has no check delta, and an answer with one is invalid', () => {
     assert.ok(!contentPack.deltaVocab.deltas.some((x) => x.type === 'check'));
     const p = parseExtraction(JSON.stringify({ expected: {}, deltas: [{ seq: 1, type: 'check', what: 'large animal tracks', stat: 'PER', success: true }] }), contentPack.deltaVocab, {}, {});
-    assert.equal(p.valid, false);
+    assert.ok(p.rejected.length);
 });
 
 test('extractor contract treats tracks as evidence and never re-reports engine search checks', () => {

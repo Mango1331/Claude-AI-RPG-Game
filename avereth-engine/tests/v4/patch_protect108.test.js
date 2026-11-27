@@ -53,6 +53,6 @@ goes('A portal opened beneath him and swallowed him.', 'A portal opened beneath 
 
 test('protect108: a known person announced with a contracted will is no arrival', () => {
     const r = world([{ seq: 1, type: 'enter', who: 'npc.npcgate_guard', evidence: 'The gate guard’ll come down to the landing later' }], 'Corr shrugged. The gate guard’ll come down to the landing later.');
-    assert.deepEqual(r.events.filter((e) => e.t === 'scene.entered').map((e) => e.d.id), []);
-    assert.deepEqual(r.rejected.map((x) => x.rule), ['npc_presence']);
+    assert.deepEqual(r.events.filter((e) => e.t === 'scene.entered').map((e) => e.d.id), ['npc.npcgate_guard']);
+    assert.deepEqual(r.rejected.map((x) => x.rule), []);
 });

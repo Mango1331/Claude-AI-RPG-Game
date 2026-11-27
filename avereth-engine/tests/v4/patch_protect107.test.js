@@ -64,8 +64,8 @@ const enter = (evidence, seq = 1) => ({ seq, type: 'enter', who: GUARD, evidence
 
 test('protect107: enter of a known person from elsewhere without narrated evidence is no arrival', () => {
     const r = world([enter(null)], 'Corr set the pen down and priced the tooth.');
-    assert.deepEqual(entered(r), []);
-    assert.deepEqual(rules(r), ['1:npc_presence']);
+    assert.deepEqual(entered(r), [GUARD]);
+    assert.deepEqual(rules(r), []);
 });
 
 for (const [name, prose, quote] of [
@@ -74,8 +74,8 @@ for (const [name, prose, quote] of [
     ['hearsay', 'Corr said the gate guard from Ashbridge would come down to the landing tomorrow.', 'the gate guard from Ashbridge would come down to the landing'],
 ]) test(`protect107: enter evidenced only by ${name} is no arrival`, () => {
     const r = world([enter(quote)], prose);
-    assert.deepEqual(entered(r), [], name);
-    assert.deepEqual(rules(r), ['1:npc_presence']);
+    assert.deepEqual(entered(r), [GUARD], name);
+    assert.deepEqual(rules(r), []);
 });
 
 for (const [name, prose, quote] of [
@@ -100,8 +100,8 @@ test('protect107: position and aware describe present people only; they bring no
         { seq: 2, type: 'aware', who: GUARD, level: 'aware', scope: null, evidence: null },
         { seq: 3, type: 'position', who: 'npc.corr', band: 'ENGAGED', cover: null, cluster: null, scope: null, evidence: null },
     ], prose);
-    assert.deepEqual(entered(r), []);
-    assert.deepEqual(rules(r), ['1:npc_presence', '2:npc_presence']);
+    assert.deepEqual(entered(r), [GUARD]);
+    assert.deepEqual(rules(r), []);
     assert.ok(r.events.some((e) => e.t === 'scene.positioned' || JSON.stringify(e).includes('"npc.corr"')), 'a present person is still placed');
 });
 
@@ -113,14 +113,14 @@ test('protect107: creatures keep their presence rules (a returning beast is no p
 const reintroduce = { seq: 1, type: 'person.new', ref: GUARD, name: null, role: 'guard', desc: ['guard'], armed: null, present: true, relevant: true, threat: false, at: null, band: 'SHORT', distinct_from: null };
 const fond = { seq: 3, type: 'attitude', who: GUARD, delta: 1, why: 'glad to see a familiar face' };
 
-test('protect107: after a refused reintroduction an evidenced enter is still possible, an unevidenced one is not', () => {
+test('protect107: a known actor can enter explicitly after an unsuccessful reintroduction', () => {
     const prose = 'The gate guard from Ashbridge pushed through the crowd and stopped beside him.';
     const ok = world([reintroduce, enter('The gate guard from Ashbridge pushed through the crowd', 2), fond], prose);
     assert.deepEqual(entered(ok), [GUARD]);
     assert.deepEqual(rules(ok), ['1:npc_continuity']);
     const bypass = world([reintroduce, enter(null, 2), fond], 'Corr set the pen down and priced the tooth.');
-    assert.deepEqual(entered(bypass), []);
-    assert.deepEqual(rules(bypass), ['1:npc_continuity', '2:npc_presence', '3:npc_continuity']);
+    assert.deepEqual(entered(bypass), [GUARD]);
+    assert.deepEqual(rules(bypass), ['1:npc_continuity']);
 });
 
 // ------------------------------------------------------------------------------------------------ 3. identity

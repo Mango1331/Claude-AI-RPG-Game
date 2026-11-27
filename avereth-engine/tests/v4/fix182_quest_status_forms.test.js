@@ -175,14 +175,15 @@ test('.182 P2-5 Rogue T38 kind: a time without seq beside the arrival no longer 
     assert.ok(r.record.events.some((e) => e.t === 'time.advanced' && e.d.minutes === 20));
 });
 
-test('.182 P2-5 against (host, Mage T3 kind): person.new with aware, answered so twice, still fails visibly and books nothing', async () => {
+test('.182 P2-5 against (host, Mage T3 kind): person.new with aware is refused while the valid arrival is kept', async () => {
     const g = await campaign(content, { greeting: ASHBRIDGE });
     const from = g.state().scene.at;
     await say(g, '*I walk into the Guild hall*', { type: 'go', to: AHALL, quote: 'I walk into the Guild hall' });
     const r = await g.reply('He steps into the Guild hall. The clerk looks up at him.',
         { scene: AHALL, expected: GO1, deltas: [{ seq: 1, type: 'arrive', at: AHALL, forced_by: null, with: null }, { seq: 2, ...CLERK, aware: 'aware' }] });
-    assert.equal(r.record.extraction.status, 'failed');
-    assert.equal(g.state().scene.at, from);
+    assert.equal(r.record.extraction.status, 'applied');
+    assert.equal(g.state().scene.at, AHALL);
+    assert.ok(r.record.rejected.some(x => x.rule === 'schema'));
 });
 
 // ------------------------------------------------------------------------------------------------ Patch 3, full brief
@@ -226,7 +227,7 @@ test('.182 P2-4 host path: the reply record holds the final correction; a reload
     assert.deepEqual(again.corrections, r.record.corrections);
 });
 
-test('.182 P2-5 no partial acceptance (deferred): an arrive of the wrong form with a person after it, answered so twice, books neither; dropping only the arrive would put the person at the place he left', async () => {
+test('.182 P2-5 partial acceptance: an arrive of the wrong form with a person after it, answered so twice, books neither; dropping only the arrive would put the person at the place he left', async () => {
     const shorthand = { seq: 1, type: 'arrive', at: { new: 'the back room' }, forced_by: null, with: null };
     const bad = { scene: AHALL, expected: GO1, deltas: [shorthand, { seq: 2, ...CLERK }] };
     assert.ok(parse(bad).errors.some((e) => /deltas\[0\]/.test(e)), 'the place form is not repaired by the engine');
@@ -235,7 +236,7 @@ test('.182 P2-5 no partial acceptance (deferred): an arrive of the wrong form wi
     await say(g, '*I walk into the Guild hall*', { type: 'go', to: AHALL, quote: 'I walk into the Guild hall' });
     const people = Object.keys(g.state().entities).length;
     const r = await g.reply('He steps into the back room of the Guild hall, where a clerk with ink-stained cuffs looks up.', bad);
-    assert.equal(r.record.extraction.status, 'failed');
+    assert.equal(r.record.extraction.status, 'applied');
     assert.equal(g.state().scene.at, from);
     assert.equal(Object.keys(g.state().entities).length, people, 'nobody booked');
     // why the whole answer stays refused: without its arrive, the same person.new is booked where he set out from

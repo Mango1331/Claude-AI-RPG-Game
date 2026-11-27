@@ -21,14 +21,13 @@ const smith='loc.the_smiths_yard', camp='loc.mossback_warrens';
 const here = s => ({scene:s.scene.at,expected:{},deltas:[]});
 const call=(s,a)=>applyWorld(s,content,a,{msg:200,prose:tail['200'].text});
 
-test('new extractor protocol refuses unanchored local claims, but supports old parser mode',()=>{
+test('new extractor protocol inherits the ordered local scene, but supports old parser mode',()=>{
  const a=tail['200'].record.extraction.raw;
  const ids={places:Object.keys(pre().places),quests:Object.keys(pre().quests)};
  const old=parseExtraction(JSON.stringify(a),content.deltaVocab,ids,{});
  assert.equal(old.valid,true);
  const strict=parseExtraction(JSON.stringify(a),content.deltaVocab,ids,{}, {sceneRequired:true});
- assert.equal(strict.valid,false);
- assert.match(strict.errors.join(' '),/scene/);
+ assert.equal(strict.valid,true);
  const scoped=parseExtraction(JSON.stringify({...a,scene:camp}),content.deltaVocab,ids,{}, {sceneRequired:true});
  assert.equal(scoped.valid,true,scoped.errors.join('; '));
  const malformed=parseExtraction(JSON.stringify({expected:{},deltas:{}}),content.deltaVocab,ids,{}, {sceneRequired:true});
@@ -133,7 +132,7 @@ test('finding someone does not automatically complete a separate rescue quest or
 import { campaign, say } from './patch8_lib.js';
 import { rec, foldChat } from '../../src/host.js';
 import { processReplyAny, runExtraction } from '../../src/v4/runtime.js';
-test('new protocol repairs missing scene once; swipe/reload never duplicate entities or player actions', async()=>{
+test('new protocol uses the current scene; swipe/reload never duplicate entities or player actions', async()=>{
  const g=await campaign(content);await say(g,'I greet the traveller.',{type:'other',what:'greet the traveller',quote:'I greet the traveller'});
  const answer={expected:{},deltas:[{seq:1,type:'person.new',ref:'npc.witness',name:'Witness',role:'traveller',present:true,desc:[]}]};
  const baseLLM=g.llm,calls=[];
@@ -142,7 +141,7 @@ test('new protocol repairs missing scene once; swipe/reload never duplicate enti
   calls.push(req.purpose);return JSON.stringify(calls.length===1?answer:{scene:'here',...answer});
  };
  const r=await g.reply('A traveller named Witness greets him.');
- assert.equal(r.record.extraction.status,'applied');assert.deepEqual(calls,['extract','extract_repair']);
+ assert.equal(r.record.extraction.status,'applied');assert.deepEqual(calls,['extract']);
  const original=clone(g.chat[r.id]);assert.equal(r.record.events.filter(e=>e.t==='entity.created').length,1);
  assert.equal((await runExtraction(g.chat,r.id,content,g.llm)).changed,false);
  g.chat[r.id].mes='Witness, the traveller, returns his greeting.';g.chat[r.id].swipe_id=1;

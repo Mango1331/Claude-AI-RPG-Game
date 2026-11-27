@@ -135,7 +135,7 @@ test('c.6.6 route and sight: the planner keeps the destination and leaves the ro
     assert.match(MECH_RULES, /For a journey or crossing, go\.to is the destination, never the way there\./);
     assert.match(MECH_RULES, /A route is never a place of its own\./);
     const go = content.deltaVocab.expected.go.summary;
-    assert.match(go, /arrived is true only when the reply ends with him at the place \(seeing it ahead or passing it is false\)/);
+    assert.match(go, /did Alaric reach the chosen objective/);
 });
 
 // ------------------------------------------------------------------------------------------------ 11-14. before a fight

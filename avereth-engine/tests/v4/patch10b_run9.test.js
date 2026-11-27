@@ -103,8 +103,6 @@ test('Run 9 review .73: rejected goblins do not create a generic local threat th
 
 test('Run 9 review .74: GO extraction guidance distinguishes current Dungeon interior from a quoted crossing', () => {
     const rule = content.deltaVocab.expected.go.summary;
-    assert.match(rule, /END of this reply/);
-    assert.match(rule, /first interior or mouth tunnel/);
-    assert.match(rule, /quoted, hypothetical/);
-    assert.match(rule, /returned outside/);
+    assert.match(rule, /chosen objective/);
+    assert.match(rule, /each physical stop separately with arrive/);
 });

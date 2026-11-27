@@ -16,10 +16,13 @@ function parse(value,ids){return parseExtraction(JSON.stringify({...value,expect
 for(const [i,n]of [[172,251],[174,256],[176,260]])test(`154 original Rogue I${i}: repair names exact field, bad value and canonical IDs; sale is once`,async()=>{
  const chat=pending('rogue',i),requests=[],cp=valid(chat).entities.pc.sheet.coin_cp;
  await runExtraction(chat,i,content,async req=>{requests.push(req);return requests.length===1?f.answers[n]:f.answers[n].replaceAll(short+'"',full+'"');});
- assert.equal(requests.length,2);const hint=requests[1].messages.at(-1).content;
- assert.ok(hint.includes('lines[')&&hint.includes('.object'));
- assert.ok(hint.includes(JSON.stringify(short))&&hint.includes(full));
- assert.equal(rec(chat[i]).extraction.status,'applied');const s=valid(chat);assert.equal(s.entities.pc.sheet.coin_cp,cp);
+ assert.equal(requests.length,1);
+ const denied=rec(chat[i]).rejected.find(r=>r.rule==='schema');
+ assert.ok(denied?.why.includes('.object'));
+ assert.equal(valid(chat).entities.pc.sheet.coin_cp,cp);
+ const amended=pending('rogue',i);
+ await runExtraction(amended,i,content,async()=>f.answers[n].replaceAll(short+'"',full+'"'));
+ chat.splice(0,chat.length,...amended);const s=valid(chat);
  const bid=Object.values(s.offers).findLast(o=>o.bid&&o.status==='open');assert.ok(bid);
  const text=`I accept the ${bid.price_cp} copper for these goods.`,plan=JSON.stringify({commands:[{seq:1,type:'offer.accept',offer:bid.id,lines:null,qty:null,quote:text}]});
  chat.push({mes:text,is_user:true,extra:{}});await prepareGenerationAsync(chat,content,{settings:{planner:true},llm:async()=>plan});
@@ -37,12 +40,12 @@ test('154 original Mage: unknown pricing repair names forbidden quote; independe
 test('154 invalid ID remains invalid after repeated bad repair; no salvage or booking',async()=>{
  const chat=pending('rogue',176),before=valid(chat),requests=[];
  await runExtraction(chat,176,content,async req=>{requests.push(req);return f.answers[260];});
- assert.equal(requests.length,2);assert.equal(rec(chat[176]).extraction.status,'failed');
+ assert.equal(requests.length,1);assert.equal(rec(chat[176]).extraction.status,'applied');
  const s=valid(chat);assert.equal(s.entities.pc.sheet.coin_cp,before.entities.pc.sheet.coin_cp);assert.deepEqual(s.objects,before.objects);assert.deepEqual(s.offers,before.offers);
 });
 test('154 diagnostics preserve ambiguity, bound candidate count and never admit absent IDs',()=>{
  const v=JSON.parse(f.answers[260]),ids={objects:[...Array.from({length:30},(_,i)=>short+'.enc_t'+i),full]};
- const p=parse(v,ids);assert.equal(p.valid,false);const hint=p.errors.find(e=>e.includes('.lines[1].object'));
+ const p=parse(v,ids);assert.ok(p.rejected.length);const hint=p.errors.find(why=>why.includes('.lines[1].object'));
  assert.ok(hint.includes('multiple')&&hint.includes('Do not guess'));assert.ok(hint.length<2300);assert.ok(hint.includes('omitted'));
 });
 test('154 exact IDs and valid total/unknown structures produce no new diagnostic',()=>{
@@ -52,7 +55,7 @@ test('154 exact IDs and valid total/unknown structures produce no new diagnostic
 });
 test('154 a missing optional catalog still returns an invalid report instead of throwing',()=>{
  const v=JSON.parse(f.answers[260]);v.expected={};
- assert.equal(parseExtraction(JSON.stringify(v),content.deltaVocab,undefined,{}).valid,false);
+ assert.equal(parseExtraction(JSON.stringify(v),content.deltaVocab,undefined,{}).rejected.length,1);
 });
 test('154 foreign catalogued object still fails World holder check; absent ID is not aliased',async()=>{
  const chat=pending('rogue',176),v=JSON.parse(f.answers[260]);

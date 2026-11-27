@@ -393,7 +393,7 @@ test('patch 7 (3, 21): two ruins, a guard room in each: two rooms; the other rui
     const r = await g.reply('He steps into the guard room.', { expected: { 1: { arrived: true, at: guardA, with: null } }, deltas: [] });
     assert.notEqual(g.state().scene.at, guardA, 'no jump into the other ruin');
     assert.ok(!extractorCatalog(s, content, { c: true }).places.includes(guardA), 'not even the extractor can name it from here');
-    assert.ok(r.record.events.some((e) => e.t === 'extract.failed'), 'an answer that names it is no valid report');
+    assert.ok(r.record.rejected?.some(e=>e.rule==='schema') || r.record.extraction.status==='failed', 'an answer that names it is no valid report');
     // levels: a cellar guard room one level down is another room than the one up here
     await walk(g, guardB, { text: '*I go into the guard room*', prose: 'A trapdoor leads down to a cellar guard room.', deltas: [way(room('Cellar'), { name: 'trapdoor', dir: 'down' })] });
     s = g.state();

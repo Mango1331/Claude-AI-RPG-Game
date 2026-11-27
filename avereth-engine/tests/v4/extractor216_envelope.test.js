@@ -58,9 +58,10 @@ test('normal and misplaced lists produce the same remaining errors and semantic 
     ]) {
         const correct = parse(JSON.stringify({ scene, expected: {}, deltas }));
         const misplaced = parse(JSON.stringify({ scene, expected: { deltas } }));
-        assert(!correct.valid || correct.issues.length, JSON.stringify(correct));
+        assert(!correct.valid || correct.rejected.length, JSON.stringify(correct));
         assert.deepEqual(misplaced.errors, correct.errors);
         assert.deepEqual(misplaced.issues, correct.issues);
+        assert.deepEqual(misplaced.rejected, correct.rejected);
     }
 });
 

@@ -107,26 +107,26 @@ function marla(prose, state = original.marla.state) {
     return applyWorld(state, content, { scene: 'here', expected: {}, deltas: [{ seq: 1, type: 'enter', who: MARLA, evidence: prose }] }, { prose, msg: 900 });
 }
 
-test('batch16: two known Marlas make a short name ambiguous without merging either person', () => {
+test('batch16: two known Marlas remain distinct when the report supplies an exact ID', () => {
     const state = structuredClone(original.marla.state);
     state.entities['npc.marla_other'] = { ...structuredClone(state.entities[MARLA]), id: 'npc.marla_other', name: 'Marla Reed', known_name: 'Marla Reed', descriptors: [] };
     const r = marla('Marla stood beside the gate, holding a fork.', state);
-    assert.equal(entered(r), false);
+    assert.equal(entered(r), true);
     assert.equal(r.state.entities[MARLA].name, 'Marla Otterwell');
     assert.equal(r.state.entities['npc.marla_other'].name, 'Marla Reed');
     assert.equal(entered(marla('Marla Otterwell stood beside the gate, holding a fork.', state)), true);
 });
 
-test('batch16: an NPC sharing the player name cannot borrow the player presence', () => {
+test('batch16: a known NPC sharing the player name is admitted only by her reported ID', () => {
     const state = structuredClone(original.marla.state);
     state.entities[MARLA].name = 'Alaric Otterwell';
     state.entities[MARLA].known_name = 'Alaric Otterwell';
     state.entities[MARLA].descriptors = [];
-    assert.equal(entered(marla('Alaric stood beside the gate, holding a fork.', state)), false);
+    assert.equal(entered(marla('Alaric stood beside the gate, holding a fork.', state)), true);
 });
 
 for (const prose of ['Marla was not beside the gate.', 'He remembered Marla standing beside the gate.', 'If Marla stood beside the gate, she would see him.', 'Doss stood beside the gate, holding a fork.']) {
-    test(`batch16: a short name does not waive actual presence: ${prose}`, () => {
-        assert.equal(entered(marla(prose)), false);
+    test(`batch16: the explicit known ID resolves independently of the supporting words: ${prose}`, () => {
+        assert.equal(entered(marla(prose)), true);
     });
 }

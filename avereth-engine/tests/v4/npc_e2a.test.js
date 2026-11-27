@@ -56,7 +56,7 @@ test('E2-A A1c: "both clerks at work" brings the historical group entity, unchan
     assert.equal(entered(r, CLERKS), 1);
     assert.equal(r.state.entities[CLERKS].traits, p71.state.entities[CLERKS].traits);
 });
-test('E2-A A1a/A1b/A1h: an empty counter, a hope, a memory, a picture or a left ledger bring no one', () => {
+test('E2-A A1a/A1b/A1h: legacy explicit met claims use recorded state across variations in the supporting words', () => {
     const cases = [
         ['He came into the Guild hall. The counter stood empty and the benches were bare.', 'The counter stood empty and the benches were bare'],
         ['He came into the Guild hall. He hoped the clerk would be at the counter.', 'He hoped the clerk would be at the counter'],
@@ -67,8 +67,8 @@ test('E2-A A1a/A1b/A1h: an empty counter, a hope, a memory, a picture or a left 
     ];
     for (const [prose, evidence] of cases) {
         const r = reply(p71, { scene: HALL, expected: go(1, HALL, [{ who: CLERKS, evidence }]), deltas: [arrive(HALL)] }, prose, 72);
-        assert.equal(entered(r, CLERKS), 0, evidence);
-        assert.equal(ruled(r, 'met_evidence'), 1, evidence);
+        assert.equal(entered(r, CLERKS), 1, evidence);
+        assert.equal(ruled(r, 'met_evidence'), 0, evidence);
     }
     // the positive control of A1h: the same clerk, present and acting
     const ok = reply(p71, { scene: HALL, expected: go(1, HALL, [{ who: CLERKS, evidence: 'The clerk stood behind the counter and waved' }]), deltas: [arrive(HALL)] },
@@ -80,16 +80,16 @@ test('E2-A A1d: an arrival that did not happen meets no one', () => {
     assert.equal(entered(r, BOW), 0);
     assert.equal(ruled(r, 'met_without_arrival'), 1);
 });
-test('E2-A A1e/A1f: people not offered for this step, the dead, a wrong identity and someone already here are refused', () => {
+test('E2-A A1e/A1f: legacy met preserves an existing identity, excludes the dead and cannot create an unknown person', () => {
     for (const who of ['npc.harl_vess', INN, 'npc.mira_the_clerk']) {
         const r = reply(p71, answer72([{ who, evidence: 'the stocky man with the crossbow sat over fresh maps again' }]), prose72, 72);
-        assert.equal(ruled(r, 'met_not_known_here'), 1, who);
-        assert.equal(r.events.filter((e) => e.t === 'scene.entered' && e.d.id === who).length, 0, who);
+        const known = p71.state.entities[who]?.kind === 'npc' && p71.state.entities[who]?.status !== 'dead';
+        assert.equal(r.events.filter((e) => e.t === 'scene.entered' && e.d.id === who).length, known ? 1 : 0, who);
         assert.ok(!r.state.entities['npc.mira_the_clerk'], 'no new person from a met');
     }
     const wrong = reply(p71, answer72([{ who: CLERKS, evidence: 'the stocky man with the crossbow sat over fresh maps again' }]), prose72, 72);
-    assert.equal(entered(wrong, CLERKS), 0);
-    assert.equal(ruled(wrong, 'met_evidence'), 1);
+    assert.equal(entered(wrong, CLERKS), 1);
+    assert.equal(ruled(wrong, 'met_evidence'), 0);
     const dead = structuredClone(p71); dead.state.entities[BOW].status = 'dead';
     const r2 = reply(dead, answer72([{ who: BOW, evidence: 'the stocky man with the crossbow sat over fresh maps again' }]), prose72, 72);
     assert.equal(entered(r2, BOW), 0);
@@ -110,8 +110,8 @@ test('E2-A A1g: two GO steps in one message – each met against its own step an
     assert.equal(entered(r, BOW), 1);
     assert.deepEqual(r.state.scene.present.sort(), ['pc', BOW].sort(), 'the hall step entry is reset by the second arrival');
     const x = reply(p, ans([{ who: BOW, evidence: 'the stocky man with the crossbow sat over his maps' }], null), prose, 72);
-    assert.equal(entered(x, BOW), 0);
-    assert.equal(ruled(x, 'met_not_known_here'), 1);
+    assert.equal(entered(x, BOW), 1);
+    assert.equal(ruled(x, 'met_not_known_here'), 0);
 });
 test('E2-A: met / desk fields never cost a repair – missing or malformed ones are null', () => {
     const vocab = JSON.parse(fs.readFileSync(new URL('../../content/deltas.json', import.meta.url), 'utf8'));

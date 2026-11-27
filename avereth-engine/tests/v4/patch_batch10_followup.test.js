@@ -87,7 +87,7 @@ test('schema error then ST200 transient error uses the third existing extractor 
     const g = new Chat4(c);
     await g.player('Mage');
     await g.player('Flame Lance and Arcane Ward');
-    await g.player('I wait.');
+    await g.player('I walk to the Guild hall.', [{seq:1,type:'go',to:{new:'Guild hall'},quote:'I walk to the Guild hall.'}]);
     const id = g.chat.push({ mes: 'The innkeeper nods.', is_user: false, extra: {} }) - 1;
     processReplyAny(g.chat, id, c);
     let calls = 0;
@@ -95,7 +95,7 @@ test('schema error then ST200 transient error uses the third existing extractor 
         calls++;
         if (calls === 1) return '{"scene":"here","expected":{},"deltas":[{"seq":1,"type":"made.up"}]}';
         if (calls === 2) throw Object.assign(Error('HTTP 200: Internal Server Error'), { code: 'LLM_PROVIDER', status: 200, retryable: true });
-        return '{"scene":"here","expected":{},"deltas":[]}';
+        return '{"scene":"here","expected":{"1":{"arrived":false}},"deltas":[]}';
     });
     assert.equal(calls, 3);
     assert.equal(rec(g.chat[id]).extraction.status, 'applied');
@@ -170,7 +170,7 @@ async function pendingReply() {
     const g = new Chat4(c);
     await g.player('Mage');
     await g.player('Flame Lance and Arcane Ward');
-    await g.player('I wait.');
+    await g.player('I walk to the Guild hall.', [{seq:1,type:'go',to:{new:'Guild hall'},quote:'I walk to the Guild hall.'}]);
     const id = g.chat.push({ mes: 'The innkeeper nods.', is_user: false, extra: {} }) - 1;
     processReplyAny(g.chat, id, c);
     return { g, id };
@@ -181,7 +181,7 @@ test('transient exhaustion keeps the existing call limit and safe world continua
     let calls = 0;
     await runExtraction(g.chat, id, c, async () => {
         calls++;
-        if (calls === 1) return '{"scene":"here","expected":{},"deltas":[{"seq":1,"type":"made.up"}]}';
+        if (calls === 1) return 'invalid JSON';
         throw recovery.providerResponseError(200, { error: { message: 'Internal Server Error' } });
     });
     assert.equal(calls, 3);

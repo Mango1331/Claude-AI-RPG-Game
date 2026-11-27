@@ -18,7 +18,7 @@ const KEYS = { 1: 'buy', 2: 'pay' };
 // type at all and an expected answer in a field the key does not have
 const T41 = JSON.stringify({ 1: { bought: false, priced: true }, 2: { paid: false }, deltas: [{ type: 'offer', seller: 'npc.innkeeper', price: 7, unit: 'cp', phase: 'firm' }] });
 const T43 = JSON.stringify({ scene: 'here', expected: { 1: { bought: false }, 2: { priced: true, taken_anyway: false } }, deltas: [{ offer: { seller: 'npc.innkeeper', price_cp: 7 } }] });
-const FORM = 'Required form: {"scene": <place-ref or "here">, "expected": {"1": {"priced": true|false, "taken_anyway": true|false}, "2": {"priced": true|false, "taken_anyway": true|false}}, "deltas": [{"seq": 1, "type": "<one listed delta type>", <only that type\'s fields>}]}.';
+const FORM = 'Required form: {"scene": <optional place-ref>, "expected": {"1": {"priced": true|false, "taken_anyway": true|false}, "2": {"priced": true|false, "taken_anyway": true|false}}, "deltas": [{"seq": 1, "type": "<one listed delta type>", <only that type\'s fields>}]}.';
 const errorsOf = (raw, keys = KEYS) => parseExtraction(raw, vocab, {}, keys, { sceneRequired: true }).errors;
 const repairText = (raw, keys = KEYS) => extractorRequest(vocab, { catalog: 'CATALOG: –', actions: 'none', expectedKeys: keys, reply: 'x' }, { previous: raw, errors: errorsOf(raw, keys) }).messages.at(-1).content;
 
@@ -46,7 +46,7 @@ test('.185 against: no schema loosening – the broken answers are still invalid
     }
     assert.ok(errorsOf(T41).includes('$: unexpected property "1"'), 'a top-level answer is not read as expected');
     assert.equal(repairForm(vocab, {}, ['$.scene: actual narrative setting required for world changes']),
-        ' Required form: {"scene": <place-ref or "here">, "expected": {}, "deltas": [{"seq": 1, "type": "<one listed delta type>", <only that type\'s fields>}]}. Keep what was valid; invent no field and no event.');
+        ' Required form: {"scene": <optional place-ref>, "expected": {}, "deltas": [{"seq": 1, "type": "<one listed delta type>", <only that type\'s fields>}]}. Keep what was valid; invent no field and no event.');
     const empty = extractorRequest(vocab, { catalog: '', actions: '', expectedKeys: KEYS, reply: 'x' }, { previous: '', errors: ['no JSON text'] }).messages.at(-1).content;
     assert.match(empty, /^Your previous answer was empty/, 'the empty-answer repair is unchanged');
 });
@@ -71,7 +71,7 @@ test('.185 host path: the repair after a T41-form answer carries the form; the c
     const { r, asked } = await buying([bad, good]);
     assert.deepEqual(asked.map((x) => x.purpose), ['extract', 'extract_repair']);
     const repair = asked[1].messages.at(-1).content;
-    assert.ok(repair.includes('Required form: {"scene": <place-ref or "here">, "expected": {"1": {"priced": true|false, "taken_anyway": true|false}}'), repair);
+    assert.ok(repair.includes('Required form: {"scene": <optional place-ref>, "expected": {"1": {"priced": true|false, "taken_anyway": true|false}}'), repair);
     assert.match(repair, /"1" is an answer of "expected": put it inside "expected", never at the top level/);
     assert.equal(r.record.extraction.status, 'applied', JSON.stringify(r.record.extraction));
 });

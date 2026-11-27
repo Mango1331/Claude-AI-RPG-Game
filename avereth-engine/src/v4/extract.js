@@ -1,3 +1,4 @@
+import { tokenize } from '../util.js';
 import { movementEvidence } from './narration_evidence.js';
 import { thresholdSlot } from './living.js';
 import { placeKey } from './place_refs.js';
@@ -597,17 +598,21 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const clean = missing.length ? { ...value, expected: Object.fromEntries(Object.entries(exp).filter(([k]) => !missing.includes(k))) } : value;
     const errors = [];
     const invalid = new Map();
-    for (const reason of validate(clean, schema)) {
+    const violations = validate(clean, schema);
+    const diagnostics = [];
+    for (const reason of violations) {
         const entry = /^\$\.deltas\[(\d+)\]/.exec(reason);
         const step = /^\$\.expected\.(\d+)\b/.exec(reason);
         if (entry) {
             const index = Number(entry[1]), delta = value.deltas[index];
-            if (!invalid.has(index)) invalid.set(index,{delta, why:reason +
-                (delta ? fieldRepairHint(reason,delta,index,ids,vocab.deltas.find(x => x.type === delta.type)) : '')});
+            const why = reason + (delta ? fieldRepairHint(reason,delta,index,ids,vocab.deltas.find(x => x.type === delta.type)) : '');
+            if (!invalid.has(index)) invalid.set(index,{delta, why});
+            diagnostics.push(why);
         } else if (step) {
+            diagnostics.push(reason);
             if (!missing.includes(step[1])) missing.push(step[1]);
             delete exp[step[1]];
-        } else errors.push(reason);
+        } else { errors.push(reason); diagnostics.push(reason); }
     }
     value.expected = exp;
     if (invalid.size) value.deltas = value.deltas.filter((_,index) => !invalid.has(index));
@@ -655,6 +660,22 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             const section = g.section;
             const match = arrivals.some(d => (end && placeKey(state,end,content) === placeKey(state,d.at,content))
                 || (section && d.at?.new?.kind === 'interior' && d.at.new.parent === section.root));
+            // A free goal involving a known contact can have competing place identities.
+            // Preserve the old continuity repair only when it can change that booked endpoint.
+            if (match && !g.to && end?.new && g.newName) {
+                const goalWords = tokenize(g.newName);
+                for (const d of value.deltas) {
+                    if (d.type !== 'person.new' || d.present === false || placeKey(state,d.at,content) !== placeKey(state,end,content)) continue;
+                    const known = state.entities[d.ref];
+                    const name = tokenize(d.name);
+                    if (known?.kind === 'npc' && known.at && !state.scene.present.includes(known.id) &&
+                        name.length && name.every(word => goalWords.includes(word)) &&
+                        !value.deltas.some(x => x.type === 'enter' && x.who === known.id)) {
+                        semanticIssues.push({seq:g.seq, why:`Check the GO destination against the established site of ${known.id} at ${known.at}. Preserve the known contact or report their actual arrival at the new site.`});
+                        break;
+                    }
+                }
+            }
             if (exp[g.seq]?.arrived === true && !match)
                 semanticIssues.push({seq:g.seq,why:`GO ${g.seq} reports its objective reached without its corresponding arrive delta. Report the actual stop or correct the objective answer.`});
             else if (!arrivals.length && exp[g.seq]?.arrived === false && reply && movementEvidence(reply) &&
@@ -674,5 +695,5 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         }
     }
     return {value, rejected:[...invalid.values()], issues:semanticIssues, valid:!errors.length, complete:!missing.length,
-        errors:[...errors.slice(0,8), ...missing.map(k => `expected key "${k}" not answered or invalid`)], missing, raw};
+        errors:[...diagnostics.slice(0,8), ...missing.map(k => `expected key "${k}" not answered or invalid`)], missing, raw};
 }

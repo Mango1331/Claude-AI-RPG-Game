@@ -34,6 +34,6 @@ test('every answer a command handler expects has its shape in the vocabulary, th
         const schema = deltaSchema(content.deltaVocab, {}, { 1: t }).properties.expected.properties['1'];
         assert.deepEqual(Object.keys(schema.properties).sort(), shape, `${t}: the schema asks what the vocabulary names`);
         assert.ok(!expectedText(content.deltaVocab, { 1: t }).includes('did it happen'), `${t}: the prompt names its shape, not the fallback`);
-        assert.ok(world.includes(`type === '${t}'`), `${t}: the world applier reads the answer`);
+        assert.ok((t === 'desk' ? world.includes('expected[k]?.handled_by') : world.includes(`type === '${t}'`)), `${t}: the world applier reads the answer`);
     }
 });

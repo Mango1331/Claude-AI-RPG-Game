@@ -26,7 +26,7 @@ test('the extractor prompt states every rule and every constraint the validator 
     assert.doesNotMatch(sys, /Answer with \{"expected":/);
     assert.match(messages[1].content, /PLAYER ACTIONS \(each status[^\n]*\):\n1\. GOES/);
     // c.6.6: the go question also says that seeing or passing a place is no arrival
-    assert.match(messages[1].content, /"1" \(go: did he arrive, where, and who came with him; arrived is true only when the reply ends with him at the place/);
+    assert.match(messages[1].content, /For this GO only: did Alaric reach the chosen objective/);
 });
 
 test('the schema stays strict internally while the parser fills harmless soft omissions before validation', () => {
@@ -59,7 +59,8 @@ test('a missing expected key makes an answer incomplete, not invalid; a wrong id
     assert.deepEqual(incomplete.missing, ['1']);
     assert.match(incomplete.errors.join('; '), /expected key "1" not answered/);
     const wrongId = parseExtraction('{"expected": {}, "deltas": [{"seq": 1, "type": "arrive", "at": "loc.redmarch.guildhall"}]}', vocab, ids, {});
-    assert.equal(wrongId.valid, false);
+    assert.equal(wrongId.rejected[0].delta.type, "arrive");
+    assert.deepEqual(wrongId.value.deltas, []);
     assert.match(wrongId.errors.join('; '), /deltas\[0\]/);
     const prose = parseExtraction('Sure! Here are the deltas.', vocab, ids, {});
     assert.equal(prose.valid, false);
@@ -121,5 +122,5 @@ test('a wrapped object.new has exactly the authority and schema of its flat fiel
         {...wrapped, object:{...fields, scene:'here'}}, {...wrapped, object:{...fields, price:1}},
         {...wrapped, object:{...fields, qty:'two'}}, {...wrapped, object:{...fields, holder:undefined}},
         {...wrapped, type:'object.move'}, {type:'object.new', object:fields},
-    ]) assert.equal(read(invalid).valid, false, JSON.stringify(invalid));
+    ]) assert.deepEqual(read(invalid).value.deltas, [], JSON.stringify(invalid));
 });

@@ -72,7 +72,7 @@ test('.53 extractor: a list of words is joined only for the free words of a pers
     assert.equal(parseExtraction(JSON.stringify(armed), content.deltaVocab, req.ids, req.expectedKeys).value.deltas[0].armed, 'a ledger, a short club');
     const bad = JSON.parse(fx.extract_repair_answer);
     bad.deltas[0].ref = ['gatekeeper'];
-    assert.equal(parseExtraction(JSON.stringify(bad), content.deltaVocab, req.ids, req.expectedKeys).valid, false);
+    assert.equal(parseExtraction(JSON.stringify(bad), content.deltaVocab, req.ids, req.expectedKeys).rejected.length, 1);
 });
 
 // ------------------------------------------------------------------------------------------------ after a failed extraction

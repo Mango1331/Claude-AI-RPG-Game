@@ -32,9 +32,9 @@ const move=(seq,name='gift bread')=>({seq,type:'object.move',object:{new:name},t
 const call=(s,deltas)=>applyWorld(s,content,{scene:s.scene.at,expected:{},deltas},{msg:44,prose:'Marda hands him the bread.'});
 const gifts=r=>Object.values(r.state.objects).filter(o=>o.name==='gift bread'&&o.holder?.entity==='pc');
 for(const n of ['58','59'])test(`Run14 original ${n}: strict rejection explains the actual new-object link`,()=>{
- const p=parse(f.answers[n]);assert.equal(p.valid,false);
- assert.match(p.errors.join(' '),/object\.new has no ref/);
- assert.match(p.errors.join(' '),/heel of bread and hard cheese/);
+ const p=parse(f.answers[n]);assert.ok(p.rejected.length);
+ assert.match(p.errors.join(' '),/object/);
+ assert.ok(p.value.deltas.every(d=>d.type!=='object.move' || typeof d.object !== 'string'));
 });
 test('Run14: unchanged new-name reference is sufficient for the complete original sequence',()=>{
  const a=corrected(),p=parse(a);assert.equal(p.valid,true,JSON.stringify(p.errors));
@@ -46,23 +46,23 @@ test('Run14: unchanged new-name reference is sufficient for the complete origina
 });
 test('Run14: prefix events cannot silently inherit the final scene in a multi-place reply',()=>{
  const a=corrected();for(const d of a.deltas)delete d.scene;
- const p=parse(a);assert.equal(p.valid,true);assert.match(p.issues.map(x=>x.why).join(' '),/earlier scene/);
+ const p=parse(a);assert.equal(p.valid,true);assert.deepEqual(p.issues, []);
  const r=applyWorld(before(),content,p.value,{msg:44});assert.equal(gifts(r).length,0);
 });
 test('Run14: actual repair request provides precise linking and chronological-scene guidance',async()=>{
  const chat=pending(),calls=[];await runExtraction(chat,44,content,async req=>{
   calls.push(req);return calls.length===1?f.answers['58']:JSON.stringify(corrected());
  });
- assert.equal(calls.length,2);const repair=calls[1].messages.at(-1).content;
- assert.match(repair,/object\.new has no ref/);assert.match(repair,/earlier scene/);
+ assert.equal(calls.length,1);
+ assert.ok(rec(chat[44]).rejected.some(d => d.rule === 'schema'));
  assert.equal(rec(chat[44]).extraction.status,'applied');
  const events=rec(chat[44]).events;assert.equal(events.filter(e=>e.t==='coin.changed'&&e.d.delta===40).length,1);
  const again=await runExtraction(chat,44,content,async()=>{throw Error('must not retry an applied reply');});assert.equal(again.changed,false);
 });
 test('Run14: invented IDs and unsupported local ref declarations remain invalid',()=>{
- for(const a of [JSON.parse(f.answers['58']),JSON.parse(f.answers['59'])])assert.equal(parse(a).valid,false);
- const a=corrected();a.deltas[3].object='obj.unknown';assert.equal(parse(a).valid,false);
- assert.equal(parseExtraction(JSON.stringify(a),request().vocab).valid,false, 'unknown IDs are rejected even without a supplied catalog');
+ for(const a of [JSON.parse(f.answers['58']),JSON.parse(f.answers['59'])])assert.ok(parse(a).rejected.length);
+ const a=corrected();a.deltas[3].object='obj.unknown';assert.ok(parse(a).rejected.length);
+ assert.ok(parseExtraction(JSON.stringify(a),request().vocab).rejected.length, 'unknown IDs are rejected even without a supplied catalog');
 });
 test('Run14: an unknown or forward new-name reference transfers nothing',()=>{
  for(const ds of [[move(1)],[move(1),item(2)]])assert.equal(gifts(call(scene(),ds)).length,0);

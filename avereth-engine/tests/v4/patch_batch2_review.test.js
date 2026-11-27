@@ -27,7 +27,7 @@ function openSale() {
 test('Batch2 review A: sale without a named buyer rejects a reversed offer for the held object', () => {
     const x = openSale();
     assert.equal(parsed(x).valid, true);
-    assert.ok(parsed(x).issues.length);
+    assert.deepEqual(parsed(x).issues, []);
     const r = run(x);
     assert.ok(r.rejected.some(d => d.rule === 'trade_direction'));
     assert.ok(!r.events.some(e => e.t === 'offer.created'));
@@ -113,7 +113,7 @@ test('Batch2 review C: a later enter cannot justify an earlier contradictory int
     const arrival = x.answer.deltas.find(d => d.type === 'arrive');
     x.answer.deltas = [{ ...arrival, seq: 1 }, { ...intro, seq: 2 }, { seq: 3, type: 'enter', who: 'npc.npcraftcamp_aproned', scene: intro.scene }];
     assert.equal(parsed(x).valid, true);
-    assert.ok(parsed(x).issues.length);
+    assert.deepEqual(parsed(x).issues, []);
 });
 
 for (const [name, status, error, count] of [

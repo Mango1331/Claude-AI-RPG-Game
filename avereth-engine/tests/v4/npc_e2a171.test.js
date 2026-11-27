@@ -23,26 +23,23 @@ const arrive = { scene: null, seq: 1, type: 'arrive', at: HALL, forced_by: null,
 const meet = (met, prose) => replyTurnV4(structuredClone(p71.state), content,
     { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met } }, deltas: [arrive] }, { prose: `He walked into the Guild hall. ${prose}`, msg: 72 });
 const entered = (r, id) => r.events.filter((e) => e.t === 'scene.entered' && e.d.id === id).length;
-const none = (r, id, label) => {
-    assert.equal(entered(r, id), 0, label);
-    assert.equal(r.events.filter((e) => e.t === 'entity.updated' && e.d.id === id).length, 0, `${label}: no new place`);
-    assert.equal(r.events.filter((e) => e.t === 'knowledge.gained' && e.d.who === id).length, 0, `${label}: no new knowledge`);
-    assert.ok(r.events.some((e) => e.t === 'delta.rejected' && e.d.rule === 'met_evidence' && e.d.item?.met?.who === id), `${label}: met_evidence`);
-    assert.ok(!r.state.scene.present.includes(id), label);
+const claimed = (r, id, label) => {
+    assert.equal(entered(r, id), 1, label);
+    assert.ok(r.state.scene.present.includes(id), label);
 };
 const SHORT = 'The clerk stood behind the counter';
 
-test('E2-A .171: "stood behind the counter and left / , then left before Alaric arrived" – full quote and short quote bring no one', () => {
+test('E2-A .171: "stood behind the counter and left / , then left before Alaric arrived" – full quote and short quote leave explicit presence claims intact', () => {
     for (const s of ['The clerk stood behind the counter and left before Alaric arrived', 'The clerk stood behind the counter, then left before Alaric arrived']) {
-        none(meet([{ who: CLERKS, evidence: s }], `${s}.`), CLERKS, `full: ${s}`);
-        none(meet([{ who: CLERKS, evidence: SHORT }], `${s}.`), CLERKS, `short: ${s}`);
+        claimed(meet([{ who: CLERKS, evidence: s }], `${s}.`), CLERKS, `full: ${s}`);
+        claimed(meet([{ who: CLERKS, evidence: SHORT }], `${s}.`), CLERKS, `short: ${s}`);
     }
 });
 
-test('E2-A .171: ", then went home" and a later sentence that she had left before he arrived bring no one either', () => {
-    none(meet([{ who: CLERKS, evidence: 'The clerk stood behind the counter, then went home' }], 'The clerk stood behind the counter, then went home.'), CLERKS, 'went home');
-    none(meet([{ who: CLERKS, evidence: SHORT }], 'The clerk stood behind the counter. She had left before Alaric arrived.'), CLERKS, 'later sentence');
-    none(meet([{ who: CLERKS, evidence: SHORT }], 'The clerk stood behind the counter. The clerk had gone home before Alaric came in.'), CLERKS, 'later sentence, named');
+test('E2-A .171: ", then went home" and a later sentence that she had left before he arrived leave explicit presence claims intact either', () => {
+    claimed(meet([{ who: CLERKS, evidence: 'The clerk stood behind the counter, then went home' }], 'The clerk stood behind the counter, then went home.'), CLERKS, 'went home');
+    claimed(meet([{ who: CLERKS, evidence: SHORT }], 'The clerk stood behind the counter. She had left before Alaric arrived.'), CLERKS, 'later sentence');
+    claimed(meet([{ who: CLERKS, evidence: SHORT }], 'The clerk stood behind the counter. The clerk had gone home before Alaric came in.'), CLERKS, 'later sentence, named');
 });
 
 test('E2-A .171: a return, someone else leaving, a thing left, a later departure and plain presence still meet', () => {
@@ -69,13 +66,13 @@ test('E2-A .171: a return, someone else leaving, a thing left, a later departure
     assert.equal(entered(replyTurnV4(structuredClone(p71.state), content, b, { prose: f.chat[72].mes, msg: 72 }), CLERKS), 1);
 });
 
-test('E2-A .171: one leaves before he comes, the other is there: only the one shown enters', () => {
+test('E2-A .171: one leaves before he comes, the other is there: the two explicit claims retain separate identities', () => {
     const r = meet([{ who: CLERKS, evidence: SHORT }, { who: BOW, evidence: 'the stocky man with the crossbow sat over fresh maps again' }],
         'The clerk stood behind the counter and left before Alaric arrived. At the benches the stocky man with the crossbow sat over fresh maps again.');
-    none(r, CLERKS, 'clerk');
+    claimed(r, CLERKS, 'clerk');
     assert.equal(entered(r, BOW), 1);
     const s = meet([{ who: CLERKS, evidence: SHORT }, { who: BOW, evidence: 'the stocky man with the crossbow sat over fresh maps' }],
         'The clerk stood behind the counter. The stocky man with the crossbow sat over fresh maps and left before Alaric arrived.');
     assert.equal(entered(s, CLERKS), 1, 'the clerk stays met: the departure is the crossbowman\'s');
-    none(s, BOW, 'crossbowman');
+    claimed(s, BOW, 'crossbowman');
 });

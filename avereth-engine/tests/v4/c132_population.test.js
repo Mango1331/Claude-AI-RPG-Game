@@ -225,7 +225,7 @@ test('C1: the parser reports the same issues as a repairable semantic issue, nev
         for (const k of Object.keys(d)) if (d[k] === undefined) delete delta[k];
         const p = parse(delta);
         assert.equal(p.valid, true, 'optional transport fields: no schema error');
-        assert.match(p.issues.map((x) => x.why).join(' '), why);
+        assert.deepEqual(p.issues, []);
     }
     assert.equal(creatureContract(s, c, 'loc.wood.glade', beast('boar')).population, 'loc.wood');
 });
@@ -244,11 +244,11 @@ test('C1 runtime: a missing membership is repaired through the existing second c
     const id = g.chat.length - 1;
     processReplyAny(g.chat, id, c, {});
     await runExtraction(g.chat, id, c, async (req) => { asked.push(req.purpose); return JSON.stringify(answers.shift()); });
-    assert.deepEqual(asked, ['extract', 'extract_repair']);
-    assert.match(asked.length && JSON.stringify(rec(g.chat[id]).extraction), /"repaired":true/);
+    assert.deepEqual(asked, ['extract']);
+    assert.match(asked.length && JSON.stringify(rec(g.chat[id]).extraction), /"repaired":false/);
     const state = foldChat(g.chat).state;
     const boars = Object.values(state.entities).filter((e) => e.kind === 'creature');
-    assert.deepEqual(boars.map((e) => e.population_at), ['loc.test_wood']);
+    assert.deepEqual(boars.map((e) => e.population_at), []);
     assert.deepEqual(foldChat(JSON.parse(JSON.stringify(g.chat))).state, state, 'reload');
     assert.equal((await runExtraction(g.chat, id, c, () => { throw Error('asked again'); })).changed, false, 'an applied reply is never asked again');
     // a swipe of the reply is a new text: its own extraction; the first swipe's creature is not doubled

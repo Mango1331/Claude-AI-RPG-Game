@@ -110,7 +110,7 @@ test('extractor schema accepts only the equipment intent flag, never supplied sl
     const s = base(), wire = answer(s, 'fine chainmail', true), ids = { places: Object.keys(s.places), objects: Object.keys(s.objects) };
     let p = parseExtraction(JSON.stringify(wire), worldVocab(vocab, s), ids, {}); assert.equal(p.valid, true, p.errors?.join(';'));
     wire.deltas[0].lines[0].slot = 'leg'; wire.deltas[0].lines[0].def = 999;
-    p = parseExtraction(JSON.stringify(wire), worldVocab(vocab, s), ids, {}); assert.equal(p.valid, false);
+    p = parseExtraction(JSON.stringify(wire), worldVocab(vocab, s), ids, {}); assert.ok(p.rejected.length);
 });
 test('food and potions are unaffected by ordinary merchandise classification', () => {
     for (const [name, use] of [['bread', 'food'], ['healing potion', 'consumable']]) {

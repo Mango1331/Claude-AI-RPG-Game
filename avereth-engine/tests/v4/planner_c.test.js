@@ -375,7 +375,7 @@ test('a step the engine does not take with the main action is visible in a fight
     const s = await story();
     await s.say('I run off down the road', cmds({ type: 'flee', quote: 'I run off down the road' }));
     assert.equal(s.last().route, 'v4');
-    assert.match(outcomeOf(s.last()).actions[0], /NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; narrate what he says and does/);
+    assert.match(outcomeOf(s.last()).actions[0], /NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked/);
     assert.deepEqual(s.last().plan.free, ['flee: "I run off down the road"']);
     const t = await story();
     await t.say('I burn the dead stump with Flame Lance and sit down on the warm ashes', cmds(

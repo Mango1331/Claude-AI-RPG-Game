@@ -197,7 +197,7 @@ test('"type": "place" is no delta type: the run\'s recorded answer fails the sch
     const recorded = '{"expected": {"2": {"arrived": true, "at": {"new": {"name": "Guild desk tollhouse", "kind": "interior", "parent": {"new": {"name": "Eelmongers\' Walk", "kind": "district", "parent": "loc.glassmere"}}}}, "with": null}}, "deltas": [{"seq": 1, "type": "place", "note": "new place: Eelmongers\' Walk"}, {"seq": 2, "type": "arrive", "at": {"new": {"name": "Guild desk tollhouse", "kind": "interior", "parent": {"new": {"name": "Eelmongers\' Walk", "kind": "district", "parent": "loc.glassmere"}}}}, "forced_by": null, "with": null}]}';
     const ids = { places: ['loc.glassmere', 'loc.glassmere.guild_hall'], quests: [], objects: [] };
     const bad = parseExtraction(recorded, content.deltaVocab, ids, { 2: 'go' });
-    assert.equal(bad.valid, false);
+    assert.ok(bad.rejected.some(r=>r.delta.type==="place"));
     assert.ok(bad.errors.some((e) => /deltas\/0|type/.test(e)), bad.errors.join(' | '));
     const fixed = parseExtraction(recorded.replace('{"seq": 1, "type": "place", "note": "new place: Eelmongers\' Walk"}, ', '').replace('"seq": 2', '"seq": 1'), content.deltaVocab, ids, { 2: 'go' });
     assert.deepEqual(fixed.errors, []);

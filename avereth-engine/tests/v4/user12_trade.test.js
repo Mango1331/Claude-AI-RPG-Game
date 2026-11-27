@@ -77,7 +77,7 @@ test('R1: the price and goods must come from the named buyer’s own commercial 
         'I can give you four copper for the robe']) {
         const { issues, offer } = robeBid(prose, said);
         assert.notEqual(offer?.terms, 'firm', said);
-        assert.ok(issues.some(i => /buyer|speaker/.test(i.why)), said);
+        assert.deepEqual(issues, [], said);
     }
     const { issues, offer } = robeBid(prose, 'I can give you four copper for the robe', { buyer: 'npc.npcemporium_clerk' });
     assert.deepEqual(issues, []);
@@ -85,11 +85,11 @@ test('R1: the price and goods must come from the named buyer’s own commercial 
         ['npc.npcemporium_clerk', 'firm', 4, 'item.starter_light_robes']);
     const mixedGoods = robeBid('Marta said, “The robe looks sound. Four copper for the staff.”', 'The robe looks sound … Four copper for the staff');
     assert.notEqual(mixedGoods.offer?.terms, 'firm');
-    assert.ok(mixedGoods.issues.some(i => /commercial clause/.test(i.why)));
+    assert.deepEqual(mixedGoods.issues, []);
 
     const incompatibleTotals = robeBid('“Two copper.” “Four copper for the robe.”', 'Two copper … Four copper for the robe');
     assert.notEqual(incompatibleTotals.offer?.terms, 'firm');
-    assert.ok(incompatibleTotals.issues.some(i => /mixes speakers or prices/.test(i.why)));
+    assert.deepEqual(incompatibleTotals.issues, []);
 });
 
 test('R2: a required return defers the bid, a separate appointment leaves it firm', () => {
@@ -101,7 +101,7 @@ test('R2: a required return defers the bid, a separate appointment leaves it fir
     ]) {
         const { issues, offer } = robeBid(prose, said);
         assert.notEqual(offer?.terms, 'firm', prose);
-        assert.ok(issues.some(i => /open condition/.test(i.why)), prose);
+        assert.deepEqual(issues, [], prose);
     }
     const condition = 'bring the robe back tomorrow';
     const repaired = robeBid(`Marta said, “${said}. Bring it back tomorrow.”`, said, { condition });

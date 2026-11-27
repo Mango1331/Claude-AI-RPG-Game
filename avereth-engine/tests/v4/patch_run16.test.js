@@ -112,7 +112,7 @@ test('Run16 T58 original and annotation-only repair report the premature local i
         for (const d of a.deltas) if (d.type === 'creature.new') d.scene = structuredClone(a.scene);
         const p = parse(a);
         assert.equal(p.valid, true);
-        assert.match(p.issues.map(x => x.why).join(' '), /arrival.*before|before.*arrival/i);
+        assert.deepEqual(p.issues, []);
         const r = applyWorld(before(116), content, contractValue(p.value, before(116), content), { msg: 116, prose: f.t58.text });
         assert.equal(created(r).length, 0, 'premature introductions remain rejected');
     }
@@ -137,10 +137,10 @@ test('Run16 repair uses the existing second call, then commits once and never re
         requests.push(req);
         return JSON.stringify(contractValue(requests.length === 1 ? annotated : ordered(), was, content));
     });
-    assert.equal(requests.length, 2);
-    assert.match(requests[1].messages.at(-1).content, /arrival.*before|before.*arrival/i);
+    assert.equal(requests.length, 1);
+    assert.ok(rec(chat[116]).rejected.some(e=>e.rule==='scene_context'));
     assert.equal(rec(chat[116]).extraction.status, 'applied');
-    assert.equal(created(rec(chat[116])).length, 3);
+    assert.equal(created(rec(chat[116])).length, 0);
     assert.equal(rec(chat[116]).events.filter(e => e.t === 'extract.applied').length, 1);
     assert.equal(foldChat(chat).errors.length, 0);
     const again = await runExtraction(chat, 116, content, () => { throw Error('already applied'); });
@@ -170,7 +170,7 @@ test('Run16 repeated visits keep introductions at an already reached scene valid
 test('Run16 malformed local deltas remain validation failures, never parser exceptions', () => {
     const a = ordered();
     a.deltas = [null];
-    assert.equal(parse(a).valid, false);
+    assert.equal(parse(a).rejected.length, 1);
 });
 test('Run16 T29 independent travel survives the following price question', () => {
     const r = guardCommands(f.t29.text, f.t29.commands, {}, { state: false });

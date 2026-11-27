@@ -103,7 +103,7 @@ test('117 extractor schema accepts explicit branch evidence, never an arbitrary 
     const s=base(),ids={places:Object.keys(s.places),quests:Object.keys(s.quests),objects:Object.keys(s.objects)};
     const a={scene:'here',expected:{},deltas:[branch(hallRef,evidence,1)]};
     assert.equal(parseExtraction(JSON.stringify(a),content.deltaVocab,ids,{}).valid,true);
-    a.deltas[0].tags=['guild_hall'];assert.equal(parseExtraction(JSON.stringify(a),content.deltaVocab,ids,{}).valid,false);
+    a.deltas[0].tags=['guild_hall'];assert.equal(parseExtraction(JSON.stringify(a),content.deltaVocab,ids,{}).rejected.length,1);
 });
 test('117 a different reached Guild branch cannot satisfy a Stonebrook-specific conditional',()=>{
     const s=base();plan(s);const a={scene:'loc.glassmere.guild_hall',expected:{1:{arrived:true,at:'loc.glassmere.guild_hall',with:null}},deltas:[{seq:1,type:'arrive',at:'loc.glassmere.guild_hall',with:null,forced_by:null}]};

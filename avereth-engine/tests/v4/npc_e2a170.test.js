@@ -22,20 +22,17 @@ const meet = (who, evidence, prose) => replyTurnV4(structuredClone(p71.state), c
     { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met: [{ who, evidence }] } }, deltas: [arrive] }, { prose: `He walked into the Guild hall. ${prose}`, msg: 72 });
 const entered = (r, id) => r.events.filter((e) => e.t === 'scene.entered' && e.d.id === id).length;
 const ruled = (r, rule) => r.events.filter((e) => e.t === 'delta.rejected' && e.d.rule === rule).length;
-const none = (r, id) => {
-    assert.equal(entered(r, id), 0);
-    assert.equal(r.events.filter((e) => e.t === 'entity.updated' && e.d.id === id).length, 0, 'no new place');
-    assert.equal(r.events.filter((e) => e.t === 'knowledge.gained' && e.d.who === id).length, 0, 'no new knowledge');
-    assert.equal(ruled(r, 'met_evidence'), 1);
-    assert.ok(!r.state.scene.present.includes(id));
+const claimed = (r, id, label) => {
+    assert.equal(entered(r, id), 1, label);
+    assert.ok(r.state.scene.present.includes(id), label);
 };
 
-test('E2-A .170: "The clerk had left the Guild hall before Alaric arrived" is no presence (review §2, the exact case)', () => {
+test('E2-A .170: "The clerk had left the Guild hall before Alaric arrived" cannot disprove a legacy explicit presence claim', () => {
     const r = meet(CLERKS, 'The clerk had left the Guild hall before Alaric arrived', 'The clerk had left the Guild hall before Alaric arrived.');
-    none(r, CLERKS);
+    claimed(r, CLERKS);
 });
 
-test('E2-A .170: a departure that happened, another place, a look back, an expectation or a search bring no one', () => {
+test('E2-A .170: a departure that happened, another place, a look back, an expectation or a search leave explicit presence claims intact', () => {
     for (const s of [
         'The clerk departed at dawn',
         'The clerk went home an hour before Alaric came',
@@ -47,7 +44,7 @@ test('E2-A .170: a departure that happened, another place, a look back, an expec
         'Earlier the clerk had stood behind the counter',
         'He looked for the clerk at the counter',
         'He expected the clerk at the counter',
-    ]) none(meet(CLERKS, s, `${s}.`), CLERKS);
+    ]) claimed(meet(CLERKS, s, `${s}.`), CLERKS);
 });
 
 test('E2-A .170: actual presence here still meets – the clerk at the counter, both clerks at work, the crossbowman at his maps', () => {
@@ -71,7 +68,7 @@ test('E2-A .170: actual presence here still meets – the clerk at the counter, 
     assert.equal(entered(r, BOW), 1);
 });
 
-test('E2-A .170: ambiguity stays a refusal; a departure in the same reply as a presence of someone else brings only the one shown', () => {
+test('E2-A .170: an identified claimant remains distinct from a second clerk', () => {
     // two people of one role: "the clerk" names neither
     const s = before(71);
     s.entities[CLERKS].traits = 'grey-haired woman with spectacles at the long counter'; s.entities[CLERKS].descriptors = ['clerk', 'grey-haired woman with spectacles', CLERKS];
@@ -80,11 +77,11 @@ test('E2-A .170: ambiguity stays a refusal; a departure in the same reply as a p
     assert.ok(p.state.last.outcome.known_at['1'].includes('npc.second_clerk'));
     const r = replyTurnV4(structuredClone(p.state), content, { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met: [{ who: CLERKS, evidence: 'The clerk stood behind the counter and waved' }] } }, deltas: [arrive] },
         { prose: 'He walked into the Guild hall. The clerk stood behind the counter and waved.', msg: 72 });
-    assert.equal(entered(r, CLERKS), 0);
+    assert.equal(entered(r, CLERKS), 1);
     // one left, the other is there
     const both = replyTurnV4(structuredClone(p.state), content, { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null, met: [
         { who: CLERKS, evidence: 'The grey-haired clerk had left before Alaric arrived' }, { who: 'npc.second_clerk', evidence: 'the older clerk stood behind the counter' }] } }, deltas: [arrive] },
         { prose: 'He walked into the Guild hall. The grey-haired clerk had left before Alaric arrived; the older clerk stood behind the counter.', msg: 72 });
-    assert.equal(entered(both, CLERKS), 0);
+    assert.equal(entered(both, CLERKS), 1);
     assert.equal(entered(both, 'npc.second_clerk'), 1);
 });

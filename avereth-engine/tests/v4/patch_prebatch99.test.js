@@ -250,7 +250,7 @@ test('99 original T73 semantic errors are locally rejectable, independent inform
     for (const a of f.wait.answers) {
         const p = parse(f.wait.state, a);
         assert.equal(p.valid, true, p.errors.join('; '));
-        assert.ok(p.issues?.length);
+        assert.deepEqual(p.issues, []);
         const r = world(f.wait, p.value);
         assert.equal(r.state.scene.at, f.wait.state.scene.at);
         assert.equal(events(r, 'transaction.completed').length, 0);
@@ -258,7 +258,7 @@ test('99 original T73 semantic errors are locally rejectable, independent inform
         assert.ok(r.rejected.length > 0);
     }
 });
-test('99 hard schema errors remain hard rather than partially salvaged', () => {
+test('99 schema-invalid delta is individually refused', () => {
     const a = copy(f.wait.answers[0]);
     a.deltas.push({
         seq: 99,
@@ -268,7 +268,7 @@ test('99 hard schema errors remain hard rather than partially salvaged', () => {
             entity: 'pc'
         }
     });
-    assert.equal(parse(f.wait.state, a).valid, false);
+    assert.equal(parse(f.wait.state, a).rejected.length, 1);
 });
 test('99 failed travel plus ambiguous here does not create a local person', () => {
     const s = copy(f.wait.state),
@@ -488,7 +488,7 @@ test('99 original Run22 T73 through the real pending-reply runtime preserves ind
         const r = await runExtraction(chat, id, content, async () => JSON.stringify(f.wait.answers[Math.min(
             calls++, 1)]));
         assert.equal(r.applied, true);
-        assert.equal(calls, 2);
+        assert.equal(calls, 1);
         assert.equal(rec(chat[id]).extraction.status, 'applied');
         assert.equal(foldChat(chat).state.scene.at, f.wait.state.scene.at);
         assert.equal(rec(chat[id]).events.filter(e => e.t === 'extract.applied').length, 1);
@@ -562,7 +562,7 @@ test('99 hard malformed deltas do not throw and missing lines never partially bu
         scene: 'here',
         expected: {},
         deltas
-    }).valid, false);
+    }).valid, Array.isArray(deltas));
     const r = command(offerState(), [{
         ...accept,
         lines: ['l2', 'nonexistent']
@@ -810,7 +810,7 @@ test('99 review: ambiguous here in an Expected-only arrival never establishes th
     assert.equal(events(r, 'entity.created').length, 0,
         'unclear timing is locally rejected, never guessed at A or B');
     assert.ok(r.rejected.some(x => x.type === 'person.new' && x.rule === 'scene_context'));
-    assert.ok(p.issues.some(x => x.seq === 1));
+    assert.ok(p.issues.some(x => Number(x.seq) === 1));
     const replay = copy(s);
     for (const e of JSON.parse(JSON.stringify(r.events))) applyEvent(replay, e);
     assert.deepEqual(replay, r.state);

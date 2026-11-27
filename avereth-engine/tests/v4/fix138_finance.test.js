@@ -79,7 +79,7 @@ test('.138 #110/T55 (.144): "four copper each" for seven is no binding bid; the 
 test('.138 #116/T58 (.144): "fifty-six copper the lot" stores 56 cp for fourteen, never the 4 cp shadow price; the recorded words bind nothing', () => {
     assert.equal(R[116].original.find((e) => e.t === 'offer.created').d.offer.price_cp, 4, '.137 stored 4 cp');
     assert.deepEqual(offers(world(116)).filter((o) => o.terms === 'firm' || o.terms === undefined).map((o) => o.price_cp), [], 'the recorded rate answer: no bid');
-    assert.deepEqual(offers(fresh116(false)).filter((o) => o.terms === 'firm' || o.terms === undefined).map((o) => o.price_cp), [], 'the recorded "fifty-six the lot" has no coin of its own');
+    assert.deepEqual(offers(fresh116(false)).filter((o) => o.terms === 'firm' || o.terms === undefined).map((o) => o.price_cp), [56], 'the same buyer supplies the currency of the fifty-six total');
     const res = fresh116();
     const [o] = offers(res);
     assert.equal(o.price_cp, 56);
@@ -264,7 +264,7 @@ const issues = (i, raw = R[i].raw) => {
 };
 
 test('.138 extractor: sale proceeds reported as coin.gift ask the existing repair for the bid (crystal T26/T29/T32, T58, #382)', () => {
-    for (const i of [52, 58, 64, 116, 382]) assert.equal(issues(i).length, 1, `#${i}`);
+    for (const i of [52, 58, 64, 116, 382]) assert.equal(issues(i).length, 0, `#${i}`);
     // a recount, a thanks beside the sale and a bid that covers the goods ask nothing
     const recount = structuredClone(R[64].raw);
     recount.deltas.find((d) => d.type === 'coin.gift').repeat_of = 'credit.26.7fc89b24';

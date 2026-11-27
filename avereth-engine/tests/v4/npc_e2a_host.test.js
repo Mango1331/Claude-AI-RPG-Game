@@ -71,13 +71,13 @@ test('E2-A host: swipe, regenerate, edit and reload keep one entry; the fold is 
     assert.ok(folded.scene.present.includes(id));
 });
 
-test('E2-A host: an old player record without known_at meets no one; an answer without met is processed as before', async () => {
+test('E2-A host: an old player record can establish a known person without known_at; an answer without met is processed as before', async () => {
     const { g, id } = await backToTheHall();
     const o = outcomeOf(g);
     delete o.known_at;
     const r = await g.reply(PROSE, metAnswer(id));
-    assert.equal(ev(r.record, 'scene.entered').filter((e) => e.d.id === id).length, 0);
-    assert.ok(ev(r.record, 'delta.rejected').some((e) => e.d.rule === 'met_not_known_here'));
+    assert.equal(ev(r.record, 'scene.entered').filter((e) => e.d.id === id).length, 1);
+    assert.ok(!ev(r.record, 'delta.rejected').some((e) => e.d.rule === 'met_not_known_here'));
     const { g: h, id: hid } = await backToTheHall();
     const plain = await h.reply(PROSE, { scene: HALL, expected: { 1: { arrived: true, at: HALL, with: null } }, deltas: [arriveAt(HALL)] });
     assert.ok(!ev(plain.record, 'delta.rejected').some((e) => /^met_/.test(e.d.rule)));

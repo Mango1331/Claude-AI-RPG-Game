@@ -181,7 +181,7 @@ test('t4: "*i sign the card*" after he paid books nothing and refuses nothing; t
     // the interpreter read the signature as guild.register (recorded); a member registers no second time
     assert.deepEqual((o.dropped || []).map((d) => [d.type, d.rule, d.quote]), [['guild.register', 'redundant', 'i sign the card']]);
     assert.deepEqual(o.resolutions, []);
-    assert.match(o.actions[0], /^NOTHING TO BOOK — .*narrate what he says and does/);
+    assert.match(o.actions[0], /^NOTHING TO BOOK — .*no journey to another place was booked/);
     assert.doesNotMatch(p.context.text, /NOTHING TO DO — he is already a member|REGISTERS — pending|has not agreed to pay/);
     assert.equal(g.state().entities.pc.sheet.coin_cp, 30);
     g.chat.push({ mes: 'He signs the card; she stamps it and slides it back to him.', is_user: false, is_system: false, extra: {} });

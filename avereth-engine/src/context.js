@@ -25,7 +25,7 @@ import { goalLines } from './v4/intents.js';
 import { featuresAt, featureText } from './v4/features.js';
 import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
 import { sectionExits } from './v4/sections.js';
-import { contextLines as livingLines, guardianAccessLines, floorAt as livingFloorAt } from './v4/living.js';
+import { contextLines as livingLines, thresholdSlot, encounterRoster, guardianAccessLines, floorAt as livingFloorAt } from './v4/living.js';
 import { settlementOf, realmOf, hallOf, listedToday, lineage, placeName } from './v4/domain.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
 import { objectiveText, proofText as guildProofText, defeatTally, tallyText, readyText, proofMemory } from './v4/guild.js';
@@ -1159,6 +1159,8 @@ function whereLines(state, input, opts) {
     const town = state.scene.location && state.places?.[state.scene.location]?.name;
     const said = (to) => (typeof to === 'string' ? (state.places?.[to] ? placeName(state, to) : null) : to?.name || null);
     const missed = [...new Set((opts.notReached || []).map(said).filter((n) => n && n !== here))];
+    const threshold = thresholdSlot(state);
+    const roster = threshold && encounterRoster(state,threshold);
     const steps = (opts.outcome?.actions || []).map((a) => String(a).replace(/^\d+\.\s*/, '')).filter((a) => /^(?:GOES|CONTINUES|RETURNS|DEPARTS)\b/.test(a)).map((a) => a.split(' (')[0]);
     const words = ` ${normText(input || '').replace(/[^a-z0-9' ]+/g, ' ')} `;
     const absent = Object.values(state.entities || {}).filter((e) => e.kind === 'npc' && e.name && e.status !== 'dead' && !state.scene.present.includes(e.id)
@@ -1176,6 +1178,7 @@ function whereLines(state, input, opts) {
         `WHERE — ${here}${town && town !== here ? ` (${town})` : ''}.${missed.length ? ` The last reply's ${missed.join(', ')} ${missed.length > 1 ? 'were' : 'was'} not reached. Only established observations from here carry forward.` : ''}`,
         state.scene.focus ? `Standpoint at this site: ${state.scene.focus}` : '',
         `TRAVEL THIS TURN — ${steps.length ? steps.join('; ') : unbooked}.`,
+        roster ? 'OBSERVED ACROSS THIS THRESHOLD — '+roster+'. Keep each individual’s current condition.' : '',
         absent.length ? `NOT HERE — ${absent.map((e) => `${e.name}${e.at && state.places?.[e.at] ? ` (${placeName(state, e.at)})` : ''}`).join(', ')}: he speaks of them from where he is; they answer only if the story brings them here.` : '',
     ].filter(Boolean).join('\n');
 }

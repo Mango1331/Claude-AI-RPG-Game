@@ -47,6 +47,9 @@ function adapted(i, raw, at) {
             observations.push({type:'thread',id:null,kind:'sign',status:'open',who:[],
                 text:'From outside the doorway Alaric saw two goblins at a crate near the bend, one with a crooked knife and one with a stone maul.'});
         }
+        if (i === 38) observations.push({type:'creature.new',ref:'lookouts',species:'goblin',anchor:'goblin',count:2,
+            present:true,band:'SHORT',population:'independent',life_stage:'adult',
+            across:'on a flattened crate, sat the two goblins',desc:['a crooked knife stuck in its belt','a stone maul between its feet']});
         return {scene:at, expected:{1:{standpoint}}, deltas:observations.map((d,n) => anchored({...d, seq:n+1},at))};
     }
     return raw;
@@ -85,7 +88,10 @@ for (let i = 1; i < chat.length; i++) {
         assert(next.scene.at.includes('east_fold'),next.scene.at);
         assert(next.scene.focus,'no local standpoint M'+i+': '+JSON.stringify(events(i)));
         assert(events(i).some(e=>e.t === 'thread.set'));
-        assert(!next.encounter && !next.scene.present.some(id=>id.includes('goblin') && statusOf(next,id) !== 'dead'));
+        assert(!next.encounter);
+        const visible = next.scene.present.filter(id=>next.entities[id]?.sight_at);
+        assert.equal(visible.length,i === 38 ? 2 : 0,JSON.stringify(events(i)));
+        if (i === 38) assert(events(i).some(e=>e.t === 'check.recorded'));
     }
 }
 assert.deepEqual(host.foldChat(chat).errors,[]);
@@ -154,9 +160,31 @@ assert.deepEqual(further.next.scene.present.filter(id => id !== 'pc').sort(),[..
 assert.equal(further.events.filter(e => e.t === 'dungeon.slot').length,1);
 assert.match(current.threads['thread.t16.2'].text,/crooked knife.*stone maul/);
 const attack = 'I cast Flame Lance at the goblin with the knife.';
-const shot = await branch(chat,attack,[{seq:1,type:'use_skill',skill:'mage.flame_lance',target:{new:'goblin with the knife'},quote:attack}]);
-assert(!shot.next.encounter && shot.next.scene.at===outside);
-assert(!shot.events.some(e=>e.t==='combat.attack' || e.t==='vitals.changed'));
+const visible = current.dungeons[dungeon].run.floors[1].slots[0].entities;
+assert.deepEqual(scouts.entities,visible);
+assert.match(current.entities[visible[0]].descriptors.join(' '),/crooked knife/);
+assert(!away.next.scene.present.includes(visible[0]));
+const targeted = await branch(chat,attack,[{seq:1,type:'use_skill',skill:'mage.flame_lance',target:visible[0],quote:attack}]);
+const strike = targeted.next.last.outcome.records.find(r=>r.target===visible[0]);
+assert(strike.strikes[0].hp_after < strike.strikes[0].hp_before && strike.cost.before > strike.cost.after);
+assert.equal(statusOf(targeted.next,visible[0]),'dead');
+const afterKill = await branch(targeted.run,enter,go(dungeon,enter),entry,{scene:room,expected:{1:{arrived:true,at:room,with:null,met:null}},deltas:[{seq:1,type:'arrive',at:room,evidence:entry,with:null}]});
+const survivors = await branch(afterKill.run,more,go({new:'the passage around the bend'},more),nextRoom,
+    {scene:around,expected:{1:{arrived:true,at:around,with:null,met:null}},deltas:[{seq:1,type:'arrive',at:around,evidence:nextRoom,with:null}]});
+assert.deepEqual(survivors.next.dungeons[dungeon].run.floors[1].slots[0].entities,visible);
+assert.equal(survivors.next.entities[visible[1]].level,4);
+assert.equal(statusOf(survivors.next,visible[0]),'dead');
+assert(!survivors.events.some(e=>['entity.created','coin.changed','xp.gained'].includes(e.t)));
+const shield = await branch(chat,'I watch the lookout.',[],'The lookout ducks behind a thick stone pillar.',
+    {scene:outside,expected:{},deltas:[{seq:1,type:'position',who:visible[0],band:'SHORT',cover:'full',scope:null,cluster:null,evidence:'The lookout ducks behind a thick stone pillar'}]});
+assert.equal(shield.next.scene.positions[visible[0]].cover,'full');
+const blocked = await branch(shield.run,attack,[{seq:1,type:'use_skill',skill:'mage.flame_lance',target:visible[0],quote:attack}]);
+assert(!blocked.next.last.outcome.records?.some(r=>r.strikes?.length));
+assert.equal(statusOf(blocked.next,visible[0]),'alive');
+assert.deepEqual(host.foldChat(JSON.parse(JSON.stringify(targeted.run))).state,targeted.next);
+assert.deepEqual(host.foldChat(targeted.run.slice(0,chat.length)).state,current);
+assert(!host.foldChat(chat.slice(0,38)).state.entities[visible[0]]);
+assert.equal(targeted.next.scene.at,outside);
 const hide = 'I sneak up to the slab under the lookout.';
 const sneak = 'Alaric crouches behind the slab at the foot of the hill.';
 const close = await branch(chat.slice(0,29),hide,go({scene:'the slab'},hide,{manner:{kind:'stealth',scope:'action'}}),sneak,

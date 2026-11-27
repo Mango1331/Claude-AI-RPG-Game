@@ -636,6 +636,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         if (d.recall_at === null) delete d.recall_at;
         if (d.player_words === null) delete d.player_words;
     }
+    if (!errors.length) for (const d of value.deltas) if (d.type === 'creature.new' && d.across === null) delete d.across;
     const semanticIssues = [];
     let placeHintAdded = false;
     for (const [errorIndex,error] of [...errors].entries()) {

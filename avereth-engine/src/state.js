@@ -161,7 +161,12 @@ export function applyEvent(state, e) {
             break;
         case 'scene.moved': {
             const from = state.scene.at;
-            if (d.reset_present || (d.at && d.at !== from)) delete state.scene.focus;
+            if (d.reset_present || (d.at && d.at !== from)) {
+                delete state.scene.focus;
+                delete state.scene.approaching;
+                const goal = state.last?.outcome?.auth?.go?.enter?.root;
+                if (goal && state.dungeons?.[goal] && d.at !== goal && !d.at?.startsWith(goal + '.')) state.scene.approaching = goal;
+            }
             if (d.reset_present && state.party) for (const id of state.scene.present) rememberMember(state,id,from);
             if (d.track_history && d.at !== undefined && d.at !== from && from) state.scene.history = [...(state.scene.history || []), from].slice(-16);
             state.scene.location = d.location ?? state.scene.location;

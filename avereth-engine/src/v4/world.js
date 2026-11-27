@@ -735,7 +735,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const pcName = String(s.entities.pc?.name || '').trim();
         return [pcName, pcName.split(/\s+/)[0]].filter((n) => n.length >= 3).some((n) => value.includes(` ${normText(n)} `));
     };
-    const newEntity = (d, kind, { slot = null } = {}) => {
+    const newEntity = (d, kind, { slot = null, sightAt = null } = {}) => {
         // Patch 8 (src/v4/living.js): a creature of an encounter the engine placed ahead is that encounter, its slot of
         // this cycle (its ref, else its kind where he went on); one of a slot already resolved (the boss he killed) is
         // not brought back by the story
@@ -793,35 +793,45 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 return [];
             }
             hit = slotForNew(s, content, d, s.scene.at, prose);
-            if (hit?.existing) {
-                const ids = hit.slot.entities.filter((id) => s.entities[id]?.status !== 'dead');
-                if (d.present === false) {
-                    for (const id of ids) namedHere.add(id);
-                    if (ids.length) refs.set(normText(d.ref), ids[0]);
-                    if (ids.length > 1) groups.set(normText(d.ref), ids);
-                    return ids;
-                }
-                const here = ids.filter((id) => {
-                    if (s.scene.present.includes(id)) return true; // an explicit enter/arrival already moved it
-                    const e = s.entities[id];
-                    const at = e.left?.at || e.at || hit.slot.at;
-                    if (at && at !== s.scene.at) {
-                        reject(d, 'dungeon_presence', `${id} remains at ${at || 'its last known room'}; a story reference alone does not move it`);
-                        const fix = `${entityLabel(s, id)} was not brought into this room. It remains at its last booked location unless an actual entrance or arrival establishes its movement.`;
-                        if (!corrections.includes(fix)) corrections.push(fix);
-                        return false;
-                    }
-                    emit({ t: 'scene.entered', d: { id, band: d.band || 'MEDIUM' } });
-                    return true;
-                });
-                if (here.length) {
-                    if (!hit.slot.at) { grant('dungeon.slot'); for (const e of slotEntityEvents(s, content, hit, ids, s.scene.at)) emit(e); }
-                    for (const id of here) materialise(s, content, dice, emit, id);
-                    refs.set(normText(d.ref), here[0]);
-                    if (here.length > 1) groups.set(normText(d.ref), here);
-                }
-                return here;
+        }
+        if (hit?.existing) {
+            const ids = hit.slot.entities.filter((id) => s.entities[id]?.status !== 'dead');
+            if (d.present === false) {
+                for (const id of ids) namedHere.add(id);
+                if (ids.length) refs.set(normText(d.ref), ids[0]);
+                if (ids.length > 1) groups.set(normText(d.ref), ids);
+                return ids;
             }
+            const here = ids.filter((id) => {
+                if (s.scene.present.includes(id)) return true; // an explicit enter/arrival already moved it
+                const e = s.entities[id];
+                const at = e.left?.at || e.at || hit.slot.at;
+                const meetingReserved = !sightAt && !hit.slot.at && e.sight_at === hit.root && aheadSlot(hit);
+                if (at && at !== (sightAt || s.scene.at) && !meetingReserved) {
+                    reject(d, 'dungeon_presence', `${id} remains at ${at || 'its last known room'}; a story reference alone does not move it`);
+                    const fix = `${entityLabel(s, id)} was not brought into this room. It remains at its last booked location unless an actual entrance or arrival establishes its movement.`;
+                    if (!corrections.includes(fix)) corrections.push(fix);
+                    return false;
+                }
+                emit({ t: 'scene.entered', d: { id, band: d.band || 'MEDIUM' } });
+                return true;
+            });
+            if (here.length) {
+                if (!sightAt && !hit.slot.at) {
+                    grant('dungeon.slot');
+                    emit({ t:'dungeon.slot', d:{id:hit.root, cycle:s.dungeons[hit.root].cycle, floor:hit.floor, slot:hit.slot.id, set:{at:s.scene.at, met_turn:s.turn}} });
+                }
+                for (const id of here) {
+                    if (s.entities[id].sight_at && !sightAt) emit({ t:'entity.updated', d:{id, set:{sight_at:null,at:s.scene.at,left:null}} });
+                    namedHere.add(id);
+                }
+                for (const id of here) materialise(s, content, dice, emit, id);
+                refs.set(normText(d.ref), here[0]);
+                if (here.length > 1) groups.set(normText(d.ref), here);
+            }
+            return here;
+        }
+        if (cPath && kind === 'creature' && !hit) {
             // Patch 8.4.1 (live 22.10.2026 05:43, turn 16: a search's SUCCESS on level 1 of the Old Crown Catacombs, a
             // "robed waiting thing" the reply brought that was no encounter of the level; its fight gave 13 XP and level
             // 2): inside a Living Dungeon only the engine adds the foes (its encounters, placed ahead and filled here). A
@@ -938,7 +948,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             for (let n = count + 1; kind === 'creature' && n < count + 64 && (entries.some((x) => normText(x.ref) === normText(ref)) || (numbered ? takenRef(ref) : absentRef(ref))); n++) ref = `${d.ref} ${n}`;
             entries.push(kind === 'npc'
                 ? { ref, kind: 'npc', name: d.name || undefined, anonymous: !d.name, desc: [...(d.role ? [d.role] : []), ...(d.desc || [])], traits: (d.desc || []).join(', '), band: d.band || undefined }
-                : { ref, present: d.present !== false, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: d.desc || [], band: d.band || undefined });
+                : { ref, present: d.present !== false, kind: 'creature', name: undefined, species: d.species, anchor: d.anchor, desc: sightAt ? [d.desc[i-1]] : d.desc || [], band: d.band || undefined });
         }
         const joins = kind === 'creature' && d.present !== false && s.encounter && hostileRefs.has(normText(d.ref));
         if (joins) grant('envelope.fight'); // introduced by this reply: an ambush or a reinforcement is the world's move
@@ -1009,8 +1019,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // Gameplay visibility: once an actual creature is visibly present, lock its deterministic profile immediately.
         // This gives the player a canonical target handle + HP + Range before deciding whether to attack; Initiative still waits for Combat START.
         if (hit && created.length) {
+            if (sightAt) for (const id of created) emit({t:'entity.updated',d:{id,set:{sight_at:sightAt,at:sightAt}}});
             grant('dungeon.slot');
-            for (const e of slotEntityEvents(s, content, hit, created, d.present === false ? null : s.scene.at)) emit(e);
+            for (const e of slotEntityEvents(s, content, hit, created, sightAt || d.present === false ? null : s.scene.at)) emit(e);
             if (d.present !== false && aheadSlot(hit)) for (const id of created) aheadBorn.add(id);
         }
         if (kind === 'creature' && d.present !== false) for (const id of ids) materialise(s, content, dice, emit, id);
@@ -1470,9 +1481,27 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 refs.set(normText(name), id);
                 break;
             }
-            case 'creature.new':
-                newEntity(d, 'creature');
+            case 'creature.new': {
+                if (d.across == null) {
+                    newEntity(d, 'creature');
+                    break;
+                }
+                const root = s.scene.approaching || s.scene.at;
+                const dungeon = livingOf(s, root);
+                const slot = dungeon?.run.floors[1]?.slots[0];
+                const home = root;
+                const cues = d.desc || [];
+                if (!slot || slot.role !== 'minion' || slot.taken || resolved(s,slot) || slot.anchor !== d.anchor
+                    || slot.at || d.count !== (slot.entities.length ? slot.entities.filter(id => statusOf(s,id) !== 'dead').length : slot.count)
+                    || !d.present || !d.band || !narratedEvent(prose,d.across).ok || cues.length !== d.count
+                    || new Set(cues.map(normText)).size !== d.count || !cues.every(q => narratedEvent(prose,q,{minWords:2}).ok)) {
+                    reject(d,'dungeon_sight','A threshold sighting needs a view of identifiable individuals of the entrance encounter and their actual distance.');
+                    blockCreature(d);
+                    break;
+                }
+                newEntity(d, 'creature', {slot:{root,floor:1,slot,existing:!!slot.entities.length,story_ref:d.ref},sightAt:home});
                 break;
+            }
             case 'enter': {
                 const who = mapRef(d.who);
                 if (metEntered.has(who) && s.scene.present.includes(who)) break;
@@ -1496,7 +1525,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // who walks off is not waiting at this place when Alaric comes back
                 if (s.entities[who]?.at && !s.scene.present.includes(who)) emit({ t: 'entity.updated', d: { id: who, set: { at: null } } });
                 // Patch 5: a creature that goes off stays in the area it left for a while (newEntity: the same one again)
-                if (s.entities[who]?.kind === 'creature' && !s.scene.present.includes(who)) emit({ t: 'entity.updated', d: { id: who, set: { left: { at: s.scene.at, minute: s.clock.minute, turn: s.turn, leg: false } } } });
+                if (s.entities[who]?.kind === 'creature' && !s.scene.present.includes(who)) emit({ t: 'entity.updated', d: { id: who, set: { left: { at: s.entities[who].sight_at || s.scene.at, minute: s.clock.minute, turn: s.turn, leg: false } } } });
                 break;
             }
             case 'position': {
@@ -2213,7 +2242,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     const local = approach && approach.at === s.scene.at && !s.encounter && typeof standpoint === 'string'
         && standpoint.length <= 400 && sceneMatches(answer.scene) && !travel.some(t => !t.ok)
         && narratedEvent(prose, standpoint).ok;
-    if (local) emit({t:'scene.focus', d:{text:standpoint}});
+    if (local) {
+        emit({t:'scene.focus', d:{text:standpoint}});
+        for (const id of [...s.scene.present]) if (s.entities[id]?.sight_at && !namedHere.has(id)) {
+            emit({t:'scene.left',d:{id}});
+        }
+    }
     const localStealth = local && approach.stealth && s.scene.present.some(id => id !== 'pc' && statusOf(s,id) !== 'dead');
     const arrivedStealth = stealthGo && stealthAt === s.scene.at && s.scene.at !== startAt && s.scene.at !== transit && !s.encounter;
     if (localStealth || arrivedStealth) {
@@ -3114,7 +3148,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (who === 'pc' || party.includes(who) || e?.status === 'dead') continue;
             // Patch 5: a living creature he leaves behind stays where it was (entity.left): the story may show the same
             // ones again there, never unhurt copies of them (newEntity)
-            if (e?.kind === 'creature') emit({ t: 'entity.updated', d: { id: who, set: { left: { at: from, minute: s.clock.minute, turn: s.turn, leg: id === from } } } });
+            if (e?.kind === 'creature') emit({ t: 'entity.updated', d: { id: who, set: { left: { at: e.sight_at || from, minute: s.clock.minute, turn: s.turn, leg: id === from } } } });
             if (e?.kind !== 'npc' || e.at === from) continue;
             emit({ t: 'entity.updated', d: { id: who, set: { at: from } } });
         }

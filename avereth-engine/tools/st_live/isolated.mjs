@@ -28,6 +28,7 @@ const MODULES = ['FINANCE', 'SAVE_RECOVERY', 'FETCH', 'STEALTH', 'UI', 'CONTINUI
 const MODES = {
     party217: {AVERETH_SMOKE_PARTY217:'1'},
     base: {},
+    extractor261: { AVERETH_SMOKE_EXTRACTOR261: '1' },
     host_cost: { AVERETH_SMOKE_HOST_COST: '1' },
     prompt_prefix: { AVERETH_SMOKE_PREFIX: '1' },
     board_reference: { AVERETH_SMOKE_BOARD159: '1', AVERETH_SMOKE_BOARD_REFERENCE: '1' },

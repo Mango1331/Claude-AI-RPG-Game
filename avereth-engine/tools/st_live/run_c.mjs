@@ -143,6 +143,8 @@ fs.writeFileSync(secretsFile, JSON.stringify({ api_key_custom: [{ id: 'smoke', v
 
 // ------------------------------------------------------------------------------------------------ mock provider
 const calls = [], worldTimings = [];
+const extractor261 = process.env.AVERETH_SMOKE_EXTRACTOR261 === '1';
+let sentEmptyExtraction = false;
 let probeMode = false;
 let stealthProbeMode = false;
 let financeMode = false;
@@ -180,6 +182,16 @@ const mock = http.createServer(async (req, res) => {
         purpose = 'extract';
         const t = allTurns.find((x) => x.reply && users.includes(x.reply.slice(0, 60)));
         text = continuityAnswer(t) ?? JSON.stringify({ scene: 'here', ...(t?.answer || { expected: {}, deltas: [] }) });
+        if (extractor261 && t?.key === 'burrow') {
+            const answer = JSON.parse(text);
+            answer.memory = null;
+            for (const d of answer.deltas) if (d.type === 'creature.new') d.type = 'creature';
+            text = JSON.stringify(answer);
+        }
+        if (extractor261 && t?.key === 'alias' && !sentEmptyExtraction) {
+            sentEmptyExtraction = true;
+            text = '';
+        }
         if (t?.key === 'board203comparison' && !system.includes('Write compact single-line JSON.')) {
             const answer=JSON.parse(text);
             answer.deltas[0].scene=null;
@@ -309,20 +321,21 @@ try {
         throw new Error('SillyTavern did not finish generation/extraction');
     };
     /** The player message (by its text) and the message after it: records, panel, display. */
-    const look = (text) => page.evaluate((t) => {
+    const look = (text) => page.evaluate(({t, extractor261}) => {
         const ctx = SillyTavern.getContext();
         const u = ctx.chat.findLastIndex((m) => m.is_user && m.mes === t);
         const r = ctx.chat[u]?.extra?.avereth || null;
         const next = ctx.chat[u + 1] || null;
+        const extraction = next?.extra?.avereth?.extraction;
         const els = document.querySelectorAll('#chat .mes');
         const outcome = (r?.events || []).findLast((e) => e.t === 'outcome.recorded')?.d?.outcome || null;
         return {
             u, record: r ? { route: r.route, ir: r.ir ? { route: r.ir.route, reason: r.ir.reason } : null, plan: r.plan || null, events: r.events || [] } : null,
             pcSteps: (outcome?.records || []).filter((x) => x.actor === 'pc'), planNotes: outcome?.plan_notes || [], outcomeKind: outcome?.kind || null,
-            next: next ? { system: !!next.is_system, mes: next.mes, display: next.extra?.display_text || '', swipes: next.swipes?.length || 0, shown: els[u + 1]?.querySelector('.mes_text')?.innerText || '' } : null,
+            next: next ? { system: !!next.is_system, mes: next.mes, ...(extractor261 && extraction ? { extraction: {status:extraction.status, llm:extraction.llm} } : {}), display: next.extra?.display_text || '', swipes: next.swipes?.length || 0, shown: els[u + 1]?.querySelector('.mes_text')?.innerText || '' } : null,
             mp: null,
         };
-    }, text);
+    }, {t:text, extractor261});
     const fold = () => page.evaluate(async () => {
         const ctx = SillyTavern.getContext();
         const { foldChat } = await import('/scripts/extensions/third-party/avereth-engine/src/host.js').catch(() => import('/extensions/avereth-engine/src/host.js')).catch(() => ({}));
@@ -609,6 +622,11 @@ const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
 const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
+    ...(extractor261 ? {
+        rootAudit: S('burrow').look.next?.extraction?.llm?.[0].discarded_root?.join() === 'memory',
+        emptyReportRecovered: sentEmptyExtraction && S('alias').look.next?.extraction?.status === 'applied' &&
+            S('alias').look.next.extraction.llm.map(c => c.purpose).join() === 'extract,extract_repair',
+    } : {}),
     ...result.streamingChecks,
     ...Object.fromEntries(Object.entries(result.tradeChecks || {}).map(([k,v]) => [`tradeHud_${k}`,v])),
     ...Object.fromEntries(Object.entries(result.actionHudChecks || {}).map(([k,v]) => [`actionHud_${k}`,v])),
@@ -653,7 +671,7 @@ const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
     // one planner call per free-text message, none for the question back and none for the swipe
     onePlanPerMessage: plans.length === TURNS.length && !calls.some((c) => c.purpose === 'interpret'),
     // every reply read once (the swiped one too): the barrier and the extractor as in Runtime V4
-    extractPerReply: normalCalls.filter((c) => c.purpose === 'extract').length === narr.filter(c => !c.empty).length - (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? 1 : 0),
+    extractPerReply: normalCalls.filter((c) => c.purpose === 'extract').length === narr.filter(c => !c.empty).length - (process.env.AVERETH_SMOKE_PROVIDER_ERROR === '1' ? 1 : 0) + (extractor261 ? 1 : 0),
     planCallParams: plans.every((c) => !c.stream && c.model === 'mock-narrator' && c.temperature === 0.1 && c.maxTokens === 2000),
     fightPromptInFight: plans.slice(1).every((c) => String(c.messages[0].content).startsWith('You are the intent planner')) && String(plans[0].messages[0].content).startsWith('You are the command interpreter'),
     keyAddedBySillyTavern: calls.length > 0 && calls.every((c) => c.auth === `Bearer ${DUMMY_KEY}`),

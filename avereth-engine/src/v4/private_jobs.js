@@ -9,7 +9,7 @@ export const jobOf = (s, id) => privateQuestsOf(s) && typeof id === 'string' && 
 export const jobAction = c => ['go', 'other', 'attempt', 'give', 'use_skill'].includes(c.type)
     || (c.type === 'activity' && ['work', 'craft', 'errand', 'search', 'gather'].includes(c.kind));
 
-export function recordJobWork(s, emit, outcome, expected, events) {
+export function recordJobWork(s, emit, outcome, expected, events, reachedGoals = null) {
     const blocked = new Set();
     if (rulesetOf(s) < 2) return blocked;
     const actions = [...(outcome.resolutions || []), ...(outcome.job ? [outcome.job] : [])];
@@ -26,9 +26,10 @@ export function recordJobWork(s, emit, outcome, expected, events) {
                 while (at && !seen.has(at)) { if (at === target) return true; seen.add(at); at = s.places[at]?.parent; }
                 return false;
             };
-            const reached = events.find(e => e.t === 'scene.moved' && (!goal?.to || under(e.d.at, goal.to)));
+            const reached = reachedGoals ? reachedGoals.get(String(r.seq))
+                : events.find(e => e.t === 'scene.moved' && (!goal?.to || under(e.d.at, goal.to)))?.d.at;
             done = r.status === 'authorized' && !!goal && !!reached && expected[String(r.seq)]?.arrived === true;
-            if (done) at = reached.d.at;
+            if (done) at = reached;
         } else if (r.type === 'activity') {
             const report = expected[String(r.seq)];
             done = r.work_ok !== false && (r.status === 'resolved' || (r.status === 'authorized'

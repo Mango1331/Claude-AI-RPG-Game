@@ -5,7 +5,7 @@ import { encounterHumanLevel } from '../npcgen.js';
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
-import { allowedArrival, stepsOf, newPlaceScope, gateAlias } from './movement.js';
+import { allowedArrival, stepsOf, reportedEndpoints, newPlaceScope, gateAlias } from './movement.js';
 import { reportedContinuation } from './travel_continuation.js';
 import { sectionsOf, sectionId } from './sections.js';
 import { sceneIssues, sceneSteps, localSceneDelta } from './extract.js';
@@ -535,7 +535,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     let arrivedHall = null;
     let sceneEpoch = 0;
     const deskWitnesses = [];
-    const metDone = new Set(); // NPC E2-A: the GO steps whose met was decided
+    const endpoints = reportedEndpoints(answer, state, content);
+    const reachedGoals = new Map(); // GO seq → actual accepted place
     const deniedPresence = new Set();
     const arrivals = new Set();
     const arrivalManner = () => {
@@ -1307,7 +1308,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (explicitTravel) {
                     const fresh = events.slice(mark).some((e) => e.t === 'place.created' && e.d.place.id === at.id);
                     const steps = stepsOf(s, auth.gos);
-                    const no = allowedArrival(s, steps, at.id, { fresh, forced: forcedHere, reached: (k) => expected[String(k)]?.arrived === true });
+                    const no = allowedArrival(s, steps, at.id, { fresh, forced: forcedHere, reached: (k) => expected[k]?.arrived === true &&
+                        !reportedArrivals.some(later => later.seq > d.seq && samePlace(s,later.at,endpoints.get(String(k)),content)) });
                     // past the gate of a step that ends at it: he did reach the gate (the way in is his next step)
                     const gate = no?.gate && s.places[no.gate] && s.scene.at !== no.gate ? no.gate : null;
                     if (gate) {
@@ -1342,9 +1344,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 }
                 // NPC E2-A (R1): the known people this GO step's arrival shows here
                 if (explicitTravel) {
-                    const k = goStepAt(at.id, ref);
+                    const k = !forcedHere ? goStepAt(at.id) : null;
                     if (k !== null) {
-                        metDone.add(k);
+                        reachedGoals.set(k, at.id);
                         for (const m of expected[k]?.met || [])
                             admitPresence(m.who, {seq:Number(k),type:'expected',met:m});
                     }
@@ -2064,7 +2066,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         for (const g of auth.gos || []) {
             if (expected[String(g.seq)]?.arrived !== true) continue;
             const i = Object.values(s.intents || {}).find((x) => x.status === 'active' && x.seek && !x.place && (x.id === g.intent || (!g.to && normText(x.seek) === normText(g.newName || ''))));
-            if (i) emit({ t: 'intent.set', d: { intent: { ...i, place: arrived, status: 'done', updated: { turn: s.turn, minute: s.clock.minute }, why: `he found it: ${placeName(s, arrived)}` } } });
+            const found = explicitTravel ? reachedGoals.get(String(g.seq)) : arrived;
+            if (i && found) emit({ t: 'intent.set', d: { intent: { ...i, place: found, status: 'done', updated: { turn: s.turn, minute: s.clock.minute }, why: `he found it: ${placeName(s, found)}` } } });
         }
     }
 
@@ -2076,7 +2079,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // A confirmed approach within the current site can spend incidental scene time.
         const stayedHere = auth.gos?.some(g => {
             const reply = expected[g.seq];
-            return reply?.arrived && reply.at && samePlace(s, reply.at, startAt, content) && s.scene.at === startAt;
+            return reply?.arrived && (explicitTravel ? reportedArrivals.some(d => d.at === startAt && travel.some(t => t.ok && t.seq === d.seq)) && samePlace(s,endpoints.get(String(g.seq)),startAt,content) : reply.at && samePlace(s,reply.at,startAt,content)) && s.scene.at === startAt;
         });
         if (stayedHere && entry.delta.during == null && entry.minutes <= content.rules.time.engine_clock.go_min_same_settlement) {
             emit({ t:'time.advanced', d:{minutes:entry.minutes, why:'narration'} });
@@ -2160,7 +2163,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Settle private work only after this reply's actual arrivals and conditional actions.
     // Completion and wage order in the extractor answer cannot change the result.
     step = { kind: 'engine' };
-    blockedJobs = privateMode ? recordJobWork(s, emit, outcome, expected, events) : new Set();
+    blockedJobs = privateMode ? recordJobWork(s, emit, outcome, expected, events, explicitTravel ? reachedGoals : null) : new Set();
     // Sources settle before dependants. Wages still wait for this reply's private close,
     // even when the extractor reported the payment first. Every queued item runs at most once.
     const waiting = settlements.sort((a, b) => a.d.seq - b.d.seq);
@@ -2227,7 +2230,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // NPC E2-A: a met of a GO step that brought him nowhere enters no one; the desk steps' actual handlers
     step = { kind: 'expected' };
     if (explicitTravel) for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
-        if (type !== 'go' || metDone.has(k) || !Array.isArray(expected[k]?.met)) continue;
+        if (type !== 'go' || reachedGoals.has(k) || !Array.isArray(expected[k]?.met)) continue;
         for (const m of expected[k].met) reject({ seq: Number(k), type: 'expected', met: m }, 'met_without_arrival', `GO step ${k} did not bring him to its place in this reply`);
     }
     if (explicitTravel) deskHandlers();
@@ -2532,11 +2535,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     }
 
     /** The GO step an actual arrival at this place answers (the first not yet met one, by its place). */
-    function goStepAt(id, ref) {
-        return Object.entries(outcome.expected_keys || {}).filter(([k, type]) => type === 'go' && !metDone.has(k)).map(([k]) => k)
+    function goStepAt(id) {
+        return Object.entries(outcome.expected_keys || {}).filter(([k, type]) => type === 'go' && !reachedGoals.has(k)).map(([k]) => k)
             .sort((a, b) => Number(a) - Number(b)).find((k) => {
-                const g = (auth.gos || []).find((x) => String(x.seq) === k);
-                return (g?.to && g.to === id) || (expected[k]?.at && samePlace(s, ref, expected[k].at, content));
+                const endpoint = endpoints.get(k);
+                return endpoint && (typeof endpoint === 'string' ? endpoint === id : samePlace(s,id,endpoint,content));
             }) ?? null;
     }
 
@@ -2955,7 +2958,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (destination?.id) return hallOf(s, destination.id) === hall;
         if (go.guild_settlement && go.guild_settlement !== town
             && normText(go.guild_settlement) !== normText(s.places[town]?.name || '')) return false;
-        const target = go.to || placeIdentity(s, expected[String(go.seq)]?.at, content, { c: true });
+        const target = go.to || placeIdentity(s, endpoints.get(String(go.seq)), content, { c: true });
         if (target) return hallOf(s, target) === hall;
         return guildDestination(s, go.newName || go.name, town, { allowNew: true })?.id === hall;
     }

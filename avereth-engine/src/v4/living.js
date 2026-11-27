@@ -1011,7 +1011,7 @@ export function catalogLines(s, { extractor = false } = {}) {
     const mine = Math.max(1, floorAt(s, s.scene.at));
     const L = [floorText(s, x, mine)];
     if (extractor) {
-        L.push('If an authorized advance reaches a new chamber, use the same {new:{name,kind:"interior",parent:"'+root+'"}} in expected.at and arrive.at. The departure room ID means the party stayed there. A glimpse alone is no arrival.');
+        L.push('If an authorized advance reaches a new chamber, use {new:{name,kind:"interior",parent:"'+root+'"}} in arrive.at. The departure room ID means the party stayed there. A glimpse alone is no arrival.');
     } else {
         L.push('Entering the first chamber from the threshold or walking onward on this level is go with to:{new:"on"}. Descending to a LOWER level requires the actual stairs.');
     }

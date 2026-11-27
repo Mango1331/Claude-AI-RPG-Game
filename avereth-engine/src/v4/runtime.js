@@ -1105,7 +1105,7 @@ export function extractionRequest(chat, id, content) {
     for (const go of o.auth?.gos || []) {
         if (!go.section) continue;
         const {id, from, name} = go.section;
-        actions += '\nGO '+go.seq+' from '+from+' to '+name+': if the reply takes him there, use the engine room ID "'+id+'" in expected.at AND arrive.at. The final scene may then use the same ID. If still at the departure point answer arrived:false.';
+        actions += '\nGO '+go.seq+' from '+from+' to '+name+': if the reply takes him there, use the engine room ID "'+id+'" in arrive.at. The final scene may then use the same ID. If still at the departure point answer arrived:false.';
     }
     if (state.scene.approaching && Object.values(o.expected_keys || {}).includes('approach'))
         actions += '\nAfter recording the standpoint, separately account for what is visible: individually distinguishable creatures at the threshold must be addressable via creature.new with across, desc per individual and band. A fact about the observer cannot record the individuals. For signs or voices alone use ordinary observations.';

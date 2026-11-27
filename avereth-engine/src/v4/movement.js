@@ -10,7 +10,7 @@
 // never a destination: another place of the same town or realm is not reached because it lies there.
 import { lineage, sameSettlement, settlementOf, realmOf } from './domain.js';
 import { dungeonOf, trueDungeonOf, isRoom } from './dungeon.js';
-import { placeIdentity } from './place_refs.js';
+import { placeIdentity, samePlace } from './place_refs.js';
 
 /**
  * The fixed fields of a step, decided by the GO handler at authorization.
@@ -53,10 +53,31 @@ export function stepOf(s, go) {
 /** The steps of this turn (outcome.auth.gos), each with its fields. */
 export const stepsOf = (s, gos) => (gos || []).map((g) => stepOf(s, g));
 
+/** Identify the reported endpoint of each GO. This never authorizes an arrival.
+ * An unnamed search among several stops needs its existing optional at reference.
+ * Receipt matching and the actual place reached stay separate until World accepts the move.
+ */
+export function reportedEndpoints(answer, state, content) {
+    const goals = stepsOf(state, state.last?.outcome?.auth?.gos);
+    const arrivals = Array.isArray(answer?.deltas) ? answer.deltas.filter(d => d?.type === 'arrive' && !d.forced_by) : [];
+    const ends = new Map();
+    for (const g of goals) {
+        const e = answer?.expected?.[g.seq];
+        const ref = g.section?.id || g.to || e?.at;
+        if (ref) ends.set(String(g.seq), ref);
+    }
+    const unresolved = goals.filter(g => !ends.has(String(g.seq)) && answer?.expected?.[g.seq]?.arrived === true);
+    const unassigned = arrivals.filter(d => ![...ends.values()].some(ref => samePlace(state,d.at,ref,content)));
+    if (unresolved.length === 1 && unassigned.length === 1)
+        ends.set(String(unresolved[0].seq),unassigned[0].at);
+    return ends;
+}
+
 /** The parent of a new place told on arrival for a step whose scope fixes it: the habitat, or the Dungeon. */
 export function newPlaceScope(answer, s) {
     const steps = stepsOf(s, s.last?.outcome?.auth?.gos).filter((g) => g.scope && (g.mode !== 'within' || (s.places[g.scope]?.population && lineage(s, s.scene.at).includes(g.scope))));
     if (!steps.length) return answer;
+    const ends = reportedEndpoints(answer,s);
     const rewrite = (value) => {
         if (Array.isArray(value)) return value.map(rewrite);
         if (!value || typeof value !== 'object') return value;
@@ -65,7 +86,7 @@ export function newPlaceScope(answer, s) {
             // the new place this step's confirmed arrival names (expected.<seq>.at), never another one of the reply
             const hits = steps.filter((g) => {
                 const e = answer.expected?.[String(g.seq)];
-                return e?.arrived === true && e.at?.new && norm(e.at.new.name) === norm(fresh.name);
+                return e?.arrived === true && (norm((e.at || ends.get(String(g.seq)))?.new?.name) === norm(fresh.name) || (g.section && norm(g.section.name) === norm(fresh.name)));
             });
             if (hits.length === 1) {
                 const { scope, mode } = hits[0];

@@ -746,3 +746,30 @@ test('patch 5 review: one wolf left alive in cave A is not the wolf of cave B el
     assert.equal(hpOf(s, first), 4);
     assert.equal(creatures(s).length, 2, 'no third wolf');
 });
+
+test('a healer search ends at its confirmed stop, independently of later travel', async () => {
+    const g = await campaign();
+    const request = 'I follow the northern road until I find a village with a healer.';
+    await say(g, request, { type:'go', to:{new:'a village with a healer'}, quote:request });
+    await g.reply('A fallen cart blocks the road after five hours.', {
+        expected:NOT_THERE, deltas:[{seq:1,type:'time',minutes:300}],
+    });
+    await say(g,'I continue on the road.', CONTINUE);
+    const prefix = structuredClone(g.chat);
+    const town = {new:{name:'Harrowby',kind:'settlement',parent:'realm.duskreach'}};
+    const stop = {seq:1,type:'arrive',at:town,with:null,forced_by:null};
+    const home = {seq:2,type:'arrive',at:'realm.duskreach',with:null,forced_by:null};
+    for (const [receipt, deltas, done] of [
+        [{arrived:false}, [stop], false],
+        [{arrived:true}, [stop], true],
+        [{arrived:true}, [], false],
+        [{arrived:true,at:town}, [stop,home], true],
+        [{arrived:true}, [stop,home], false],
+    ]) {
+        g.chat = structuredClone(prefix);
+        await g.reply('Alaric follows the road.',{expected:{1:receipt},deltas});
+        const seek = goals(g.state()).find(i => i.seek);
+        assert.equal(seek.status,done ? 'done' : 'active');
+        assert.equal(seek.place,done ? 'loc.harrowby' : null);
+    }
+});

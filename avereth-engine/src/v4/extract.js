@@ -473,7 +473,7 @@ export function sceneIssues(value, startScene, state = null, content = null, exp
     const arrivals = ordered.filter(x => x.d.type === 'arrive');
     const last = arrivals.at(-1)?.d;
     if (explicitArrivals) for (const [seq, e] of Object.entries(value.expected || {})) {
-        if (e?.arrived === true && !arrivals.some(x => sceneKey(x.d.at) === sceneKey(e.at)))
+        if (e?.arrived === true && !arrivals.some(x => (!e.at || sceneKey(x.d.at) === sceneKey(e.at))))
             issues.push({ index: -1, seq: Number(seq), why: `expected.${seq}.arrived:true requires a corresponding arrive delta in story order; expected and scene cannot move the player` });
     }
     const implicitMove = !last && Object.values(value.expected || {}).some(e => e?.arrived === true
@@ -537,7 +537,7 @@ export function resolveRepeatedScene(value, ids, expectedKeys) {
     const expected=value.expected?.[keys[0]],arrivals=Array.isArray(value.deltas)?value.deltas.filter(d=>d?.type==='arrive'):[];
     if(expected?.arrived!==true || arrivals.length!==1)return value;
     const full=arrivals[0].at;
-    if(full?.new?.name!==short.new || JSON.stringify(full)!==JSON.stringify(expected.at) || validate(full,placeRef(ids.places || [])).length)return value;
+    if(full?.new?.name!==short.new || (expected.at!=null && JSON.stringify(full)!==JSON.stringify(expected.at)) || validate(full,placeRef(ids.places || [])).length)return value;
     return {...value,scene:JSON.parse(JSON.stringify(full))};
 }
 
@@ -615,8 +615,11 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             exp[pending.seq] = { taken:false };
         }
     }
-    // who came along may be left out of an arrival answer, like a |null delta field
-    for (const [k, t] of Object.entries(expectedKeys || {})) if (t === 'go' && exp[k] && typeof exp[k] === 'object' && exp[k].with === undefined) exp[k].with = null;
+    // Read legacy GO receipts. Only arrived is required on the new wire contract.
+    for (const [k, t] of Object.entries(expectedKeys || {})) if (t === 'go' && exp[k] && typeof exp[k] === 'object') {
+        exp[k].at ??= null;
+        exp[k].with ??= null;
+    }
     // NPC E2-A: met and handled_by are optional evidence, never a reason for a repair call: a missing or malformed one
     // is null (a malformed item of met is left out), a desk step the answer leaves out is answered "no handler shown"
     const pair = (x) => x && typeof x === 'object' && !Array.isArray(x) && typeof x.who === 'string' && typeof x.evidence === 'string' ? { who: x.who, evidence: x.evidence } : null;
@@ -627,7 +630,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     // A new dungeon section already has an engine ID in the authorized step. Its
     // name becomes a place reference in this report only alongside its reported arrival.
     for (const go of state?.last?.outcome?.auth?.gos || []) {
-        const section = go.section, at = exp[go.seq]?.at;
+        const section = go.section, at = exp[go.seq]?.at || section?.id;
         if (!section || !exp[go.seq]?.arrived || expectedKeys?.[go.seq] !== 'go') continue;
         if (at !== section.id && !(at?.new?.kind === 'interior' && at.new.parent === section.root)) continue;
         if (Array.isArray(value.deltas) && value.deltas.some(d =>
@@ -694,9 +697,9 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         }
         if (d?.type === 'arrive') {
             const section = state.last?.outcome?.auth?.gos?.find(g =>
-                g.section?.from === d.at && value.expected?.[g.seq]?.arrived === true && value.expected[g.seq].at === d.at);
+                g.section?.from === d.at && value.expected?.[g.seq]?.arrived === true && (!value.expected[g.seq].at || value.expected[g.seq].at === d.at));
             if (section) {
-                semanticIssues.push({index:i,seq:d.seq,why:'GO '+section.seq+' reported arrival but both places name its departure room. If they entered the next chamber use {new:{name:"'+section.section.name+'",kind:"interior",parent:"'+section.section.root+'"}} in both arrivals; otherwise report arrived:false and omit the move.'});
+                semanticIssues.push({index:i,seq:d.seq,why:'GO '+section.seq+' reported arrival but both places name its departure room. If they entered the next chamber use {new:{name:"'+section.section.name+'",kind:"interior",parent:"'+section.section.root+'"}} in arrive.at; otherwise report arrived:false and omit the move.'});
             }
             stepAt = placeKey(state, d.at, content);
             present.clear();

@@ -1,4 +1,8 @@
-# Validierungsvereinfachung V1 · Stopp vor dem ersten Produktpatch
+# Validierungsvereinfachung V1 · Umsetzung und Abnahmestand
+
+**Aktueller Stand:** Technischer Zwischenstand .252 auf dem Entwicklungsbranch. Die Anwesenheitsproben bestehen. Etappe B ist vor dem Entfernen von `expected.go` angehalten. Die unten dokumentierte Gegenprobe zur offenen Ortssuche erfordert eine Fachentscheidung. Es liegt keine Gesamtabnahme vor.
+
+## Erster Stopp vor der Implementierung
 
 **Stand 27. November 2026.** Der geprüfte Remote-HEAD des Entwicklungsbranches war `4933a5f005a86a381a922981d3d7377e8ba84b5c`, Build `4.3.0-c.6.6.251`. Der Auftrag auf `main` wurde auf `baeaf5af1289c3e9031eff987875a227317580e0` gelesen. Die Vorprüfung ergab eine bisher unberücksichtigte mechanische Wirkung der in Etappe D vorgesehenen Streichung von X-`party coordinate`. Die Stoppregel greift vor Änderungen am Produkt. [Auftrag §§ 1, 4](AVERETH_252_CODEX_AUFTRAG_VALIDIERUNGSVEREINFACHUNG.md) · [Fachgrundlage P7](AVERETH_251_CLAUDE_VALIDIERUNGSARCHITEKTUR_ANALYSE_UND_PLAN.md)
 
@@ -26,3 +30,36 @@ Produktdiff und Zeilenbilanz gegenüber `4933a5f0` sind leer. Es gab keinen Prod
 ## Entscheidung nach dem Gegenreview
 
 Der Nutzer hat P7 nach Prüfung durch GPT und Claude für dieses Paket vollständig zurückgestellt. Eigenständige taktische Entscheidungen bleiben auch ohne offene Bitte möglich. Sämtliche Party-Akte im X-Vertrag, Sprecherbindung, Zustimmung, Ablehnung und Angebote behalten ihren bisherigen Funktionsumfang. Die Gegenproben zu Schutz und Wache gehören zur Abnahme. Der Implementierungsauftrag gilt für 0, A, B, C, P8, P9a und E.
+
+## Fortschritt nach der Freigabe
+
+| Stand | Nachweis |
+|---|---|
+| Messgrundlage auf .251 | [28a22f0a](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/28a22f0a0bb92676ebe326613b1c6209e3500131) enthält 24 archivierte Präsenzfälle, vier Zustandsnegative, Lantern-Originaleingaben und synthetische Zielvarianten, Martin M11 und einen Teilvalidierungsfall. Auf .251 bestanden 10 von 40 Prüfungen. Das Replay-Werkzeug kann begutachtete Abweichungen nach vier Kategorien ausgeben. |
+| Technischer Teilstand .252 | [6a7fc03c](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/6a7fc03cda9f88e6007f91b1c9bc68b222447c67). Der Produktpfad verwendet `admitPresence` für `enter`, lokale `position` und `aware` sowie ein mitgeliefertes altes `met` bei bestätigter Ankunft. `presenceInReply`, die gesonderte Orts-/Satzprüfung für `met` und der Präsenz-Reparaturhinweis entfallen. Die Beschreibung von GO fordert `met` nicht mehr an. Der weitere X-Vertragsumbau und P10 stehen noch aus. |
+| Produktumfang | Unter `src/` und `content/` zusammen 35 hinzugefügte und 113 entfernte Zeilen. Die vollständige Entfernung des E2-A-Blocks und die Desk-Zuordnung stehen aus. [Produktdiff](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/4933a5f005a86a381a922981d3d7377e8ba84b5c...6a7fc03cda9f88e6007f91b1c9bc68b222447c67) |
+
+### Ausgeführte Offline-Prüfungen
+
+- **Anwesenheit.** Auf dem Zwischenstand bestanden alle 28 Präsenzprüfungen. Die 24 archivierten Zitate und Personenprofile wurden in kontrollierten Ausgangszuständen über drei Meldewege getestet. Bei 20 tatsächlich Anwesenden entspricht das der Erzählung, bei drei ist die Identität unklar. Der vierte Grenzfall nimmt Garrick trotz fehlender Darstellung auf. Sechs weitere Anwesenheits- und Foldprüfungen aus `patch_protect110` bestanden.
+- **Originalpräfixe.** Unabhängig von diesen kontrollierten Tests wurden vier ursprüngliche X-Antworten auf dem jeweils archivierten Chatpräfix durch `processReplyAny`, `runExtraction` und Fold verarbeitet. In Martin M17 erscheint die Lederarbeiterin neu am Markt. In Elm M83 erscheint Madge genau einmal, in Reed M21 bleibt der Fischer anwesend. In x-233 M71 erscheinen die Gildenmitarbeiterin und Garrick. Die Gildenauszahlung von 90 cp und die Weitergabe von 45 cp an Ossen waren auf beiden Builds gleich. Jeder dieser vier Replays verarbeitete eine eingespeiste X-Antwort. Der anschließende Einkauf und die Mahlzeitenabrechnung sind noch nicht abgenommen.
+- **Party.** Alle 26 Prüfungen des vorhandenen User14-basierten Party-Replays bestanden auf dem Zwischenstand, einschließlich kombinierter Kampfaktion und Schutzbitte. In der getrennten Wachprobe blieb Ossen bei gebuchter Wachübernahme nach 60 Minuten bei 80 HP. Beim gezielten Weglassen des Deltas stieg er auf 90 HP.
+- **Offene Prüfungen im neuen Korpus.** 34 von 40 bestanden auf dem Zwischenstand. Rot sind vier synthetische Bewegungsziele, die Teilübernahme bei ungültigem Fakt und die Preisellipse. Lantern M80/M82 mit Original-P bestanden bereits auf .251.
+- **Ausgangsmessung.** `recount_v2.py` ergab 223 zugeordnete Antworten mit 289 X-Anfragen, davon 66 Reparaturen (29,6 % der Antworten). Häufigste Ablehnungen waren `scene_context` (55), `met_evidence` (24) und `party_decision` (19). Die separate Auszählung aller physischen Reparaturanfragen fand 67, davon 38 ausschließlich semantisch, 22 ausschließlich Schema, sechs gemischt und eine andere. Diese zweite Auszählung verwendet einen anderen Nenner. Im fünften Martin-Spielzug (M16/M17) umfassten die auf .251 lokal gebauten Nachrichteninhalte 51.458 Zeichen für P und 62.089 für X, gemessen in JavaScript-Stringlängen. [Zählmethode](claude_251_analyse/recount_v2.py) · [Originalarchiv](../testrun_10b/openrouter-20261127-martin-251/)
+
+## Zweiter Stopp · Ankunft und Abschluss einer offenen Ortssuche
+
+Der Spieler kann ein Ziel verfolgen, für das die Engine noch keine Orts-ID kennt. In diesem Fall entscheidet `expected.go.arrived` in .251 auch, **ob dieses persönliche Ziel erledigt wird**. Das beeinflusst den nächsten Spielerzug. Der Auftrag behandelt das Feld als zweite Ankunftsmeldung. `goStepAt` kann bei einem freien Suchziel nicht aus der Identität des erreichten Orts erkennen, ob dort auch die gesuchte Bedingung erfüllt ist. [Zielabschluss in World](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/4933a5f005a86a381a922981d3d7377e8ba84b5c/avereth-engine/src/v4/world.js#L2076-L2083) · [Schrittzuordnung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/4933a5f005a86a381a922981d3d7377e8ba84b5c/avereth-engine/src/v4/world.js#L2581-L2587)
+
+**Synthetische Gegenprobe auf unveränderter .251.** Ausgangspunkt war die reale Produkt-Teststrecke „follow the northern road until I find a village“ mit Ruleset 2, eingespeistem Planner und Extractor. Als Suchbedingung diente „a village with a healer“. Nach fünf Stunden und einem Halt auf der Straße bestand `intent.1` mit `status: active`, `place: null`. Auf „I continue on the road“ wurden vom selben Präfix zwei Antworten eingespeist. Beide enthielten dasselbe einzige `arrive` für Harrowby (neue Siedlung in Duskreach). Beide wurden angewandt. [Basis der Reproduktion](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/4933a5f005a86a381a922981d3d7377e8ba84b5c/avereth-engine/tests/v4/patch5.test.js#L165-L187)
+
+| Erzählung nach Betreten von Harrowby | Antwort zum Ziel | Gespeicherter Zustand | Nächster tatsächlich ausgeführter Plannerbefehl `journey.continue` |
+|---|---|---|---|
+| „The healer lives further north.“ | `arrived:false, at:null` | PC in Harrowby, Suche aktiv, Zielort offen | autorisiert für `intent.1` |
+| „The healer lives here.“ | `arrived:true, at:Harrowby` | PC in Harrowby, Suche erledigt, Zielort Harrowby | abgewiesen mit `no established journey` |
+
+Nach Weglassen des GO-Ergebnisses sind die strukturierten Ortsmeldungen beider Antworten identisch. „Letztes Ziel erreicht“ beendet die erste Suche zu früh. „Unbekanntes Ziel offen lassen“ hält die zweite Suche fälschlich aktiv. Andere optionale Weltfakten sind in beiden gültigen Antworten entbehrlich. Eine neue Grammatikprüfung der Heiler-Erzählung würde der Leitbedingung widersprechen.
+
+**Empfehlung zur Entscheidung:** `arrive` bucht jeden physischen Ortswechsel. Nur für ein aktives Suchziel ohne gebundene Orts-ID behält X die bestehende Ja/Nein-Antwort zur Zielerfüllung. Orts-ID, Mitreisende und Begegnungen werden auch dann ausschließlich aus dem bestätigten Ankunftsschritt übernommen. Das erfordert keinen weiteren Modellaufruf. Die Ausnahme ist ein Vorschlag und wurde nicht implementiert.
+
+Etappe B und die anschließenden Produktetappen sind angehalten. Vollständiges T1, kategorisiertes T3 samt Neubewertung, isolierte ST-Abnahme, Abschlussmessung und Gesamtabnahme sind **nicht ausgeführt**. Der Entwicklungsstand ist ein Sicherungspunkt. Eine Installation in der persönlichen SillyTavern-Umgebung ist derzeit nicht angezeigt. Providerkosten dieser Arbeiten: 0 USD.

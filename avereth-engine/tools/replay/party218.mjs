@@ -1,6 +1,8 @@
 // User14 prefix; deliberately wrong P/X outputs exercise both runtime authority boundaries.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {partyDecision} from '../../src/party.js';
+import {applyEvent} from '../../src/state.js';
 import {engineAt} from './replay.mjs';
 const {runtime,host,content}=await engineAt();
 const original=fs.readFileSync(process.argv[2],'utf8').trim().split('\n').slice(1).map(JSON.parse);
@@ -132,8 +134,14 @@ for (const [text,ok] of [
     ["I'd like to split the Guild's ninety copper evenly and give you twenty copper extra",false],
 ]) {
     const run=structuredClone(original.slice(0,15));
-    await player(run,text,{act:'offer',quest,combat:true,share:'half',quote:text});
-    assert.equal(Object.values(state(run).party?.agreements||{}).some(a=>a.phase==='open' && a.terms.half),ok);
+    run.push({is_user:true,mes:text,extra:{}});
+    await runtime.prepareGenerationAsync(run,content,{llm:async req=>{
+        if(req.purpose.startsWith('plan')) return JSON.stringify({travel_frame:'local',commands:[{type:'party',seq:1,who,act:'offer',quest,combat:true,share:'half',quote:text}]});
+        assert.equal(req.purpose,'party_decision');assert(ok);
+        const {invitation}=JSON.parse(req.messages.at(-1).content);
+        return JSON.stringify({who,invitation,decision:'accept'});
+    }});
+    assert.equal(Object.values(state(run).party?.agreements||{}).some(a=>a.phase==='accepted' && a.terms.half),ok);
 }
 
 for (const [name,answer,accept] of [
@@ -142,7 +150,12 @@ for (const [name,answer,accept] of [
     ['Ossen','Two of us, half each. Fair enough, but only for thirty copper.',false],
 ]) {
     const ch=structuredClone(original.slice(0,15));
-    await player(ch,ask,{act:'offer',quest,combat:true,share:'half',quote:ask});
+    // A save with a pre-structured open player offer still accepts the original X protocol.
+    const before=structuredClone(state(ch)), events=[];
+    partyDecision(before,content,{seq:1,who,act:'offer',quest,combat:true,share:'half',quote:ask},ask,'pc',
+        e=>{applyEvent(before,e);events.push(e);});
+    ch.at(-1).extra.avereth.events.push(...events);
+    await player(ch,'I listen.');
     const agreement=Object.keys(state(ch).party.agreements)[0];
     await reply(ch,'“'+answer+'” He extended a hand. “Name’s '+name+'.”',
         [{seq:1,type:'party',who,act:'accept',agreement,quote:answer}]);

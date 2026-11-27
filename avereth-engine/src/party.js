@@ -378,7 +378,9 @@ export function partyDecision(s, content, command, source, actor, emit, contract
         const travel={wait:'wait|stay|hold here',follow:'follow|come|rejoin|travel together',leave:'leave|quit|part ways|go alone|split up|dismiss|go on my own'};
         const decision=withoutAddress(s,statement);
         const own=actor===who ? "(?:I|we)(?:['’]ll| will)?\\s+" : "(?:please\\s+|(?:let['’]s|we)\\s+|(?:I\\s+(?=dismiss|go alone|go on my own)))?";
-        const committed=travel[c.act] && new RegExp('^'+own+'(?:'+travel[c.act]+')\\b','i').test(decision);
+        const personalExit = c.act === 'leave' && actor === 'pc' && person.name &&
+            new RegExp('^I (?:part ways|split up) with '+escapedName(person.name)+'\\b','i').test(decision);
+        const committed=personalExit || (travel[c.act] && new RegExp('^'+own+'(?:'+travel[c.act]+')\\b','i').test(decision));
         if (!committed || decision.includes('?') || negated.test(decision) || qualified.test(decision) || /\b(?:tomorrow|later)\b/i.test(decision))
             return failure('Quote the change of travel arrangement.');
         const q=s.quests[s.party.agreements[member.agreement]?.terms.quest];

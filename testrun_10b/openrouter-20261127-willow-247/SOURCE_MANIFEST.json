@@ -1,0 +1,43 @@
+{
+  "build": "4.3.0-c.6.6.247",
+  "commit": "c954742a98da31bcb56e70d708c278e67d3495e4",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Hearth nach Zimmerkauf. Direkte Ortsauswahl in ST, tatsächliche Folgeinteraktionen.",
+  "savedMessages": 85,
+  "requests": 8,
+  "costUSD": "0.005533762",
+  "usage": {
+    "prompt_tokens": 115717,
+    "completion_tokens": 4130,
+    "total_tokens": 119847
+  },
+  "sha256": {
+    "actions.jsonl.gz": "df64bbf693a8af854def71f3ff564a2ad886124e90afb219b58ebacd57915968",
+    "chat-0.jsonl.gz": "3a4d13b344bc84cee149c06f4606440027611673dad35276cfdf3fd6d4cb0c69",
+    "chat.jsonl.gz": "142b375e9f32bf1ff0b5b6a70846b8a0ad802f9670eb5929b4ce39733d6a1232",
+    "events.json.gz": "e9982cf7c92d6082598e59c43713f54a798e3abd995053344b7bbdaa658aba70",
+    "explore.log.gz": "f3cc1fa273a8cf7f384d80754449bdbb14faa9986e930a8b522f1da669f49c2a",
+    "last-verified-world.json.gz": "8f4f5caff1f872d77b537737bab6ec553fbc10c29f5cf21abdc23bc989dbcf83",
+    "parent-check.json.gz": "34f75c3bd092ca57db9470930f69110a3ea27b4f6b53825e2a69b1d9f909a83f",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "06a6aa4b8c0fabdd7870664666d422218fd16cc7108c705277af65d2abbbc7bf",
+    "raw-215.gz": "dca4d842c50d1760d9e2659a99a080d47710003f90dc61b302a3811bd3efcd59",
+    "raw-216.gz": "12f0bc2661728407a444b14b526267dfeed47d1875aa67c0942ce0d4b7a26957",
+    "raw-217.gz": "08d7ab76a6541bc6cf73c602568165b4503c7bc63107c6e8b0f457b38ab57816",
+    "raw-218.gz": "96202d8e8193709a44840a161750fb9e7393d0f402b626d44f61b0008f3b487a",
+    "raw-219.gz": "8b6f2322fbfc60b3866234f31537f9d758e69d191ed789fa00fc9a7d95244ea1",
+    "raw-220.gz": "56aa60e00848114921c4a82f09187aaa82090b7cc64cfa6a16bd08c1d657f956",
+    "raw-221.gz": "873d52a93e57cf7a981c1a65b72e53568759c72c643275aed9ffe4821f9cea6f",
+    "raw-222.gz": "274e849060788d662f3e9d4b180b0cdafbadb268f34bdfafa519ea90f9219c3c",
+    "requests.jsonl.gz": "441fdc5edd7e729d72a0bc46e7bb5c4806013bdd2a2a4f85560a28f508c3757e",
+    "response.json.gz": "c27ad32efa02ff0a50540e87139664598a2bad43414244b39771400054b08030",
+    "st.log.gz": "325dea3b11c5e5ffd191fc9ade769b379a5ba2ea49b6067d5669736a77be76c4",
+    "turns.jsonl.gz": "c227b0241fc0491284e3853503bfb1957cc3a87e05601303e5739a35ebf1cdf7",
+    "visible.json.gz": "1279bd92ba14fa98d31e65fb9bc09f17c841b091398c737d57afaafe0221cad7",
+    "world-0.json.gz": "208483ec58ea332ba1c92f15626b6c85f05db14ce544f0294da327933409999f"
+  }
+}

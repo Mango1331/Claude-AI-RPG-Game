@@ -1,0 +1,39 @@
+{
+  "build": "4.3.0-c.6.6.246",
+  "commit": "9a7cfe732da964165ed25267f64625ed5c5c8737",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Hearth T12 vor Zimmerkauf. Unterkunft bezahlt; P stufte den ausdrücklichen Zimmerzugang als lokalen Standpunkt ein.",
+  "savedMessages": 79,
+  "requests": 4,
+  "costUSD": "0.002775540",
+  "usage": {
+    "prompt_tokens": 57802,
+    "completion_tokens": 1974,
+    "total_tokens": 59776
+  },
+  "sha256": {
+    "actions.jsonl.gz": "b21121a6eaa53d198fd2c270eba1bbb8f6eda461af05577eba8e39387eacee07",
+    "chat-0.jsonl.gz": "dae451138a66f76674e12c90f12b808235963e302343b08f57d7e15f5ee5d4f1",
+    "chat.jsonl.gz": "27909acce09a55021d407b86c799905859c7f4514ec5c412e579350635efa687",
+    "events.json.gz": "e4a85bb36b3ebff60cea7b78c7457cfba709795b6b27d4f90f7bfd5db7f912b1",
+    "explore.log.gz": "330a66d59ecd7f1f2002828fecff550ae16fdc1c11c5fd5389de51f39e4d7fcb",
+    "last-verified-world.json.gz": "ec70d452a41a0f1a93a2c847415344a8a62f656b9c2f3397cf4004c5c30e570e",
+    "parent-check.json.gz": "ea75a18c3538c4a3b5954a9e4997cc83b56e5003c45accdefe1587fab1c088cc",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "0fbf95dd24838ff8e4341972ad69059f184744205784a52ea2eb0de22339cd8b",
+    "raw-196.gz": "ac8ca241e9b7f5aea6e22c64b8759ee5b66f755ad332bae6e0a706c966dce947",
+    "raw-197.gz": "dd7a0152340a635020715681faeca5529ffcc88a630a72b6e405f96afe19e6f8",
+    "raw-198.gz": "addd8e0052ae6266d27398f2e377c212b2b8d5e3ee3db61d061b7eaf49d13ac0",
+    "raw-199.gz": "b6c1766e8c5049daf27222f526f50f486531f1de69570de6fe7d92a6421d2f54",
+    "requests.jsonl.gz": "355f6054ec7163c2ad7f190ac60d38a67567ce43355531726a044c8e908e20ec",
+    "response.json.gz": "2d6e37c8153f2cedfbc8e9de54f9180908b00ca6dbf83f538ea557cabc631068",
+    "st.log.gz": "4989ff003c763bd720a7c96ee557d6f157b66cb7ea3fa812c708270c9509432f",
+    "turns.jsonl.gz": "9368a4f8b20569aa686cf0e9da2580075425d8db4851690cb7441c6ec221eeab",
+    "visible.json.gz": "232c29c630f8344128de3a648fd25fc1af33fab1d3401dfc6e6ba4961b9765d4",
+    "world-0.json.gz": "9fedfb1f3b15903618399d5be622831c099bd0dd1e92e0d3f862da47d6e3074d"
+  }
+}

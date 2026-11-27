@@ -459,7 +459,9 @@ function blockingHere(s, name) {
 
 // Only a direct entry, in the player's own words, can disambiguate a spurious habitat scope.
 function entersThisDungeon(quote, name) {
-    const entry = normText(quote).match(/^(?:i )?(?:enter|(?:go|step|walk|head|descend) (?:in|inside|into))(?: (?:the |this )?([\w '-]+?))?[.!]?$/);
+    if (/\b(?:if|unless|instead|but|before|without)\b|\?/i.test(quote)) return false;
+    const destination = normText(quote).split(/\s+(?:through|via|by way of|down|using)\s+/)[0];
+    const entry = destination.match(/^(?:i )?(?:enter|(?:go|step|walk|head|descend) (?:in|inside|into))(?: (?:the |this )?([\w '-]+?))?[.!]?$/);
     if (!entry) return false;
     const target = entry[1];
     const dungeon = normText(name);
@@ -791,7 +793,7 @@ const HANDLERS = {
         // .190 (A2): the step as decided once: its kind, the Dungeon it goes into, the scope of a new place of it; a
         // step whose words name a Dungeon's way in ends at its gate
         if (envx?.c && rulesetOf(s) >= 2) {
-            if (known && s.places[c.to]?.dungeon?.real && (c.gateFirst || GATE_WORDS.test(`${wordsFor} ${c.quote || ''}`))) go.way_in = true;
+            if (known && s.places[c.to]?.dungeon?.real && (c.gateFirst || (GATE_WORDS.test(`${wordsFor} ${c.quote || ''}`) && !entersThisDungeon(c.quote,placeName(s,c.to))))) go.way_in = true;
             if (section) go.section = section;
             Object.assign(go, stepFields(s, go));
         }

@@ -277,6 +277,20 @@ export const companiesHere = (s, root, floor) => (s.dungeons?.[root] ? companies
 /** How the story names a slot's encounter (DUNGEON AHEAD, PULSE). */
 export const slotSay = (sl) => `${sl.count > 1 ? `${sl.count} ${sl.species}${/s$/.test(sl.species) ? '' : 's'}` : sl.name ? `${titled(sl.name)} (${sl.species})` : `a ${sl.species}`}`;
 
+/** Once seen, the current cycle's individuals replace its design-time head count. */
+export function encounterRoster(s, slot) {
+    if (!slot.entities?.length) return null;
+    return slot.entities.map(id => {
+        const e = s.entities[id];
+        if (!e) return id + ' (unavailable)';
+        const status = e.status === 'dead' ? 'dead' : e.fled ? 'fled' : e.surrendered_to ? 'surrendered'
+            : e.left ? 'alive, last seen elsewhere' : 'alive';
+        const hp = s.encounter?.combatants[id]?.current.hp ?? e.hp;
+        return [id, e.name, e.descriptors?.[0], status, Number.isFinite(hp) ? hp + ' HP' : null,
+            e.profile?.attack?.name].filter(Boolean).join(' · ');
+    }).join('; ');
+}
+
 /**
  * The next slot of a level the engine places ahead of him: its encounter, or a quiet part first (its pace). .190 (B5):
  * going into section k of the track, the encounter is the one whose section k is (the same section every cycle)
@@ -370,12 +384,13 @@ export function aheadEvents(s, content, { into = false, root: dest = null, floor
     const here = s.scene.at === root || trueDungeonOf(s, s.scene.at) !== root ? 1 : floorAt(s, s.scene.at);
     const floor = Math.max(1, to || here);
     const lines = [];
-    const say = slotSay;
+    const say = slot => encounterRoster(s,slot) || slotSay(slot);
     const n = nextSlot(s, x, floor, section);
     let ahead = null;
     if (n && !n.quiet) {
         ahead = { turn: s.turn, cycle: x.cycle, floor, slot: n.id, ref: n.ref };
-        lines.push(`DUNGEON AHEAD (the engine's) — going on into a part of level ${floor} he has not seen: there he meets ${say(n)}${n.role === 'boss' ? ', the master of this Dungeon' : n.role === 'guard' ? `, the guardian of level ${floor}` : ''}. That is where this walk ends; bring exactly these, and the quiet way there is told in passing (a sound, a shadow or old tracks without consequence are no stop).`);
+        if (n.entities?.length) lines.push(`DUNGEON AHEAD (the engine's) — known encounter in this section: ${say(n)}. Preserve these identities and statuses. Only remaining opponents can appear. Do not add replacements.`);
+        else lines.push(`DUNGEON AHEAD (the engine's) — going on into a part of level ${floor} he has not seen: there he meets ${say(n)}${n.role === 'boss' ? ', the master of this Dungeon' : n.role === 'guard' ? `, the guardian of level ${floor}` : ''}. That is where this walk ends; bring exactly these, and the quiet way there is told in passing (a sound, a shadow or old tracks without consequence are no stop).`);
     } else if (n?.quiet) {
         lines.push(`DUNGEON AHEAD (the engine's) — the next part of level ${floor} he goes into holds no foe: shape this room with a find, tracks or other signs within it; no fight there. Carry the walk to it, not further.`);
     } else if (x.run.floors[floor]?.slots.some(sl => !resolved(s, sl))) {
@@ -858,7 +873,7 @@ const roleText = (sl) => (sl.role === 'boss' ? 'boss' : sl.role === 'guard' ? 'g
 function slotState(s, sl) {
     if (sl.taken) return 'dealt with by another company';
     if (!sl.entities.length) return 'not met';
-    if (!slotMet(sl) && !resolved(s, sl)) return 'known, not met';
+    if (!slotMet(sl) && !resolved(s, sl) && !sl.entities.some(id => DONE(s,id))) return 'known, not met';
     const n = sl.entities.length;
     const up = sl.entities.filter((id) => !DONE(s, id)).length;
     const dead = sl.entities.filter((id) => s.entities[id]?.status === 'dead').length;
@@ -990,6 +1005,7 @@ export function catalogLines(s, { extractor = false } = {}) {
         if (!extractor) return [];
         const slot = thresholdSlot(s);
         if (!slot) return [];
+        if (slot.entities.length) return ['Previously seen across this threshold: '+encounterRoster(s,slot)+'. Reuse these identities.'];
         return ['If individually visible across the threshold: creature.new ref "'+slot.ref+'", anchor "'+slot.anchor+'", count '+slot.count+', present:true, population "independent", life_stage "adult" unless juvenile, across: one verbatim clause showing them, desc: one short contiguous quote per individual, band: observed distance. This reserved ref is never an independent remote group. Sounds alone are clues.'];
     }
     const mine = Math.max(1, floorAt(s, s.scene.at));
@@ -1003,7 +1019,8 @@ export function catalogLines(s, { extractor = false } = {}) {
         for (const a of [x.ahead, x.ahead.next].filter(Boolean)) {
             const sl = x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
             // PULSE package B: a wandering minion comes to him where he is, it is not met where he arrives
-            if (sl && !slotMet(sl) && !resolved(s, sl)) L.push(`ENGINE ENCOUNTER (level ${a.floor}): when the reply shows ${sl.name ? titled(sl.name) : `the ${sl.species}${sl.count > 1 ? 's' : ''}`} ${a.wander ? 'coming to him here' : 'where he arrives'}, report creature.new ref "${sl.ref}", species "${sl.species}", anchor "${sl.anchor}", count ${sl.count}`);
+            if (sl?.entities.length) L.push('Established encounter: '+encounterRoster(s,sl)+'. Use existing IDs; no new group.');
+            else if (sl && !slotMet(sl) && !resolved(s, sl)) L.push(`ENGINE ENCOUNTER (level ${a.floor}): when the reply shows ${sl.name ? titled(sl.name) : `the ${sl.species}${sl.count > 1 ? 's' : ''}`} ${a.wander ? 'coming to him here' : 'where he arrives'}, report creature.new ref "${sl.ref}", species "${sl.species}", anchor "${sl.anchor}", count ${sl.count}`);
         }
     }
     for (const p of companiesOn(s, x, mine).filter((y) => y.npc)) L.push(`${p.npc} leads ${p.name} (inside on this level)`);

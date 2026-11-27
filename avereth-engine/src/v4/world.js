@@ -801,7 +801,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             hit = slotForNew(s, content, d, s.scene.at, prose);
         }
         if (hit?.existing) {
-            const ids = hit.slot.entities.filter((id) => s.entities[id]?.status !== 'dead');
+            const ids = hit.slot.entities.filter(id => {
+                const foe=s.entities[id];
+                return foe && foe.status !== 'dead' && !foe.fled && !foe.surrendered_to;
+            });
             if (d.present === false) {
                 for (const id of ids) namedHere.add(id);
                 if (ids.length) refs.set(normText(d.ref), ids[0]);
@@ -2128,8 +2131,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const sl = a && x.run.floors[a.floor]?.slots.find((y) => y.id === a.slot);
         if (sl && !slotMet(sl) && !resolved(s, sl) && !sl.entities.some(id => namedHere.has(id))) {
             step = { kind: 'engine' };
-            const ids = newEntity({ seq: 0, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [], count: sl.count, present: true, band: 'MEDIUM', more: true }, 'creature', { slot: sl.entities.length ? null : { root: x.id, floor: a.floor, slot: sl } });
-            if (ids.length) corrections.push(`ENGINE ENCOUNTER — ${sl.name ? sl.name : `${sl.count} ${sl.species}${sl.count > 1 ? 's' : ''}`} ${sl.count > 1 ? 'are' : 'is'} here in ${placeName(s, freshPart)} (the engine placed ${sl.count > 1 ? 'them' : 'it'} for this part of level ${a.floor}): the next reply shows ${sl.count > 1 ? 'them' : 'it'} at once.`);
+            const ids = newEntity({ seq: 0, type: 'creature.new', ref: sl.ref, species: sl.species, anchor: sl.anchor, desc: [], count: sl.count, present: true, band: 'MEDIUM', more: true }, 'creature', { slot: { root: x.id, floor: a.floor, slot: sl, existing: !!sl.entities.length } });
+            if (ids.length && sl.entities.length) corrections.push('ENGINE ENCOUNTER — here: '+ids.map(id=>s.entities[id].name).join(', '));
+            else if (ids.length) corrections.push(`ENGINE ENCOUNTER — ${sl.name ? sl.name : `${sl.count} ${sl.species}${sl.count > 1 ? 's' : ''}`} ${sl.count > 1 ? 'are' : 'is'} here in ${placeName(s, freshPart)} (the engine placed ${sl.count > 1 ? 'them' : 'it'} for this part of level ${a.floor}): the next reply shows ${sl.count > 1 ? 'them' : 'it'} at once.`);
         }
     }
 

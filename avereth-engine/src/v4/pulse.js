@@ -26,7 +26,7 @@ import { lineage, placeName, settlementOf, namesKind, sameKinds, kindOf as kindW
 import { rulesetOf } from '../content.js';
 import { dayPart, outdoorsInTown } from './settlement.js';
 import { trueDungeonOf } from './dungeon.js';
-import { livingOf, floorAt, wanderSlot, companiesHere, slotSay } from './living.js';
+import { livingOf, floorAt, wanderSlot, companiesHere, encounterRoster, slotSay } from './living.js';
 import { sceneHandle } from './scene_handles.js';
 
 export const PULSE_VERSION = 1;
@@ -453,7 +453,7 @@ function settle(s, content, ctx, emit, ordered, exposure, early = false) {
             ...(exposure.type === 'pause' ? { safety: exposure.safety } : {}), ...(dz ? { floor: dz.floor } : {}), ...(forced ? { forced: true } : {}) };
         // package B: an open danger in a Dungeon is its free minion slot, bound for this reply with the draw
         if (d.open && d.kind === 'danger' && dz?.slot) {
-            d.wander = { dungeon: dz.root, cycle: dz.cycle, floor: dz.floor, slot: dz.slot.id, ref: dz.slot.ref, who: slotSay(dz.slot), many: dz.slot.count > 1 };
+            d.wander = { dungeon: dz.root, cycle: dz.cycle, floor: dz.floor, slot: dz.slot.id, ref: dz.slot.ref, who: encounterRoster(s,dz.slot) || slotSay(dz.slot), many: (dz.slot.entities?.length ? dz.slot.entities.filter(id=>s.entities[id]?.status!=='dead' && !s.entities[id]?.fled && !s.entities[id]?.surrendered_to).length : dz.slot.count) > 1 };
             P.reservedAhead = dz.root;
         }
         if (d.open && d.kind === 'meeting' && dz) d.company = dz.companies[0].name;

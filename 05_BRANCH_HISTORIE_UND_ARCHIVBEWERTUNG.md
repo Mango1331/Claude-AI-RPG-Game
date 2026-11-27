@@ -2,6 +2,8 @@
 
 **Historische Bestandsprüfung 24.11.2026:** **34 Remote-Branches**, **keine offenen Pull Requests**, keiner der gemeldeten Branches geschützt. `main` ist die Dokumentationslinie und hat eine von der Produktlinie `.200` **abgewichene Git-Historie**; die beiden Branches sind nicht austauschbar.
 
+**Stand 27.11.2026 (`git ls-remote`):** 9 Remote-Branches – `main`, die beiden `experiment/211-*`, `.200` (`claude/c-planner-prototype-2026-10-02-gpt-c666`) sowie `Testrun-v1`, `chatgpt/narrator-gm-tools-2026-10-02`, `claude/pulse-package-a`, `experiment/architecture-prototype-201`, `experiment/dynamic-gm-model`. **Auf dem Remote existieren keine Tags.** Die unten vorgesehenen Archiv-Tags für bereits entfernte Branchspitzen sind dort also nicht vorhanden. Ob deren Commits anderweitig gesichert sind, ist hier nicht belegt. Vor weiteren Löschungen gilt unverändert: zuerst Tag sichern und verifizieren.
+
 ## Drei dauerhaft gewünschte Branches
 
 | Dauerhaft | Zweck | Vor Beginn der Bereinigung überprüfter Commit |

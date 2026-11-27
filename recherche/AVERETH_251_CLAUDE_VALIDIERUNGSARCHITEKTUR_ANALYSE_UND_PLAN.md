@@ -13,6 +13,8 @@
 
 **Kennzeichnung der Revision.** **[beibehalten]** · **[präzisiert]** · **[geändert]** · **[zurückgezogen]** – jeweils gegenüber Stand 1.
 
+**M-Nummern** in diesem Bericht sind Zeilenindizes in `chat.jsonl.gz` einschließlich der Header-Zeile 0. Das entspricht der Zählung ohne Header plus 1, Martin M17 hier ist M16 im Diskussionspapier. **Umsetzung:** [Codex-Auftrag .252](AVERETH_252_CODEX_AUFTRAG_VALIDIERUNGSVEREINFACHUNG.md).
+
 ---
 
 ## 0. Kurzfassung (Stand 2)

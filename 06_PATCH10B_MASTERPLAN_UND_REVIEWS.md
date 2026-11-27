@@ -4,6 +4,7 @@ Nur **abgeschlossene Entwicklungs-/Forschungsetappen** werden hier aufgenommen; 
 
 | Etappe | Fachlicher Abschluss und Gegenreview | Originale / Abnahmen |
 |---|---|---|
+| **.251 · Validierungsarchitektur: Analyse und Plan** | [Diskussionsgrundlage](recherche/AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md) · [Claude-Analyse Stand 2](recherche/AVERETH_251_CLAUDE_VALIDIERUNGSARCHITEKTUR_ANALYSE_UND_PLAN.md) · [GPT-Gegenreview](recherche/AVERETH_251_GPT_GEGENREVIEW_CLAUDE_VALIDIERUNGSARCHITEKTUR.md) · [Codex-Auftrag](recherche/AVERETH_252_CODEX_AUFTRAG_VALIDIERUNGSVEREINFACHUNG.md) | [Offline-Proben und Zählung](recherche/claude_251_analyse/) |
 | **.245–.251 · Bekannte Wege und gemeinsame Ortswechsel** | [Fachbericht, Abnahme und Installation](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md) | [Prüfprogramm](recherche/ortssteuerung_245/verify_series.mjs) |
 | **.236–.244 · Party und exploratives Spiel** | [Dauerhafte Party und Dungeonzugang](recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md) | [Spielarchive](testrun_10b/README.md) |
 | **.222–.235 · R1 und echte Party-Spielserie** | [Fachbericht und Entscheidung zu User17](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) · [Gegenreview R1–R4 und Party-Entscheidungsvorlage](recherche/AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md) | [Prüfbare Originalarchive je Versuch](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) |

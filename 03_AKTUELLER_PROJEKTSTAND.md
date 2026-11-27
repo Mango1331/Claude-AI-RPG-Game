@@ -1,6 +1,6 @@
 # Avereth Engine – aktueller Projektstand
 
-**.251 hat den unabhängigen GPT-Diffreview mit GO-Empfehlung für Usertest 17 abgeschlossen.** Der dokumentierte NPC-Anwesenheitsbefund bleibt ein Beobachtungspunkt, kein verpflichtender Vorabpatch. Der Nutzer hat Claude befristet zur unabhängigen Validierungs- und Architekturuntersuchung hinzugezogen. [Diskussion und Analysegrundlage](recherche/AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md). Produktcommit und Design-Kanon bleiben unverändert. Das getrennt gespeicherte Gasthauszimmer lässt sich über Freitext und die Ortswahl verlassen. Madge, Mahlzeit, Markt und die tatsächlichen Mitreisenden wurden im Modellspiel geprüft. Dieselbe Party hat zwei Gildenaufträge abgeschlossen. Der gekaufte Primer führte im fortgesetzten Spiel zum erlernten und benutzten Heilskill. [Gegenreview, Originalarchive, Abnahme und Installation](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md)
+**Stand 27.11.2026.** Spielbar ist der Entwicklungskandidat `.251` mit GO-Empfehlung für den persönlichen Usertest 17. Die anschließende Untersuchung der Validierungsarchitektur ist mit Analyse, Gegenreview und überarbeitetem Plan abgeschlossen. Als nächster Entwicklungsschritt ist ein Codex-Auftrag zur Vereinfachung vorbereitet. Produktcode, Design-Kanon und die .251-Testfreigabe sind dadurch unverändert.
 
 ## Aktuelle Referenzen
 
@@ -10,37 +10,27 @@
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
-`main` ist die separate Dokumentations- und Originalarchivlinie. Diese Tabelle ist ein Snapshot, keine Garantie für spätere HEADs. Vor neuer Arbeit aktuelle Remote-Refs prüfen.
+`main` ist die Dokumentations- und Originalarchivlinie. Die Tabelle ist ein Snapshot, vor neuer Arbeit die Remote-HEADs prüfen.
 
-## Letzte abgeschlossene Entwicklungsarbeit
+## Letzte abgeschlossene Etappen
 
-- .236–.244 führte die dauerhafte Standardparty ein. Der zusammenhängende Modelllauf belegt den ersten Questabschluss, die zweite Unternehmung und über getrennte Fortsetzungen die Auszahlung an einen zunächst abwesenden Gefährten, den Verkauf von Beute und den Lernbeginn. [Abnahme und Installation](recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md)
-- .222–.235 bildete die erste OpenRouter-Serie mit dem anschließenden kritischen Gegenreview. [Modellarchive und Serienbericht](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) · [Entscheidungsvorlage](recherche/AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md)
+| Etappe | Ergebnis | Maßgebliche Quelle |
+|---|---|---|
+| **.251 · Validierungsarchitektur (Analyse und Plan)** | V1 „Claim + State“ innerhalb von P/N/X: JS-Sprachprüfungen im Standardpfad entfernen, Zustandsprüfungen behalten. Keine neuen Pflichtfelder, Validatoren oder Modellaufrufe. Entscheidungen D1–D9 sind vorbereitet, D4 braucht ausdrücklich das Nutzervotum. | [Claude-Analyse, Stand 2](recherche/AVERETH_251_CLAUDE_VALIDIERUNGSARCHITEKTUR_ANALYSE_UND_PLAN.md) · [GPT-Gegenreview](recherche/AVERETH_251_GPT_GEGENREVIEW_CLAUDE_VALIDIERUNGSARCHITEKTUR.md) · [Diskussionsgrundlage](recherche/AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md) |
+| **.245–.251 · Bekannte Wege und gemeinsame Ortswechsel** | Gasthaus, Markt, Party und zwei Gildenaufträge im Modellspiel belegt. GO für Usertest 17 mit offenem Befund zur NPC-Wiedererkennung. | [Fachbericht, Abnahme und Installation](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md) |
 
-- .221 führte den lokalen Standpunkt und gezielte Erinnerungen ein. User16 zeigte den verbleibenden Zielbefund am Türpfosten. [Ausgangsbericht](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md)
+Ältere Etappen ab .203 stehen im [Etappenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md), die vollständige Forschung im [Forschungsindex](recherche/README.md).
 
-- .220 bindet Reisezeit und Mitreisende an den tatsächlich zurückgelegten Abschnitt. [Fachbericht, Abnahme und Produktdiff](recherche/AVERETH_220_REISEZEIT_UND_MITREISENDE.md)
+## Nächste Schritte
 
-- .219 setzte das User15-Paket in sieben Etappen einschließlich Reisemana und lokaler Handlungsdurchführung um. Der GPT-Diffreview bestätigte die Etappe grundsätzlich und führte zum gezielten Folgepaket .220. [User15-Fachbericht](recherche/AVERETH_219_USER15_FACH_UND_ABNAHME.md)
+1. **Persönlicher Usertest 17 auf .251** ist weiterhin möglich und hängt nicht vom Vereinfachungsauftrag ab. Upload und Archivierung laufen nach dem [Usertest-Ablauf](01_ARBEITSWEISE_GPT_CODEX.md#persönliche-usertests--verbindlicher-ablauf).
+2. **Codex-Auftrag Validierungsvereinfachung:** [Auftrag und Abnahmeplan](recherche/AVERETH_252_CODEX_AUFTRAG_VALIDIERUNGSVEREINFACHUNG.md). Er beginnt erst, wenn der Nutzer ihn an Codex gibt. Danach folgt der unabhängige GPT-Diffreview. Bezahlte Modelltests sind nur nach eigener Freigabe erlaubt, vom freigegebenen Dollar sind rechnerisch 0,747428006 USD übrig.
+3. **Kanon:** Bleibt bis zur fachlichen Abnahme der Umsetzung unverändert. Danach passt GPT gegebenenfalls die Formulierung der NPC-Wiederbegegnung an (`met` → einheitliche Anwesenheitsregel).
 
-- .218 korrigierte die Autorisierung von Partyabreden, doppelte Vergütung und angekündigte Übergaben. User15 spielte auf diesem Stand solo. [Party-Gegenreview](recherche/AVERETH_218_PARTY_GEGENREVIEW.md) · [Persönlicher Solorun](testrun_10b/user-20261126-085419-218/)
+## Arbeitsaufteilung
 
-- .216 verarbeitete sieben belegte Extractorantworten lokal und sparte im User14-Originalzug drei Folgeanfragen mit 46.330 Inputtokens. Dieser Stand bildet die Vergleichsbasis für den Partykandidaten. [Extractor-Abnahme](recherche/AVERETH_216_EXTRACTOR_NORMALISIERUNG.md)
+Der Nutzer entscheidet über Spielgefühl, Kanon, Prioritäten und Freigaben. Codex implementiert und testet beauftragte Pakete. GPT führt unabhängige Fach-, Code- und Run-Reviews und hält die Dokumentation. Claude steht befristet (Claude Pro ab 27.11.2026 für einen Monat) ausschließlich für beauftragte unabhängige Analysen und Planung zur Verfügung, nicht für Implementierungen. Der GPT-Chat, der die .251-Reviews geführt hat, hat seine maximale Länge erreicht. Sein Übergabestand ist dieser Projektstand mit den verlinkten Berichten.
 
-- [User12 und .212-Fach-/Offline-Abnahme](recherche/AVERETH_212_FACH_UND_ABNAHME.md): Revisionsbindung, NPC-Sidestep, Runner-Sicherheit, Handel, lokale Reise, PULSE, Board, native Aktionen und HUD. Wiederimplementierung nach Cloud-Ausfall, gesichert auf `7cf33bc0`. 3.589/3.589 Node-Prüfungen, 2.235 historische Replays ohne neue ungeklärte Abweichung, 122/122 archivierte Weltstufen und isolierte ST-Abnahmen laut Implementiererbericht.
-- [.213-Kontrollreview](recherche/AVERETH_213_GPT_KONTROLLREVIEW.md): zusätzliche Finanzkorrekturen auf `e7a36e2f`; R1 bestätigt behoben, eine konkrete R2-Variante bleibt bewusst zurückgestellt. `a89c690d` erhöht nur die Versionsnummer. Keine erneute vollständige .213-Abnahme behauptet. Nutzer entschied GO für persönlichen Test statt weiterer Minifix-Runde.
-- **Persönliches ST-Profil:** vollständige Engine-Extension aus dem Entwicklungscheckout; Character Card/Description, Narrator-Preset, Lorebook, Regex und ST-Einstellungen unverändert. Narrator Contract bleibt `.211`. Der Runner ist für persönliches Spiel nicht erforderlich.
+**Persönliches ST-Profil:** vollständige Engine-Extension aus dem Entwicklungscheckout. Character Card, Narrator Contract `.211`, Preset, Lorebook, Regex und ST-Einstellungen sind unverändert.
 
-## Persönliche Usertests 13 und 14
-
-Der bestätigte Gegenreview bildete die Grundlage der Implementierungsfreigabe für .214. Die zwei ursprünglichen Spielertexte schließen eine eindeutig vereinbarte Zahlung mit Stababgabe ab. Ein Gegenangebot, das ausdrücklich auch den Beutel verlangt, erfordert eine entsprechend eindeutige Autorisierung. 3.591 Node-Prüfungen und 2.235 historische Replayvergleiche bestanden. [User13-Gegenreview](testrun_10b/user-20261125-212154-213/CODEX_GEGENREVIEW.md) · [.214-Fachbericht und Reviewdiff](recherche/AVERETH_214_SURRENDER_COMBAT_NEGOTIATION.md)
-
-User14 spielte .215 mit Ossen bis zum ersten Katakombenkampf. Erzählung und gespeicherte Abrede trugen die gemeinsame Reise, im Kampf blieb Ossen Zuschauer. Der Runordner hält das ursprüngliche Feedback, die damals offene Party-Idee und beide Reviews fest. [Spielerfeedback](testrun_10b/user-20261126-010332-215/FEEDBACK_SPIELGEFUEHL.md) · [Offene Idee aus User14](testrun_10b/user-20261126-010332-215/PARTY_FACHPLANUNG_OFFEN.md) · [Gegenreview am Original](testrun_10b/user-20261126-010332-215/CODEX_GEGENREVIEW.md)
-
-Auf .216 untersuchte Codex die Party zunächst separat vom Extractorpatch. Nach dem GPT-Fachreview bestätigte der Nutzer D1–D9 und beauftragte den Architekturplan. Vor der Implementierung bestätigte er mit D10–D12 den XP-Anspruch bei vorzeitigem Ausscheiden, die Folgen einer Trennung für Quest-XP und Geld sowie das Beobachtungsfenster beim gemeinsamen Rückzug. Der erste GPT-Produktreview dieser Umsetzung führte zu R1–R6 und zum Korrekturkandidaten .218. [Entscheidungen in § 12](recherche/AVERETH_PARTY_SYSTEM_FACHPLANUNG.md#12-gemeinsame-designentscheidungen-nach-gpt-review) · [Architekturauftrag](recherche/AVERETH_PARTY_ARCHITEKTUR_FACHPLAN_AUFTRAG.md) · [Patchplan mit Abnahmematrix](patch_plans_10b/FACHPLAN_PARTY_SYSTEM.md) · [Freigabestand vor der Implementierung](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/fba804716d91b3070634eb5c4bbbce7355938550)
-
-**Arbeitsaufteilung:** Codex übernimmt beauftragte Analysen, Implementierungen, Abnahmen und Gegenreviews; GPT bleibt unabhängiger Fach-, Code- und Run-Reviewer. Keine weiteren Claude-Aufträge. Historische Fachquellen bleiben gültig als Belege ihrer jeweiligen Etappe.
-
-## Einstieg und Fachquellen
-
-[Startnachricht für neue GPT-Chats](README.md#einstieg-eines-neuen-gpt-chats) · [Arbeitsweise](01_ARBEITSWEISE_GPT_CODEX.md) · [Etappenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Forschung](recherche/README.md) · [Originalarchive](testrun_10b/README.md) · [Verbindlicher Produkt-Kanon .200](02_DESIGN_KANON.md).
+[Startnachricht für neue GPT-Chats](README.md#einstieg-eines-neuen-gpt-chats) · [Arbeitsweise](01_ARBEITSWEISE_GPT_CODEX.md) · [Design-Kanon](02_DESIGN_KANON.md) · [Etappenindex](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Originalarchive](testrun_10b/README.md) · [Vorheriger ausführlicher Projektstand](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/e65cba42803d4caa5e5ba7c3c4e3b33da1cc2aaa/03_AKTUELLER_PROJEKTSTAND.md)

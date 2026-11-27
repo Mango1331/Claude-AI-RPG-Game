@@ -1,6 +1,6 @@
 # Avereth Engine – Roadmap nach 10B
 
-**Als Nächstes prüft GPT den Produktdiff von .217 auf .218.** Danach entscheidet der Nutzer über den persönlichen Usertest. Die bestätigten Party-Regeln D1–D12 bilden weiterhin die Grundlage. [Projektstand](03_AKTUELLER_PROJEKTSTAND.md) · [Gegenreview und Abnahme .218](recherche/AVERETH_218_PARTY_GEGENREVIEW.md)
+**Den aktuellen nächsten Schritt nennt der [Projektstand](03_AKTUELLER_PROJEKTSTAND.md#nächste-schritte):** Usertest 17 auf .251 und der vorbereitete [Codex-Auftrag zur Validierungsvereinfachung](recherche/AVERETH_252_CODEX_AUFTRAG_VALIDIERUNGSVEREINFACHUNG.md). Die folgenden Themen sind spätere Entscheidungen.
 
 ## Zur späteren Entscheidung
 

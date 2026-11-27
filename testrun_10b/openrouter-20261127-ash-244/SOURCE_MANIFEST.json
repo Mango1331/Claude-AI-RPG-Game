@@ -1,0 +1,36 @@
+{
+  "build": "4.3.0-c.6.6.244",
+  "commit": "630abc2099b28155dae5ea573d0c8fbf08156086",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Unveränderte AI-Anwerbung, 15 Nachrichten. Direkte HUD-Einladung und lokales Entfernen.",
+  "savedMessages": 19,
+  "requests": 1,
+  "costUSD": "0.00001612",
+  "usage": {
+    "prompt_tokens": 248,
+    "completion_tokens": 31,
+    "total_tokens": 279
+  },
+  "sha256": {
+    "actions.jsonl.gz": "f8e135c36ade173498e93b889bcd759a29172f186dad0255a6fbd71df6ddd815",
+    "chat-0.jsonl.gz": "78812a63daaa13c7cc561200558c6a771e460ace221396f0b0ba215b9deedd6c",
+    "chat.jsonl.gz": "361b5a986686872d8e6f7bb3027716cf0018e87fa32b9225f848fca28151a678",
+    "events.json.gz": "af6c8fee3f815382ad761a9cf9efcb28a7b8f12fe43d595172f1486e1ffeb992",
+    "explore.log.gz": "b9cc0b6dcef32b1f14a018f013df4f7270188de64f9dd9662a0fe9e0ef875890",
+    "last-verified-world.json.gz": "5c952b44c318c001809e58e19f0b6869f889a3077548b3781884606e4b1d124d",
+    "parent-check.json.gz": "a05943b2a51f0bd6a238487e5be5110238d298875aea63401f6af8a1b91b3f04",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "a0e5e476436c592f4e785eb7106619a853f290ea6cd85cc6afc477103be73b1f",
+    "raw-195.gz": "a771ad070978a8e1b219a58e615af01dd047072dccb57bc7ebe620e92d952d87",
+    "requests.jsonl.gz": "6adc1a995125674b9b018069d208bf8d19eb11da6ebfa62bb16060b0b970b5f7",
+    "response.json.gz": "ccf30745785626b56a70a673de23dbd22eaa6fe9f33880d250eb0532c8c51b18",
+    "st.log.gz": "012c464ed14aad06cfd650f75aa5e47809be5716a3fdb4f67f015bd51bec3eda",
+    "turns.jsonl.gz": "e19831be9a3d86dc95d4247fc7dd66d2606ccb1038a3d3cc69a8e766ce9ae1ae",
+    "visible.json.gz": "8e3b76ea68c306c7d519d8728987c130163dc9788e2e4864bd809ffb75d2eec5",
+    "world-0.json.gz": "8088e60cf181a61fe7ca4d5c13b010c7c624a4847e7b1b0d9da6ae6e0a1e11ec"
+  }
+}

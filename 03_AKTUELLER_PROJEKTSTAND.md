@@ -1,6 +1,6 @@
 # Avereth Engine – aktueller Projektstand
 
-**.251 ist der Kandidat für den unabhängigen GPT-Gesamtreview vor Usertest 17.** Das getrennt gespeicherte Gasthauszimmer lässt sich über Freitext und die Ortswahl verlassen. Madge, Mahlzeit, Markt und die tatsächlichen Mitreisenden wurden im Modellspiel geprüft. Dieselbe Party hat zwei Gildenaufträge abgeschlossen. Der gekaufte Primer führte im fortgesetzten Spiel zum erlernten und benutzten Heilskill. [Gegenreview, Originalarchive, Abnahme und Installation](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md)
+**.251 hat den unabhängigen GPT-Diffreview mit GO-Empfehlung für Usertest 17 abgeschlossen.** Der dokumentierte NPC-Anwesenheitsbefund bleibt ein Beobachtungspunkt, kein verpflichtender Vorabpatch. Der Nutzer hat Claude befristet zur unabhängigen Validierungs- und Architekturuntersuchung hinzugezogen. [Diskussion und Analysegrundlage](recherche/AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md). Produktcommit und Design-Kanon bleiben unverändert. Das getrennt gespeicherte Gasthauszimmer lässt sich über Freitext und die Ortswahl verlassen. Madge, Mahlzeit, Markt und die tatsächlichen Mitreisenden wurden im Modellspiel geprüft. Dieselbe Party hat zwei Gildenaufträge abgeschlossen. Der gekaufte Primer führte im fortgesetzten Spiel zum erlernten und benutzten Heilskill. [Gegenreview, Originalarchive, Abnahme und Installation](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md)
 
 ## Aktuelle Referenzen
 

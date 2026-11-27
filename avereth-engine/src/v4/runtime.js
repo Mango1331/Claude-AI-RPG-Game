@@ -419,14 +419,29 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     if (chosen) pl.commands=[{seq:1,type:'go',to:chosen,quote:msg.mes.split(/[.!?]/)[0]}];
     const guarded = guardCommands(msg.mes, pl.commands.filter(c=>!hud?.bound.includes(c.seq)), guardContext(before, content, catalog));
     if(hud)guarded.kept=[...guarded.kept,...pl.commands.filter(c=>hud.bound.includes(c.seq))].sort((a,b)=>a.seq-b.seq);
-    const pc=guarded.kept.length===1 && !guarded.dropped.length && !actionInput && guarded.kept[0];
+    const partySteps = guarded.kept.filter(c=>c.type==='party');
+    const pc = !actionInput && !guarded.dropped.length && partySteps.length===1 && partySteps[0];
+    const rest = guarded.kept.filter(c=>c!==pc);
+    let organisation;
+
     const recruitment=pc?.type==='party' && (pc.act==='invite' || pc.act==='offer' && !pc.agreement &&
         (!before.party?.members[pc.who] || before.party.members[pc.who].mode==='left'));
-    if(pc?.type==='party' && (recruitment || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who]?.standard)){
+    if(pc?.type==='party' && pc.needs==null && rest.every(c=>['go','other'].includes(c.type)) && (recruitment || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who]?.standard)){
         const local=await partyControl(before,content,{act:recruitment?'invite':pc.act==='leave'?'remove':pc.act,ref:pc.who,source:msg.mes,revision:actionPrefix(chat,u),
             proposal:recruitment && (pc.act==='offer' || hasPartyTerms(msg.mes,content,pc)) ? pc : null},
             messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}));
-        return {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),plan,interp,...local};
+        const receipt={v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),plan,interp,...local};
+        if (!rest.length) return receipt;
+        const organised=clone(before);
+        for(const event of local.events) applyEvent(organised,event);
+        const desired=pc.act==='wait'?'wait':pc.act==='leave'?'left':'follow';
+        const ready=organised.party?.members[pc.who]?.mode===desired;
+        const joint=rest.some(c=>c.needs===pc.seq || c.type==='go' && /\b(?:together|let(?:['’]s| us)|only if)\b/i.test(c.quote)) ||
+            /\bonly if\b/i.test(msg.mes);
+        if (!ready && (joint || !recruitment)) return receipt;
+        before=organised;
+        guarded.kept=rest.map(c=>c.needs===pc.seq ? {...c,needs:null} : c);
+        organisation=local;
     }
     // a contract given up only in words for later is no act now (live run 03.10.2026)
     const announced = announcedAbandon(msg.mes, guarded.kept, before);
@@ -470,7 +485,12 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         ...guarded.dropped.map((x) => ({ act: x.command?.type ?? null, seq: x.command?.seq ?? null, quote: x.command?.quote ?? null, source: 'planner', dropped: x.rule })),
     ].map(({ type, ...a }) => a);
     const irRec = { v: IR_VERSION, route: m.route === 'v4' ? 'v4' : 'v3', reason: 'planner', links: ir.links, acts };
-    return executeMappedTurn(chat,content,{u,before,m,guarded,inputHash,llm,previous,plan,interp,irRec,typed:!!actionInput});
+    const turn=await executeMappedTurn(chat,content,{u,before,m,guarded,inputHash,llm,previous,plan,interp,irRec,typed:!!actionInput});
+    if (organisation && !turn.action_error) {
+        turn.events=[...organisation.events,...turn.events];
+        if (organisation.party_call) turn.party_call=organisation.party_call;
+    }
+    return turn;
 }
 function actionRefused(inputHash,reason,extra={}) {
     return {v:RECORD_V4,input_hash:inputHash,route:'v4',events:[],command:null,action_error:reason,...extra};

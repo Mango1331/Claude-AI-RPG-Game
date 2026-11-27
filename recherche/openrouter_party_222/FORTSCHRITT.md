@@ -1,4 +1,6 @@
-# Fortsetzungspunkt der Modellserie
+# Historischer Fortsetzungspunkt der Modellserie
+
+Die Serie ist abgeschlossen. Der aktuelle Stand einschließlich aller späteren Läufe steht im [Abnahmebericht zu .235](../AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md).
 
 Kumulatives Limit 2 USD, operativer Stopp bei 1,95 USD einschließlich der Reservierung des nächsten Requests. Die Sperre arbeitet pro physischem Request über alle Runs. Ein unbekannter Abschluss blockiert die Serie bis zur Kostenklärung. Alle Rechnungsbeträge stehen in den unveränderten Providerantworten. Die Runs beginnen mit benannten Originalpräfixen in isoliertem ST 1.19.
 

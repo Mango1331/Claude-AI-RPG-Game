@@ -8,13 +8,15 @@ import httpx
 root=Path(__file__).resolve().parent
 base='https://openrouter.ai/api/v1'
 model=os.environ.get('TEST_MODEL','z-ai/glm-5.3-flash')
-assert model in ('z-ai/glm-5.3-flash','openai/gpt-4.1-mini')
-secondary=model=='openai/gpt-4.1-mini'
+assert model in ('z-ai/glm-5.3-flash','openai/gpt-4.1-mini','openai/gpt-5.4-mini')
+secondary=model.startswith('openai/')
+reasoner=model=='openai/gpt-5.4-mini'
 provider='openai' if secondary else 'wafer/us'
 key=os.environ['OPENROUTER_API_KEY']
-route=next(e for e in json.loads((root/('secondary.json' if secondary else 'endpoints.json')).read_text())['data']['endpoints'] if e['tag']==provider)
+route=next(e for e in json.loads((root/('gpt-5.4-mini.json' if reasoner else 'secondary.json' if secondary else 'endpoints.json')).read_text())['data']['endpoints'] if e['tag']==provider)
 prices={'prompt':D('0.000000045'),'completion':D('0.00000019')}
 if secondary:prices={'prompt':D('0.0000004'),'completion':D('0.0000016')}
+if reasoner:prices={'prompt':D('0.00000075'),'completion':D('0.0000045')}
 assert route['status']==0 and all(D(route['pricing'][k])<=v for k,v in prices.items())
 assert set(route['pricing'])<={'discount','prompt','completion','input_cache_read','web_search'} and D(route['pricing']['input_cache_read'])<=prices['prompt']
 lock=(root/'lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
@@ -45,7 +47,7 @@ async def chat(req):
   reserve=D(route['context_length'])*prices['prompt']+D(maximum)*prices['completion']
   data.pop('clear_thinking',None);data.pop('reasoning_effort',None)
   data.update(provider={'only':[provider],'allow_fallbacks':False,'max_price':{**{k:float(v*1000000) for k,v in prices.items()},'request':0,'image':0}})
-  if secondary:data.pop('reasoning',None)
+  if secondary and not reasoner:data.pop('reasoning',None)
   else:data['reasoning']={'effort':'low'}
   if data.get('stream'):data['stream_options']={'include_usage':True}
   async with httpx.AsyncClient(timeout=240,follow_redirects=False) as client:

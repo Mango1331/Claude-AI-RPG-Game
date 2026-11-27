@@ -1,3 +1,7 @@
 # Ende des gemeinsamen Old-Crown-Auftrags
 
 Fortsetzung des realen I-Spielstands ab Sektion 2 mit denselben Bewegungsansagen wie L und M. N1 und N2 erreichen die Sektionen 3 und 4. N3–4 besiegen Alaric und Ossen den Gallery Warden. Der gebuchte Pool von 540 Kampf-XP wird halbiert. N5 führt an den Gildenschalter. Der abgeschlossene Vertrag gewährt beiden jeweils 225 Quest-XP. Die Vergütung von 90 cp ist mit einem begleichten Anspruch über 45 cp für Ossen abgerechnet. N6 beendet die Mitgliedschaft. Nach jedem Zug bestätigt das Neuladen den Zustand. [Vollständiger Chat, Events und physische Requests](SOURCE_MANIFEST.json)
+
+## Tatsächliche Startgrenze
+
+Der Import verwendete 60 der 61 Nachrichten von I22. Die letzte übernommene Nachricht stammt vom Spieler. Der gefaltete Startort war `loc.old_crown_catacombs.l1_s2`. [Vergleich mit dem vollständigen Elternzug](PREFIX.json)

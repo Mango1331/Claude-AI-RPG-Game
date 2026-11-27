@@ -1,18 +1,20 @@
 # Avereth Engine – aktueller Projektstand
 
-**Build .221 liegt zum unabhängigen GPT-Diffreview vor.** Im verketteten User16-Replay erreicht Alaric den Türpfosten, beobachtet die beiden Goblins von außen und erinnert sich bei der späteren Gildenrückkehr an die bedingte Zusage. Grundlage sind Originalprosa und gezielt geänderte Offline-Modellantworten. Der persönliche Usertest 17 folgt auf die Reviewentscheidung. [Fachbericht, Installation und Produktdiff](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md)
+**Build .235 liegt zum unabhängigen GPT-Gesamtreview vor.** Die OpenRouter-Serie belegt unter anderem den gezielten Angriff am Türpfosten, Ossens gemeinsame Dungeonquest, die Auszahlung bei Anwesenheit und die offene Schuld nach dem Austritt. Im frischen .235-Lauf scheiterte Ossens Aufnahme trotz zweier hörbarer Zusagen. Codex empfiehlt, Usertest 17 bis zur Entscheidung über die Sprecher- und Gruppenbindung zurückzustellen. [Abnahme, offene Befunde, Installation und Archive](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md)
 
 ## Aktuelle Referenzen
 
 | Zweck | Verifizierte Referenz |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`a3a46cf8`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/a3a46cf8a53336958c4b1535204bccd3485251ea) · Build `4.3.0-c.6.6.221` |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`8750a97f`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/8750a97f5a986d328db4dc98a3a93d157925158c) · Build `4.3.0-c.6.6.235` |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
 `main` ist die separate Dokumentations- und Originalarchivlinie. Diese Tabelle ist ein Snapshot, keine Garantie für spätere HEADs. Vor neuer Arbeit aktuelle Remote-Refs prüfen.
 
 ## Letzte abgeschlossene Entwicklungsarbeit
+
+- .221 führte den lokalen Standpunkt und gezielte Erinnerungen ein. User16 zeigte den verbleibenden Zielbefund am Türpfosten. [Ausgangsbericht](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md)
 
 - .220 bindet Reisezeit und Mitreisende an den tatsächlich zurückgelegten Abschnitt. [Fachbericht, Abnahme und Produktdiff](recherche/AVERETH_220_REISEZEIT_UND_MITREISENDE.md)
 

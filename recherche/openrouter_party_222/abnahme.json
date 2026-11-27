@@ -1,0 +1,300 @@
+{
+  "engine": "4.3.0-c.6.6.235",
+  "productCommit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+  "node": {
+    "tests": 3609,
+    "pass": 3609,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0
+  },
+  "historical": {
+    "summary": "baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1386 differing, 1386 of them accepted with their exact output, 0 not accepted, 0 accepted but equal",
+    "campaigns": [
+      "b16-rogue-sale: player 41 (board 1, forge 0, control 5, planner failed 0) · reply 35 (extraction failed 0, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 498 events, 0 fold errors, 0 validation problems · vs original build 31 same / 45 different",
+      "b17-mage: player 106 (board 3, forge 0, control 14, planner failed 0) · reply 90 (extraction failed 0, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 1436 events, 0 fold errors, 0 validation problems · vs original build 61 same / 135 different",
+      "b17-rogue: player 140 (board 3, forge 0, control 13, planner failed 0) · reply 122 (extraction failed 0, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 1914 events, 0 fold errors, 0 validation problems · vs original build 93 same / 169 different",
+      "b17-warrior: player 168 (board 7, forge 1, control 14, planner failed 3) · reply 141 (extraction failed 0, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 2206 events, 0 fold errors, 0 validation problems · vs original build 103 same / 206 different",
+      "b18-mage: player 22 (board 1, forge 0, control 4, planner failed 0) · reply 17 (extraction failed 1, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 283 events, 0 fold errors, 0 validation problems · vs original build 17 same / 22 different",
+      "b18-rogue: player 200 (board 1, forge 0, control 10, planner failed 4) · reply 181 (extraction failed 1, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 2278 events, 0 fold errors, 0 validation problems · vs original build 142 same / 239 different",
+      "b18-warrior: player 200 (board 3, forge 1, control 16, planner failed 0) · reply 173 (extraction failed 0, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 2229 events, 0 fold errors, 0 validation problems · vs original build 171 same / 202 different",
+      "b19-mage: player 94 (board 2, forge 0, control 8, planner failed 0) · reply 74 (extraction failed 0, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 1115 events, 0 fold errors, 0 validation problems · vs original build 57 same / 111 different",
+      "b19-rogue: player 32 (board 1, forge 0, control 3, planner failed 0) · reply 29 (extraction failed 0, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 456 events, 0 fold errors, 0 validation problems · vs original build 21 same / 40 different",
+      "b19-warrior: player 200 (board 3, forge 1, control 13, planner failed 0) · reply 170 (extraction failed 0, empty 0) · skipped {\"campaign start\":1} · replay errors 0 · fold 2352 events, 0 fold errors, 0 validation problems · vs original build 145 same / 225 different"
+    ]
+  },
+  "isolatedST": [
+    {
+      "mode": "party217",
+      "ok": true,
+      "seconds": 86,
+      "checks": 41,
+      "passed": 41,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 40,
+      "started": "2026-11-27T10:16:32.597Z",
+      "finished": "2026-11-27T10:17:58.605Z",
+      "stVersion": "1.19.0",
+      "stCommit": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+      "chromium": "156.0.8078.79",
+      "node": "24.22.1"
+    },
+    {
+      "mode": "scene221",
+      "ok": true,
+      "seconds": 49,
+      "checks": 33,
+      "passed": 33,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 24,
+      "started": "2026-11-27T10:17:58.974Z",
+      "finished": "2026-11-27T10:18:48.833Z",
+      "stVersion": "1.19.0",
+      "stCommit": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+      "chromium": "156.0.8078.79",
+      "node": "24.22.1"
+    },
+    {
+      "mode": "trade_hud",
+      "ok": true,
+      "seconds": 81,
+      "checks": 44,
+      "passed": 44,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 27,
+      "started": "2026-11-27T10:18:49.181Z",
+      "finished": "2026-11-27T10:20:11.056Z",
+      "stVersion": "1.19.0",
+      "stCommit": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+      "chromium": "156.0.8078.79",
+      "node": "24.22.1"
+    },
+    {
+      "mode": "action_saves",
+      "ok": true,
+      "seconds": 96,
+      "checks": 60,
+      "passed": 60,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 40,
+      "started": "2026-11-27T10:20:11.449Z",
+      "finished": "2026-11-27T10:21:48.224Z",
+      "stVersion": "1.19.0",
+      "stCommit": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+      "chromium": "156.0.8078.79",
+      "node": "24.22.1"
+    },
+    {
+      "mode": "narrator_streaming",
+      "ok": false,
+      "seconds": 290,
+      "checks": 59,
+      "passed": 58,
+      "failed": [
+        "noPageErrors"
+      ],
+      "page_errors": 1,
+      "calls": 71,
+      "started": "2026-11-27T10:21:48.607Z",
+      "finished": "2026-11-27T10:26:38.953Z",
+      "stVersion": "1.19.0",
+      "stCommit": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+      "chromium": "156.0.8078.79",
+      "node": "24.22.1",
+      "message": "Stale origin or records before write"
+    },
+    {
+      "mode": "narrator_streaming",
+      "ok": true,
+      "seconds": 281,
+      "checks": 59,
+      "passed": 59,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 71,
+      "started": "2026-11-27T10:28:11.170Z",
+      "finished": "2026-11-27T10:32:52.929Z",
+      "stVersion": "1.19.0",
+      "stCommit": "7e8663cd9c184a550b37238218bdd32c6efc68e9",
+      "chromium": "156.0.8078.79",
+      "node": "24.22.1"
+    }
+  ],
+  "user15_221": {
+    "processed": 108,
+    "equal": 86,
+    "changed": [
+      6,
+      8,
+      9,
+      14,
+      16,
+      18,
+      32,
+      34,
+      44,
+      46,
+      64,
+      66,
+      72,
+      74,
+      78,
+      82,
+      84,
+      88,
+      90,
+      104,
+      110,
+      125
+    ],
+    "unused": [
+      [
+        90,
+        [
+          "extract_repair"
+        ]
+      ]
+    ],
+    "sizes": {
+      "plan": {
+        "calls": 30,
+        "characters": 1643560
+      },
+      "narrator_context": {
+        "calls": 45,
+        "characters": 338802
+      },
+      "extract": {
+        "calls": 45,
+        "characters": 2918357
+      },
+      "board": {
+        "calls": 2,
+        "characters": 22891
+      },
+      "extract_repair": {
+        "calls": 5,
+        "characters": 335368
+      }
+    }
+  },
+  "user15_235": {
+    "processed": 108,
+    "equal": 86,
+    "changed": [
+      6,
+      8,
+      9,
+      14,
+      16,
+      18,
+      32,
+      34,
+      44,
+      46,
+      64,
+      66,
+      72,
+      74,
+      78,
+      82,
+      84,
+      88,
+      90,
+      104,
+      110,
+      125
+    ],
+    "unused": [
+      [
+        90,
+        [
+          "extract_repair"
+        ]
+      ]
+    ],
+    "sizes": {
+      "plan": {
+        "calls": 30,
+        "characters": 1650118
+      },
+      "narrator_context": {
+        "calls": 45,
+        "characters": 338802
+      },
+      "extract": {
+        "calls": 45,
+        "characters": 2955966
+      },
+      "board": {
+        "calls": 2,
+        "characters": 22891
+      },
+      "extract_repair": {
+        "calls": 5,
+        "characters": 340409
+      }
+    }
+  },
+  "targeted": {
+    "user13": [
+      "11 NPC authority cases and 6 contradictory planner responses passed.",
+      "User13 source, mercy, offer vs throw, counter, consent, partial settlement, pending recovery, refusal, replay and custody passed."
+    ],
+    "user16": [
+      "{",
+      "  counts: { plan: 11, extract: 14, board: 2, extract_repair: 1 },",
+      "  at: 'loc.east_fold_below_the_moss_grown_hill',",
+      "  standpoint: 'Alaric crossed the last stretch in a crouch, from slab shadow to the blackened jamb of the doorway'",
+      "}",
+      "Separate continuations: listening, backing away, Dungeon entry, target check, opposed local stealth, independent observation.",
+      "Turn 24: private terms delivered at Guild hall; later explicit disclosure reaches clerk separately.",
+      "Reunion retrieves prior encounter and Wenna, unrelated stop has no private recall; two local approaches share one final standpoint.",
+      "Reload and revision restore the original standpoint and hearsay once."
+    ],
+    "partyCampaign": [
+      "First slot loc.old_crown_catacombs.l1_s1 { 'loc.old_crown_catacombs/1/1/bones': [ 'pc', 'npc.ossen' ] }",
+      "Cleared by party 89 45 { combat: 2 }",
+      "Original seed 3509323178 turn 24 45/45 cp, 225/225 XP; registered contract closed, Ossen parted.",
+      "Waiting in the cleared room, absent at turn-in, real reunion and explicit 20+25 cp settlement passed.",
+      "Renewal after real floor clear, one original 45 cp claim settled.",
+      "Mutual amendment to 30 cp, payment on account preserved, actual final balance 10 cp.",
+      "Synthetic .217 duplicate IDs retained. Prior payments of 5 and 15 cp leave one balance of 25 cp.",
+      "First slot loc.old_crown_catacombs.l1_s1 { 'loc.old_crown_catacombs/1/1/bones': [ 'pc', 'npc.ossen' ] }",
+      "Cleared by party 89 45 { combat: 2 }",
+      "20 cp before the first fight, joint clear, 225/225 XP, then only 25 of 45 cp still due.",
+      "User14 original decision, single scout profile and finite ammunition passed.",
+      "User14 original attack, independent ally, finite arrows and two actor-relative targets passed.",
+      "Group retreat, separation and bilateral peace passed.",
+      "D10 encounter intervals, D11 work, money, absence, death and settled claims passed.",
+      "Local party HUD, personal recovery and watch passed.",
+      "Three-person pool, personal equipment and recovery, physical loot, sale and gate occupancy passed.",
+      "Group counteroffer, independent owner assent, exact bow handed over once and named peace pairs passed.",
+      "Tactical request, attributed acceptance or refusal and prior delegation passed.",
+      "Paid personal treatment, actual receipt, patient and duplicate recovery passed.",
+      "PASS independent regular scout strike",
+      "PASS independent observed kill and one carrier",
+      "PASS independent separated scout",
+      "PASS attack intent regular scout strike",
+      "PASS attack intent observed kill and one carrier",
+      "PASS attack intent separated scout",
+      "PASS alone regular scout strike",
+      "PASS alone observed kill and one carrier",
+      "PASS alone separated scout",
+      "PASS lost sight regular scout strike",
+      "PASS lost sight observed kill and one carrier",
+      "PASS lost sight separated scout",
+      "H membership and two negative controls, I partial floor, M canonical arrival verified."
+    ],
+    "departure": [
+      "AC left",
+      "Z left",
+      "X follow"
+    ]
+  }
+}

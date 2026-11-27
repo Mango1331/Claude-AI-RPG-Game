@@ -4,6 +4,7 @@
 
 | Etappe | Runordner und Auswertung |
 |---|---|
+| **.222–.235 · automatisierte OpenRouter-Spielserie** | [Alle Originalarchive, Verzweigungen und Kosten](../recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) · [Abnahme und Grenzen](../recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) |
 | **.220 · User16** | [Originale und GPT-Review](user-20261126-233937-220/README.md) · [Codex-Gegenreview](user-20261126-233937-220/CODEX_GEGENREVIEW.md) · [Entscheidungsvorlage](../recherche/AVERETH_USER16_ORTS_UND_SZENENARCHITEKTUR_ENTSCHEIDUNGSVORLAGE.md) · [.221-Folgekandidat](../recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md) |
 | **.215 · User14 – persönlicher Spieltest** | [Quellen und GPT-Review](user-20261126-010332-215/README.md) · [Codex-Gegenreview](user-20261126-010332-215/CODEX_GEGENREVIEW.md) · [Fachplanung](../recherche/AVERETH_PARTY_SYSTEM_FACHPLANUNG.md) |
 | **.213 · User13 – persönlicher Spieltest** | [Quellen, GPT-Review und offene Designideen](user-20261125-212154-213/README.md) · [bestätigter Gegenreview](user-20261125-212154-213/CODEX_GEGENREVIEW.md) · [.214-Abnahme](../recherche/AVERETH_214_SURRENDER_COMBAT_NEGOTIATION.md) |

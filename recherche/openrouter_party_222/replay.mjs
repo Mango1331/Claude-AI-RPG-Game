@@ -92,3 +92,21 @@ for (const [run,length] of [['ai-235',17],['aj-235',21]]) {
     assert.ok(Object.values(state.party.agreements).some(a=>a.phase==='open' && a.who==='npc.ossen'),run);
 }
 console.log('AI/AJ: spoken consent remains an open proposal on .235.');
+
+// Optional: apply the identical paid Q report on the unmodified .221 and compare the slot.
+if (process.argv[3]) {
+    const basePath = path.resolve(process.argv[3]);
+    const loader = await import(pathToFileURL(path.join(basePath,'tools/replay/replay.mjs')));
+    const base = await loader.engineAt(basePath);
+    const prefix = messages('q-232').slice(0,39);
+    const i = prefix.length-1;
+    const report = host.rec(prefix[i]).extraction.raw;
+    delete prefix[i].extra.avereth;
+    base.runtime.processReplyAny(prefix,i,base.content);
+    await base.runtime.runExtraction(prefix,i,base.content,async()=>JSON.stringify(report));
+    const {state,errors} = base.host.foldChat(prefix);
+    assert.deepEqual(errors,[]);
+    const ids = state.dungeons['loc.mossback_warrens'].run.floors[1].slots[0].entities;
+    assert.equal(ids?.length || 0,0);
+    console.log('Identical Q report: zero canonical slot targets on .221, two on .235.');
+}

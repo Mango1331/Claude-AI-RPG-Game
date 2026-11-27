@@ -8,6 +8,8 @@ Der Kanon dokumentiert die Spielregeln des eingefrorenen Produkts `.200` und ken
 - **Wahrnehmung.** Gewöhnliches Umschauen, sichtbare Anhaltspunkte und soziale Kontaktaufnahme gehören zur Szene. Search mit PER gilt für eine unsichere, spielrelevante Entdeckung. Der Wurf, seine Wiederholbarkeit und das unabhängige PULSE behalten ihre bisherigen Regeln. Die Welt bestimmt, wer anwesend und zur Zusammenarbeit bereit ist.
 - **Erinnerung.** Ein Vorschlag kann als Vorgeschichte erhalten bleiben. Als Zusage zählt der tatsächlich vereinbarte Umfang einschließlich seiner Bedingungen. Gehörtes behält seine Quelle. Bei einem passenden Ort oder Gesprächspartner kann Alaric sich daran erinnern. Er entscheidet über eine Mitteilung, und der Empfänger erwirbt Wissen erst durch einen belegten Vorgang.
 
+**Sichtkontakt am Dungeonzugang ab .222.** Ein individuell sichtbarer Gegner kann bei belegtem Kontakt seine bestehende Dungeonidentität bereits außerhalb des Raums erhalten. Die tatsächliche Angriffsentscheidung prüft Ziel, Reichweite und Hindernis. Hören allein bleibt ein Hinweis. Erst eine gewählte und vollzogene Bewegung bucht den Eintritt. [Modellserie und Schutzfälle](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md)
+
 Die Raststeuerung zeigt die vorhandenen Ausführungssperren an und wird nach Weltabgleich und Speicherung wieder bedienbar. [Fachbericht und Abnahme](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md)
 
 ## Party im Entwicklungskandidaten .217

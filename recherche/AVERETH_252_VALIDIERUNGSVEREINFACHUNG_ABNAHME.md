@@ -63,3 +63,7 @@ Nach Weglassen des GO-Ergebnisses sind die strukturierten Ortsmeldungen beider A
 **Empfehlung zur Entscheidung:** `arrive` bucht jeden physischen Ortswechsel. Nur für ein aktives Suchziel ohne gebundene Orts-ID behält X die bestehende Ja/Nein-Antwort zur Zielerfüllung. Orts-ID, Mitreisende und Begegnungen werden auch dann ausschließlich aus dem bestätigten Ankunftsschritt übernommen. Das erfordert keinen weiteren Modellaufruf. Die Ausnahme ist ein Vorschlag und wurde nicht implementiert.
 
 Etappe B und die anschließenden Produktetappen sind angehalten. Vollständiges T1, kategorisiertes T3 samt Neubewertung, isolierte ST-Abnahme, Abschlussmessung und Gesamtabnahme sind **nicht ausgeführt**. Der Entwicklungsstand ist ein Sicherungspunkt. Eine Installation in der persönlichen SillyTavern-Umgebung ist derzeit nicht angezeigt. Providerkosten dieser Arbeiten: 0 USD.
+
+## Freigabe zur Fortsetzung nach dem zweiten Stopp
+
+Die Zielerfüllungsantwort bleibt für jeden GO-Schritt erhalten. Ankunft, Mitreisende und Begegnungen brauchen eine eigene bestätigte Grundlage. Die Harrowby-Gegenproben gehören zur Gesamtabnahme. Von den sechs offenen Korpusprüfungen gehört der ungültige Fakt neben gültigen Deltas zu B, die vier lokalen Planner-Ziele zu C und die Preisellipse zu D/P9a. P7 bleibt zurückgestellt.

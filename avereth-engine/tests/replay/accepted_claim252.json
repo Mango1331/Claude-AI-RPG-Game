@@ -1,0 +1,1200 @@
+{
+  "inherits": "accepted_scene221.json",
+  "engine": "4.3.0-c.6.6.260",
+  "cases": {
+    "b16-rogue-sale#12": {
+      "category": "mechanical",
+      "reason": "Der zusätzliche Root-Schlüssel time macht die erste Antwort als Ganzes ungültig. Die Questannahme war bereits gebucht. Briefing und Zugerinnerung fehlen ohne die frühere freiwillige Reparatur.",
+      "previous": "sha256:a21d75190afd184b20fc7b96feca7e541559bcfc65906a7d919e985eeeb4e2ad",
+      "fingerprint": "sha256:06a137033ef2fc9e1dd0004f1722aa615b5f13be94b5b2c18a7fbc8268e6c21e"
+    },
+    "b16-rogue-sale#68": {
+      "category": "protocol",
+      "reason": "Gleicher Clerk, gleiche Questkenntnis und Auszahlung. knowledge.gained folgt nun auf den unabhängig beobachteten Fakt innerhalb desselben Schalterbesuchs.",
+      "previous": "sha256:193ad24c560db72a8f0ba8bafe57bded812474dbc66667758848e3749ecf17b6",
+      "fingerprint": "sha256:f823c3e0472dbce4749e8320a46763be844cc284ee05ca3db5ace305ee13e398"
+    },
+    "b16-rogue-sale#73": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:054b07b45cf735927a63a65ffe67bdc1d8f5a4e2588aefb83a76469eb1a8d2b4",
+      "fingerprint": "sha256:5f30c74c2bd23a477585f543c506f3f0518d1306c8f33bafa0dd4ddda8993690"
+    },
+    "b16-rogue-sale#75": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:a2d1f17ba38acd1c14a98f760234b31b3f9026625154a258a6bd7338ee7b657e",
+      "fingerprint": "sha256:44d399f13f21d5d06a8535d24432aa49d4255769dffbbee49254632a75ca3c21"
+    },
+    "b16-rogue-sale#78": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f6832abd07f4c015227a92db55f72862f092a4411acaa74e3446647632526b46",
+      "fingerprint": "sha256:c0e6cbfcdb08407424cfb4f7f736a4fab747c610334c97b5b2df61fbe969d180"
+    },
+    "b16-rogue-sale#81": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:db350c9a7b04532db1e45efdfe753c9deb5377ff2c29789ad42956b1b9ffddc0",
+      "fingerprint": "sha256:dac3f24a955145d97e22c9d9322b7dee38572e6231d5f6bb1d37006f9558fb9b"
+    },
+    "b17-mage#14": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:77fb511c16ce887ab79364a06f1d72fb3a6f9f1878f37b8d8b91e60400c32d0e",
+      "fingerprint": "sha256:0d813128551948e462abc941ea8918e49dd1a244300489407076b641bc4c6cf7"
+    },
+    "b17-mage#82": {
+      "category": "mechanical",
+      "reason": "Bestätigte Gildenabgabe im Altsave. Der einzige anwesende Schaltermitarbeiter npc.npcguild_clerk_ashbridge erlangt Wissen über f.pc.completed.quest.take_the_starved_yearling_at_the_lowfields_crofts. Vergütung und XP entsprechen .251.",
+      "previous": "sha256:18a87581217202facbc1eeacfca8ca1ab2235f2ad4eca2ea15e425980708c8ef",
+      "fingerprint": "sha256:bcffe596bb7a31837621fbca17c5df4cdb9c560ab7290ae8b0d88d1b94f0d8b1"
+    },
+    "b17-mage#103": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:561124aded5dda81e81b51a76bf83c8ec31a46e21330e16dbbac3202c6cae407",
+      "fingerprint": "sha256:79820815660336b1c0411ba720c516479f42668de91c71dddd218fd0a08b610f"
+    },
+    "b17-mage#138": {
+      "category": "mechanical",
+      "reason": "Bestätigte Gildenabgabe im Altsave. Der einzige anwesende Schaltermitarbeiter npc.npcguild_clerk_ashbridge erlangt Wissen über f.pc.completed.quest.clear_the_fen_adders_from_the_eel_weirs. Vergütung und XP entsprechen .251.",
+      "previous": "sha256:dea6796daf73227af2756c491962b9187628f84aeae95a212bfdcd9f2ed27b21",
+      "fingerprint": "sha256:2a028a87f1585a06fdff87a378f07a9ff3f573cd49a89dfd7a696e0a31ec8476"
+    },
+    "b17-mage#174": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:608f0dcd38b40feb2d100371b5cac8426b0815ec4e08de8e662bba6da2e1a72f",
+      "fingerprint": "sha256:4b303a34e3c8b6f04091625ea4a408a3212b3712841a50a695ca0b8d13aa8ca1"
+    },
+    "b17-mage#175": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:38e7a73a8e3b1ebfd5e8edc71e8517578bf102a9e9a1c4fcc84d5069f82fce2c",
+      "fingerprint": "sha256:39fe093f0e955c47558627bf3c6b361dd55bfaa1ced0e41a1c9b03014902ac65"
+    },
+    "b17-mage#178": {
+      "category": "mechanical",
+      "reason": "Die ungültige person.new-Meldung der ersten Antwort bringt den Wachmann nicht hinzu. Die bereits gebuchte Behandlung wird nicht wiederholt.",
+      "previous": "sha256:918908961e4242f0654b574651ff183ec7d705e192402b643858d7831dd902df",
+      "fingerprint": "sha256:a8f6fc958132289970eb1651212a52731e055277c40bb8cf0c1722cce8a9b067"
+    },
+    "b17-mage#200": {
+      "category": "mechanical",
+      "reason": "Die bestätigte Ankunft liegt in Ashbridge. Das ausdrücklich in der separaten Gildenhalle lokalisierte person.new darf an diesem Schritt weder einen Clerk noch dessen Wissen erzeugen.",
+      "previous": "sha256:ac6c4897a705386b9e1664f2ab549094c7b1972a977edc86dd7902d758eb574c",
+      "fingerprint": "sha256:749d09654c0353ec7012b56f9158052eac163f8f36bd8f0138a91e9e665f2340"
+    },
+    "b17-mage#207": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:96f4539c1b5ec979631b05e40e642f50be36106e06fe2b79e99ffe5be64d5382",
+      "fingerprint": "sha256:59c35d9324ab759c1dee859c234ca3bad289d3a8fe3c2644b2eb379481e195c8"
+    },
+    "b17-mage#212": {
+      "category": "mechanical",
+      "reason": "Bestätigte Gildenabgabe im Altsave. Der einzige anwesende Schaltermitarbeiter npc.npcguild_clerk_ashbridge erlangt Wissen über f.pc.completed.quest.cull_quarry_gnolls_in_the_old_quarry_cut. Vergütung und XP entsprechen .251.",
+      "previous": "sha256:a13da496828eb7a4086c2a71bdd1e74db7c23382a08bda8af0d00e550171b066",
+      "fingerprint": "sha256:ef5891029c1b9c243bc32590e628a28d0572bfcd6b0220cde5fa674ec3630b79"
+    },
+    "b17-rogue#26": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:23715b5ea55081b924b0c642305d139a909afe0b6e68816b9790e4777d090dee",
+      "fingerprint": "sha256:72272f739a2ff969922b9318a3bc2098b0eedc84e76ee338b737b4585f9cc712"
+    },
+    "b17-rogue#59": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:e5db2beefd0b66cc671201671ff1af5032f6346a6edab4b3b90e3edb4eb65c74",
+      "fingerprint": "sha256:e31be96e8ab81e7bae6d29716e46df0b1e2e9c5026a9bc9ed15a70522108f125"
+    },
+    "b17-rogue#61": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:49f06ce4d4dcbdb1e9e8670d417aacd93c955c37af75e61e97907391128fe307",
+      "fingerprint": "sha256:2e106125a32f2b0d9ee5946459a4e7b224a5a97fab784ee31c5c37632cfdfdfd"
+    },
+    "b17-rogue#75": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:cf3c1492dba8a4e70487ee48042942d32b9e2d4ebf18415e374f8602a86b5e1e",
+      "fingerprint": "sha256:bd3761bdfdb853f15818708a67494d121ffc82109a16ac00edacf779730d3262"
+    },
+    "b17-rogue#92": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:a842e7b4d1758d0558c8099ba65f7d344af3ab51d4a01f34c14ef0a5ce98f5fa",
+      "fingerprint": "sha256:cb0c93d85533001aaa2250f5e5e46f50bd444f860440ab2813f46efa3cb36280"
+    },
+    "b17-rogue#100": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:b831a5fb81f61a7007a584867711f3302a851f126c30bfd8f286dd0eee88c543",
+      "fingerprint": "sha256:c86faed1dbb17b56ab88f07bb8ae4a3d66c10612114d651a40f907151dfcd3ef"
+    },
+    "b17-rogue#103": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:a83a56858b4f526924181da3dc45209190534bc5291e4c29479c47569c544c77",
+      "fingerprint": "sha256:3f7e7d63759bdc15ca9df9c5adf1c1161b576c58401197745d22be0fc15b4ec5"
+    },
+    "b17-rogue#122": {
+      "category": "protocol",
+      "reason": "Der Fischer wird zuerst aufgenommen und danach auf LONG positioniert. Endposition, Wahrnehmung und Ziel der Reise stimmen überein.",
+      "previous": "sha256:322638f6d3c794832ed4d9aeef9f8ae859c654bf0f00408b8c1bc1f96adbb3da",
+      "fingerprint": "sha256:c835d5848a1417052d7b26350b61fbf8811587cb12f23886fefe4cf773afbe2b"
+    },
+    "b17-rogue#123": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:ed1114f2d04cb8f57d82991b3ee81cfde779d874d7f77075e360dfa9585c086a",
+      "fingerprint": "sha256:cacef3ef35b622a90ff1b67af7a0fcc1d972c57d9e58ef36d7ed454d28ba089d"
+    },
+    "b17-rogue#130": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:378c83b2db15bec055973530ec4bdbecf4e69d61af734e0bc1e13405e314528c",
+      "fingerprint": "sha256:4fee525fb7ace96df8b63125c80585f367cd8d962dc393670606d0cf3d08f822"
+    },
+    "b17-rogue#138": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:5ffacec5b54bf1e7d28d91fe97972fdad766039724a533f4f3ae41f57db3ddcb",
+      "fingerprint": "sha256:6d11f7f91e54eaa5da1b6442dcd64bb9b75262936f7b4b96ec607c03100ac4b6"
+    },
+    "b17-rogue#145": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:6fa4d803dc6b5f3ac8c166524ae5f5ff502af03adf9d3c1a8a27493fbf31cee1",
+      "fingerprint": "sha256:f6bca42d79ae0f9efc2d083df51d720f625f36565e96afe318b5d034444b0514"
+    },
+    "b17-rogue#170": {
+      "category": "mechanical",
+      "reason": "Der Wirt nennt acht Kupfer für das Bett und weitere drei für das Essen. Der gültige Währungsbeleg macht beide Positionen kaufbar. Die Buchung eines Angebots belastet das Konto noch nicht.",
+      "previous": "sha256:500919707646fadbe91c8ca262f2b4e3f0285c2b3372ef38a6458de70d4ff086",
+      "fingerprint": "sha256:6871d7d06067ba9681fd695297b4167d7b8d81dd044378895fc97249a8f65ce5"
+    },
+    "b17-rogue#173": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f2c7722694ec212ac3e82a12d6937088e56c454cf7d740006760f4fc08219ae6",
+      "fingerprint": "sha256:1d8f077192dda3d45fe87098326101636201b51429c099d9588015c2c78a2b1a"
+    },
+    "b17-rogue#192": {
+      "category": "mechanical",
+      "reason": "Die Erstantwort meldet den verkrusteten Beutel mit einem ungültigen Deltatyp. Der Beutel fehlt, die beiden zulässigen Durchgänge bleiben gespeichert.",
+      "previous": "sha256:68610b940fdfa1d2627820d9ff5afd0ee0cad2767108ce43653adece0cd96c54",
+      "fingerprint": "sha256:948810fc0666618b22432c10d28257d93d08b81e894c76d003e4ad282c87640a"
+    },
+    "b17-rogue#196": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:93e105879a6cca942887071dc7a63b53712049bcdc3d07a121ac32110aaa1325",
+      "fingerprint": "sha256:b211ccfabe05a2819ab9a7faee54171a2c71bceed21f079e88febb662c117bdb"
+    },
+    "b17-rogue#218": {
+      "category": "mechanical",
+      "reason": "Bestätigte Gildenabgabe im Altsave. Der einzige anwesende Schaltermitarbeiter npc.npccounter_woman erlangt Wissen über f.pc.completed.quest.clear_glimmerdeep_grotto_level_1_2. Vergütung und XP entsprechen .251.",
+      "previous": "sha256:f65d120876bf1bf5ded49e6654dabd06bd381fb28226df29b65b7ca945a93adc",
+      "fingerprint": "sha256:2ac2f6f0cf161ecfcfc43bba05caff8b9a3780311dcac3e7e2470ad2565c9fd9"
+    },
+    "b17-rogue#220": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "fingerprint": "sha256:596ad4e93b24ce290319cc9c811577da5cf9290829de8c4da99346866f633cd4"
+    },
+    "b17-rogue#223": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f0f813b2715a8e078faf951d3fb010d1749d9fc5276c5126ebb60d4204cfc75e",
+      "fingerprint": "sha256:4ec57bc2914a75971607f9333c4d26df10b833e8d48e2d8ea20e264c8d5db786"
+    },
+    "b17-rogue#273": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:435834139353b156f5eefbceb47754026c3aba082be81b7308d65c8edc2bbaf0",
+      "fingerprint": "sha256:3d44b6ec048143a9c626e9cc79aed1a51540972724da754ef8116fffa07305e7"
+    },
+    "b17-rogue#277": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:5c093fabead543c9fee4ee1203bb8231e361cec61252208e55110c4c9efca3e8",
+      "fingerprint": "sha256:fa3464012054dec746fc4f4a1f7be0959ac764b59bd4a916d14ae2a1f32b7629"
+    },
+    "b17-rogue#278": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f9486da6bc0b134415cd1e4961a628c77ac898c2180e19c5c4837df041cb753c",
+      "fingerprint": "sha256:f6d7537dfebd4caf28de74c183b50495ca7002d6c935aba63236fbed549731c0"
+    },
+    "b17-warrior#13": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:033169b6589dc4e954580b633bac156d2194e7ea0300ae3f7b5ba5ff98cd5cf1",
+      "fingerprint": "sha256:f48340d8046dbdaba1254a877f05db2c5f33c6daaa7b0aafecb40e49087a2f2c"
+    },
+    "b17-warrior#15": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:a87cad066c075df19bc216da65784cf90cbf02dc1fff6c962510df29defebcb5",
+      "fingerprint": "sha256:538b10584ff8bba5ed858302d9fd9c09aabd8c271f4e44d5fb651eeccdb69f0b"
+    },
+    "b17-warrior#17": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:4a79062c449d9509f8f7b721f8d0449c12202cad68532bdf70a8ab977b7390a6",
+      "fingerprint": "sha256:f67ee1df221b177d39ae64b4ab16ad2f82f882e8687a3c61a4bef6c8acc84026"
+    },
+    "b17-warrior#21": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:02f0bd5656b5272d9f676b3ba82f347488792b0a8a7afbaa474715f74ef6a057",
+      "fingerprint": "sha256:aac65ab588610ca0c2780ad517187a1c3701da34c4d2b874efd17fd823bae954"
+    },
+    "b17-warrior#30": {
+      "category": "semantic",
+      "reason": "Vor der Ankunft gemeldete Beobachtung und Aussage bleiben am Ausgangsort erhalten. Der spätere bestätigte Halt enthält weiter die Wolfsspuren.",
+      "previous": "sha256:4061472e7bd2a32dc1b670e1f5da8d6577efaff3b6aaa02edde2bab3a56c8f86",
+      "fingerprint": "sha256:436c84d81d76c134421b0d4407246f53bf2f9ba33949cf7b0a10c01a38d10606"
+    },
+    "b17-warrior#41": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:8359547d1a539f33ead39490a7e9f06eb901257991d1321eb1dc6e304d32bef8",
+      "fingerprint": "sha256:02b2ffbaf045a8f6b312c0ccd3e7c2562d2d7b72697f80ee9375c1aa91ed2fed"
+    },
+    "b17-warrior#42": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:183a7c230f16601ba054cafa22c5f50232f554006c11c4af1f63d3b90c91c278",
+      "fingerprint": "sha256:e99cc978b92e102444531708374605d702b027a26c39050b655d7839e600e987"
+    },
+    "b17-warrior#45": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:551022cbb8fd7d517a22243ee3a91dcc0e0880d020cb598c32dfa8c861ceeb3f",
+      "fingerprint": "sha256:ba983dc30f25f4b65506f3c3461d66b06ce573950481834dc6eafb8b66e4abef"
+    },
+    "b17-warrior#64": {
+      "category": "semantic",
+      "reason": "Torbeobachtung und Auskunft über den Zoll stehen in der Reihenfolge vor dem nächsten Halt. Die unabhängigen Fakten bleiben erhalten, es folgt keine Zahlung aus der bloßen Auskunft.",
+      "previous": "sha256:cb4d0f095b368088810326e4828be9f9ba713023da908f7fa0a07d79191204e7",
+      "fingerprint": "sha256:5abf1150bc685a2e6431a8f29c7068ee8b7f57cf1b50eb6d1cc1a69d34852d6e"
+    },
+    "b17-warrior#79": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:44daca477996c1569637750e186a6a503441a52021b477e8f84a3f55b8ad60b3",
+      "fingerprint": "sha256:e623b88ac740b9982fc582fe2ce8e2b53efd6d424696d96bb0acea98204a7515"
+    },
+    "b17-warrior#85": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f55a201f2270f8cac6be00db266129a2d4b2720fc4ad2d4cd0bca4f540baf0d6",
+      "fingerprint": "sha256:7bbaa4b50e061735a841809e0e6479204d96604f8b95f436b39acd78e2b7263c"
+    },
+    "b17-warrior#126": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:ebf0bf4bbc483444da276649d463f02e7cd01d8aa3cf32d3508e570e02451fca",
+      "fingerprint": "sha256:44b67f1550d56ca17abfe077a9effc0f11ab8dd6be1f54118e1df6ea10a4807c"
+    },
+    "b17-warrior#139": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:c5359a8c175f6679e0fcd28304cbb41d370f02a69a50f7d0e8b9a0478173473b",
+      "fingerprint": "sha256:672770cbeeb8ad437970a0db3032011fe09da6c75c85ee97fec91ddce4001e8e"
+    },
+    "b17-warrior#171": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:8179b6488aae331f1535c010bca122702901b692dee00b4cb7a6a429850dea83",
+      "fingerprint": "sha256:a228962c61a488802d3a56d11d3b85064c95dcbb87c4d6ca9bf8bb95beeca6cd"
+    },
+    "b17-warrior#182": {
+      "category": "mechanical",
+      "reason": "Das ausdrückliche enter nimmt Pimm am hohlen Stamm auf. Die Erzählung zeigt ihn vom Ufer aus. Dies ist ein belegter falscher Aufenthaltsort bei zulässiger, aber inhaltlich falscher X-Meldung. Im vorliegenden Zug ändern sich Angriff und Kampfausgang nicht.",
+      "fingerprint": "sha256:751c2839d669641802e7c1593b4515924c35380ff8fb5874f23389ec9aed0ec0"
+    },
+    "b17-warrior#184": {
+      "category": "mechanical",
+      "reason": "Gleiche ID, Elternort und Ankunft. Die gültige Erstantwort klassifiziert das Gasthaus als site. Die frühere Reparatur klassifizierte es als interior.",
+      "previous": "sha256:0b2442603f81da8a00321e9f7342302b416f27ef2cd6d5415c43dccf8dbd3823",
+      "fingerprint": "sha256:783b9717c92daf82aefc3be604bd415b52996e3bb524228415663bc26f018bb5"
+    },
+    "b17-warrior#192": {
+      "category": "mechanical",
+      "reason": "Die Erstantwort führt Pimm als neue Identität ein. World verweigert diese Wiedereinführung und die abhängigen Wahrnehmungs- und Threadmeldungen. Der unabhängige Wespenhinweis bleibt.",
+      "previous": "sha256:3ca2595d41d91466c90c488af4a619db48c4b60e547c4959afaf16f7a1ec8bdd",
+      "fingerprint": "sha256:26c6f2a8f78e48fbe6c1e1c3c9aced380e2afa74294ffa596f26d95ac32fd9fd"
+    },
+    "b17-warrior#193": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:90d7ce0fb043e39eaf90b62fac27d7f114d97a39535de1b5f711173a4c421813",
+      "fingerprint": "sha256:0e552ddee907f82e350961ca86f59d28e86178c12593c9ee61d344c6dd98800d"
+    },
+    "b17-warrior#207": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:61b82c967de3c84be1e4d2d870161129072f75616761af8b9deb85d284396a97",
+      "fingerprint": "sha256:5fa8c76285e2324821cf2fa9261ccacd26eff3dd78e6c63e255fd2995fda26c8"
+    },
+    "b17-warrior#209": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:11a7156a7e0cef22510a79217f33b5d5015173000ba2fc743d8a0cec32afb936",
+      "fingerprint": "sha256:5fe0f8521b08bc279fe40f416ab15f44d88287d3dea69f08b5da5d00d70eb5cb"
+    },
+    "b17-warrior#238": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:09c0e5b52b7f9f51788fa4789334dafd6a111e8909f0b5ea99915df3b82a6944",
+      "fingerprint": "sha256:116de31cf3cdef1f78798a5a712adebd84cd84d0decfd9e2227a6af62993899c"
+    },
+    "b17-warrior#244": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:3e26403b5ca40bd08f25aebdc4322f2552c3d6ddb529ac8dd9b19c95cc241396",
+      "fingerprint": "sha256:97d84a43557ea5b6de16f07f70416a8721fc55e7a97ae12156e52b5d48a02d9e"
+    },
+    "b17-warrior#258": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:8238bdb16186073fc49bbbc6bbbd8279057ef4209ce010d38b14da20c1a5f64e",
+      "fingerprint": "sha256:a2478a8109e9d64f2aa7988bd93ad10dce3ae77915bffa46475ca110a838d862"
+    },
+    "b17-warrior#266": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:35c1900366169d5e2ce0f2c8439907aed0e6c3265705ab46aaa48170951866fc",
+      "fingerprint": "sha256:2f3c6dbbdba9536491ddf3fc004af78749bcbe5bf5fda3734ea3ecfd979409f1"
+    },
+    "b17-warrior#274": {
+      "category": "mechanical",
+      "reason": "Das fehlerhafte passage der Erstantwort begründet weder einen neuen Raum unter der Platte noch einen Link dorthin. Das eigentliche Bewegungsziel wird gebucht. Der zusätzliche Weg aus dem Repair fehlt.",
+      "previous": "sha256:947a9eacebea44d7a2de8cf6e8678d5815597ead4c9ad3f8cd079356a87a936e",
+      "fingerprint": "sha256:c64b8dd49754886008ae75dc095e25739328fbc8b4ebaa880471b083ad2bc7fa"
+    },
+    "b17-warrior#284": {
+      "category": "mechanical",
+      "reason": "Die Erstantwort meldet Kadaver und vierten Wolf als ungültige Typen. Die Lichtung wird erreicht. Kadaver, Wolf und dessen Zielbarkeit fehlen. Das ist ein Spielbarkeitsverlust der Teilübernahme bei separat erfüllter Suche nach Spuren und Reise.",
+      "previous": "sha256:94335fa169bede30c8d2b076e7481c4a5279287ce7a37d5b8c4c1f31d3a5f2c4",
+      "fingerprint": "sha256:ec7abc5dad3b2ff77dfef6a3aa254fdc359f83804586ff49b783971b0feeb70a"
+    },
+    "b17-warrior#301": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:fc36d9582d7e12081754c5a7fd7d1dccb6c8a161192067c4d3dd3dae5cfe1015",
+      "fingerprint": "sha256:c4ec75cf424434bd3347bf480fd91c6be3ec505d5399268a744928e68a027003"
+    },
+    "b17-warrior#333": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:db9285bc6b56c995ca03263c83a1aa04e7ba3cb29351fc5c8e37a5a4968ea0b3",
+      "fingerprint": "sha256:147285cfe38e24b5ccca2eea8f85bf14bdd132def111ab48bfa7cecb56ed91f0"
+    },
+    "b17-warrior#336": {
+      "category": "mechanical",
+      "reason": "Bestätigte Gildenabgabe im Altsave. Der einzige anwesende Schaltermitarbeiter npc.npcalderwatch_clerk erlangt Wissen über f.pc.completed.quest.cull_the_marsh_adder_at_the_eel_weirs_3. Vergütung und XP entsprechen .251.",
+      "previous": "sha256:54e14f5c0bae95460a1e9aa4554be8294c5fc0d982f4810c60163c41b3a7ef52",
+      "fingerprint": "sha256:6fa5bfc2abc2dd8495003864685d2e49026d3d0efae187ea9681c73d1668cdef"
+    },
+    "b18-mage#12": {
+      "category": "mechanical",
+      "reason": "Das ungültige place.reported vernichtet den übrigen Bericht nicht mehr. Tatsächlicher Weg zum Durchlass, 45 plus 15 Minuten und die Schlange werden gebucht.",
+      "fingerprint": "sha256:e9b6138b3be3159a53843c9f2ad1c2590f9c37170ce9f22e51d3a9b8b6150cc1"
+    },
+    "b18-mage#20": {
+      "category": "mechanical",
+      "reason": "Bestätigte Gildenabgabe im Altsave. Der einzige anwesende Schaltermitarbeiter npc.npcguild_clerk erlangt Wissen über f.pc.completed.quest.cull_the_quarry_track_adder. Vergütung und XP entsprechen .251.",
+      "previous": "sha256:0b944e33af5d2be12d898ecba9f16dadd16d9016a1a46b24da2ab98fc2ff773f",
+      "fingerprint": "sha256:0f7dda3d7bb15ce873afd8f1d86681c7b4bc7ee4e8f64c5424d88b0d8457d3ef"
+    },
+    "b18-rogue#16": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:3c71c01a79628eabe35e687a61aca0112239c2f816dfd08fe92720640a49b36e",
+      "fingerprint": "sha256:1004279fbad34145ba407ca3d02985cc2bedb419558624d7a65d8a3c7dde23ff"
+    },
+    "b18-rogue#19": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:b0e55790521ce1b31f528fdd0c8cbe8378ff2ba18dc23847fc5b2bfe66ebfcce",
+      "fingerprint": "sha256:242ad4a488bcd3dccf2927d89e90b4bdddc655c64eec10f4a831911f61ae61c2"
+    },
+    "b18-rogue#33": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:148faa0b6570948a29290380230408391d8324c75a3e0c4dd7c5823e9afd8c7f",
+      "fingerprint": "sha256:0d068cecb16ad33a8cb0a515c281771aab6bc4a20c8572fe4d8738a762fdb57b"
+    },
+    "b18-rogue#41": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:1fc54076a1c172a3a86d170a54eb38831b3984c2f35d0e239a4aad85e7ee241c",
+      "fingerprint": "sha256:c0428022c18c142ecfe1280815562cae5872827f567ec685c3b7b4b5ed42c9c2"
+    },
+    "b18-rogue#49": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:bcb011c90cde433d4c7e0353b1871b13bffb2628653a39542e51b581568f79e8",
+      "fingerprint": "sha256:38a68e7dab689c07dcaf3bfe918b79c26263843c9602b9527f160d848cb06f77"
+    },
+    "b18-rogue#84": {
+      "category": "semantic",
+      "reason": "Die räumliche Beobachtung gehört vor der Ankunft zum vorherigen Ort. Die spätere Unterkunftssuche verändert diesen Fakteneintrag nicht.",
+      "previous": "sha256:13be44998dc5e85d2dea4b6eae454508a0b44af44d0c140913e65e719b6c40e3",
+      "fingerprint": "sha256:d10c5848c522565c8a473c5241f6b632c46031e249f5a8def97cb63de8943e83"
+    },
+    "b18-rogue#87": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:63cc5aef70c0de195fe3c4f21273a9e61441d9faf0d6fa999c65f76a272ef995",
+      "fingerprint": "sha256:cc23f07f882d69bfc1e58643876663726c04f049b6ffc7d0733cb2a552050bd6"
+    },
+    "b18-rogue#90": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:c5fad99d22fe3f6c5c7f0bff42bd116a05f41d87455375c98dffbdbfe932864f",
+      "fingerprint": "sha256:494b8feba162e7c09e6eb70b5e776239d0d24c24e394d267bc8b07a608126732"
+    },
+    "b18-rogue#120": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f33d144ff24f41443fea6e032b0c5e4feb1d87e08096e12264443ed4b2c5d908",
+      "fingerprint": "sha256:7da6b093294410142fb6c016d43ace9906a70052826f778696a3c5afafb756d3"
+    },
+    "b18-rogue#121": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:036c017cdfc303ac7b0e3b26e1b84b72de0a4e364522fa0862995b61095f4560",
+      "fingerprint": "sha256:2a84978b8292545ff8775cd9e57a7e5a2906c50c9c05594073ac970fbdd7eb29"
+    },
+    "b18-rogue#128": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:eb2ccb464f86d7e7c431b5bedba211f547db7592b0277bc151ce673dea5b0475",
+      "fingerprint": "sha256:fbafb13c420db5d7b35c36b3dc52cdea140dec9fa20456ca4673ed0692ba8d7c"
+    },
+    "b18-rogue#130": {
+      "category": "mechanical",
+      "reason": "Master Hults bisher wegen fehlender Einheit abgewiesenes Angebot erhält die Einheit aus dem ausgewählten Währungsbeleg. Sichtbarer Preis 6 cp. Die Antwort vollzieht keinen Kauf.",
+      "previous": "sha256:d7fd7a4537c70a3438fe8f48b4c31294af4f32cd92917d0a19c3b89e7f37999f",
+      "fingerprint": "sha256:db0a325cfe60190ef2820e82fd27442236e9e1aa1fb897ab9da871169f9192db"
+    },
+    "b18-rogue#138": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:58c90e69912649dac739b6a467fbbff4e0162b78a82c913566c71caf05daede3",
+      "fingerprint": "sha256:a50de3b65552a91f5aa6b3aeb7e58784fa04f66c74bda16544a242fd2cf8c799"
+    },
+    "b18-rogue#142": {
+      "category": "mechanical",
+      "reason": "Das ungültige aware der ersten Antwort erzeugt keinen neuen Wahrnehmungszustand der Schildkröte. Der ungebuchte Fremdangriff wird auf beiden Ständen abgewiesen.",
+      "fingerprint": "sha256:cb4d70ccea04bb81affd5fe5cbdb02b5b47850ebadfd764a5b3ceef072840d6a"
+    },
+    "b18-rogue#162": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:b76fe492ffb74926ec9e78793096ab2e2eb7311ce645a33a3ae0991d5f1fc112",
+      "fingerprint": "sha256:a977d993560d2a9744bbc4f308c0ef55faa1bba2a52312ad9d48b20163dd468a"
+    },
+    "b18-rogue#183": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:c585505c28861157f210a4f9ef6d6ae378dfcbe5f2d928daafd24a47380125ac",
+      "fingerprint": "sha256:765d361206cdfa534a9b5fa896611aac4379ba79c56a3c1f098bd761388676aa"
+    },
+    "b18-rogue#190": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:acb749789aaa41b21222622501c740b481a74d32ae789843310b0736a673634a",
+      "fingerprint": "sha256:5771c27f2209f6063fee4561ff9e46b3e842944ceefb247edc62553566d38d52"
+    },
+    "b18-rogue#191": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f9be2cbf0c6e345ddf046d594dba04d9a72ca227aefd5a1c00a39c0c9e7165fe",
+      "fingerprint": "sha256:ced5cb9045622eae0a4f8852c4ff921ed71ab02a799b6a7a7c9595c341f03e75"
+    },
+    "b18-rogue#192": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:1f31f3f45fc265978114164e08d00745f60116801c71eae28e33566a87ade944",
+      "fingerprint": "sha256:558be2883c830a2980b69119e76e06828a1a40e88b3eb16daa17ad76beec918b"
+    },
+    "b18-rogue#196": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:387979fa135e54d2879c30fe84ceb8ada267d50a01acbd803c1a445185e661ab",
+      "fingerprint": "sha256:ad9b8201ae71a2129e5c0124b3ec30a60adc10695b8d2468f6636a1d0d600bff"
+    },
+    "b18-rogue#198": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:47cc5f39ebe1429a21622d981b5c0b0fdcde9650b56d8d46642f1822797e4fce",
+      "fingerprint": "sha256:4490db661ac58a5f6756aa0a9817b09213fd6b9157a2f7d77c83c38a1763ce3a"
+    },
+    "b18-rogue#199": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:e59c334d7975b9d33a81eba1e4407660965e06271f3ae22d49c033a58c6874f6",
+      "fingerprint": "sha256:10d46ca63890a6458a3627c669c34f116bfc914b83d32218b9c1652c32cbb5fc"
+    },
+    "b18-rogue#228": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:d789cf8547fae56e6795fcd2744f944195c4860b20fc0a31013d1262f52fb56f",
+      "fingerprint": "sha256:aebd0f62bf17c622d48b8c99ff77482de7655d9f841c616e9d2fdef218639529"
+    },
+    "b18-rogue#245": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f7b4b5d7987bfc904c3a1009e1da974835d9fe8c5171990652640034aa1672cb",
+      "fingerprint": "sha256:05942300b68a1dd16ce50a5cd9607b06de1d640d21bda8e9aed69a3b6a457bb8"
+    },
+    "b18-rogue#247": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:1d496ddaf523a1961efd81aa2b39f79341dfdf9873f9eb0252d0fea6e231d838",
+      "fingerprint": "sha256:2eeece95343865b143e21dd7ac922c500da9ad31ba64494d8e18edcae570f77c"
+    },
+    "b18-rogue#257": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:8152a69625709efc4380b82e6068178a6a66602489570f7f025993f18f790ec1",
+      "fingerprint": "sha256:258f5efc7ced06b3975327dfacfd5ffbeb66cdf4c273d4e8a4825f7b3acfe0d5"
+    },
+    "b18-rogue#263": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:0975326e227ebc79d3ecbcfeb1b04946a9baba366c2aefb24bf5464565b84a76",
+      "fingerprint": "sha256:d9987751ea7bafb7a94c4aba2bec6b9c47fa96a6ccc1bb143bceb00fd5a1af11"
+    },
+    "b18-rogue#265": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:8c28c1df5bc0a3477fe08575808e9f165f6f215136f73ac16ff3f4efa69decd6",
+      "fingerprint": "sha256:9450fe2c0705b184be626e541aaabd36f550cd87c5d21f8869324ffad1461c0b"
+    },
+    "b18-rogue#317": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:dacd87bfca1cbd313a46d8f405f06b671d50122000740d98a2c0c60b16d8e3c9",
+      "fingerprint": "sha256:5e05c7baf4ad85575b88bd9c3337d34084c4296599365d411c5d0d2d163ab637"
+    },
+    "b18-rogue#328": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:7d5cfde963b154e663075f76ff07af5750d6aa28b6812bef5aefcd724c4fa7cc",
+      "fingerprint": "sha256:0c97f22330e6ab4914218c7ef23d09e51c591e15176c312427c7a972ea9715b4"
+    },
+    "b18-rogue#334": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:01a3c296d6b2ca168aff29ebd8228f5af02201660bb81e6bc6d5348d2d0f385a",
+      "fingerprint": "sha256:729621bb99d9442fa6b4ad4214a3bf25dbe4666cbf73a3d0c94a73d6b4c24c87"
+    },
+    "b18-rogue#338": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:ef4b80bfb18bd2eb382d9929cfabd9167e06cf3f5604512ba25b41c905a2ea3d",
+      "fingerprint": "sha256:f1ee0fc25f0167dda60f140305bb19492594cfa81bc43899549cdad36fe70f34"
+    },
+    "b18-rogue#340": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:e4e5f69012c75a7d6ff0f2084714aaa5b3fc67415df5b99fc1ac7f4f42339a44",
+      "fingerprint": "sha256:23a7806f84e45b1afe1970077b4441ff047901a73f0e0aa6a0cf62f05a42ec5b"
+    },
+    "b18-rogue#344": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:491c024e1138d208da6ae5f421e3dff6fbcce5c4e862c74427cec74801f549ab",
+      "fingerprint": "sha256:14708feffc7c804d5a0b246d1a3506fa79e2ed5f7ce07167103fbd26b8e4e1c4"
+    },
+    "b18-rogue#353": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:26c0e53c5b7d719554f06582de68f8e2aebba623e8012133d3fb91b3d61a935e",
+      "fingerprint": "sha256:141d2052b7ced6899f3d4e15bfe5c8cbe5b9f4b2ac933e2fe1d7a865665c78db"
+    },
+    "b18-rogue#355": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:4ba7b069864355d940d78a5843ac24d62b65962c96016ed3d5cb3282e49d61e8",
+      "fingerprint": "sha256:a47d57c494e39fef1d665d2be04b161c1cd1efb7ddddc9458efadfef68d0dd7c"
+    },
+    "b18-rogue#356": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:3bd02d8ae1d6444c4c4d9a92610c74f305a16dcbce8596caab7940f155a0d272",
+      "fingerprint": "sha256:ef432ecd89403a72fff5828b771705c371a5135bc6a81d61082680196fc5591a"
+    },
+    "b18-rogue#359": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:0c55035149654c2fa6de500dc42a3f577d0706278a05d017295e17c0224b5843",
+      "fingerprint": "sha256:0ce8fe8cc98ed87eb7170757bb244cd740875e015b8e021b6e9abc6dd01f581b"
+    },
+    "b18-rogue#361": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:396d5de8187d6f5c184dc043b2e3fde5691b6cfcbdc384e1dc82935d3209a9db",
+      "fingerprint": "sha256:a9c2aa16861c9ffce185cc13784e3598698f9d2fde32f97e06cb2d91cc4b00d1"
+    },
+    "b18-rogue#363": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:73fab6be57d179b0db6fa5d1d52f9a5fad113ddb3b6c784722edf7cc38b9967a",
+      "fingerprint": "sha256:c1cc15c871fac01b72889df81bee9e0ddc29e60f5497aa95085dd3ee6bada223"
+    },
+    "b18-rogue#367": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:4877e297ce30c17bc0c610aa35dea3aa911c1d729d37f126cee89bfbcfb05913",
+      "fingerprint": "sha256:6bd3a170d88fce2b088e7a90fa6c3faf8b0dc3b2deb9541d5e392ca36b07fb34"
+    },
+    "b18-rogue#368": {
+      "category": "mechanical",
+      "reason": "Ein ungültiger Questverweis bleibt zurückgewiesen. Untersuchung, Befund, Thread und die fünf gebuchten Minuten bleiben erstmals auch ohne gültiges quest.detail erhalten.",
+      "fingerprint": "sha256:c5521662626b7ed32de4e06a8b5830446627cee17111c391bcdccd03982f528e"
+    },
+    "b18-rogue#369": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:ce350bdfe182ede477df723f638e48438027f9980ef2551f5e93eaa24e3d3837",
+      "fingerprint": "sha256:3a004e1f1956a88328c14044fe631e350ee0088784a96c324e969587d0160897"
+    },
+    "b18-rogue#371": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:31aa7f6b6844caac87ddb2e58059eb98a6385555e2b6b07ee168bdda19f7b0ad",
+      "fingerprint": "sha256:b162d414f182f0bdd40ab768997c717de9f88aabc4d987853129c6dcadfbf997"
+    },
+    "b18-rogue#375": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:46b9fc6eacaccbaa4fe27a12817531947457c0bd4682d5b83913ba826954963d",
+      "fingerprint": "sha256:e2926f581184e9d98401c6e183fcd1ec751b1af91b8b64f1d3d44bd77e785964"
+    },
+    "b18-rogue#379": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:2d72d29b93d6eba3d7b0e976022df47b158237f5ff24add74dff7f0d37078f4e",
+      "fingerprint": "sha256:324947184115ba79e1943b94939aa9020f3cc74189d90dbf63487a48ca6e8f85"
+    },
+    "b18-rogue#388": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:28df413765cc6cf0cbbbc2829eef60c90a6555bf6f8d5e24ae9e79efe38133e7",
+      "fingerprint": "sha256:cd2db4c37f1ea431c33e8038974fa5b22bc912d63bfc5ceff3696dfbc0b59fc7"
+    },
+    "b18-warrior#29": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f1045ad59c8687c216ffc82978ad1cfeb9076308aaf6f4aea705e4062c464ff7",
+      "fingerprint": "sha256:ce7f676a03d2d3f5d1c51741cdae2e9feff55729513086fd88e07280909abe50"
+    },
+    "b18-warrior#30": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:ab2a06185b3231d92e4a400f426e79f84b678af4f4e98321f92199091b99cf71",
+      "fingerprint": "sha256:432addd6a4a2fc7498eea4ba2014705bea5f1acc70b93d5dc3f00fa94cd97f5f"
+    },
+    "b18-warrior#37": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:d39c62902c5c8a05dd78279ab385c22536fa93f96ac4405cdcbb2feb61a754b6",
+      "fingerprint": "sha256:d623eb1d2f29888c08d8092e3a0c4655292defef7faea98a90a9e370b8637207"
+    },
+    "b18-warrior#44": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:b1886915efb71e77908edc7e68dcacf9b02d8e904e15a5fd1b41ae546884c92f",
+      "fingerprint": "sha256:749aa62206720b4da647d6234b2d996cb0927e2324fe678fd637630cda79f2e3"
+    },
+    "b18-warrior#51": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:7df68c2b0c65dd134ba37603eb65a09025eb7a6ad79dd8e77b34ecd57c526f32",
+      "fingerprint": "sha256:4e3625e42bd6aaf02db00bcc78bc0df96ce431dba1fc8ca1f2054f9daac603bb"
+    },
+    "b18-warrior#52": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:9ffb26d884c2079152bd7aeaa4611911338e85c3ba6411a20f1d255633a04006",
+      "fingerprint": "sha256:f5db18e3573bbcb298901a054bb8080685b8b726747a9c78990310d73f9d8dd7"
+    },
+    "b18-warrior#54": {
+      "category": "mechanical",
+      "reason": "Der Spieler übergibt Rüstung und Haut ausdrücklich. Das gültige einzelne object.move nennt die bereits im Spielerzug an Bexley übergebene Haut erneut. Der Reducer setzt denselben Halter, dieselbe Objekt-ID und Menge. Keine zweite Geldbuchung. Ein zusätzliches redundantes Übergabeereignis bleibt sichtbar.",
+      "previous": "sha256:05a5eac7608c4785746f567999183406d9a267146fa7336b3afb19d7e23c5044",
+      "fingerprint": "sha256:df9ec4a91add3c531e8b2e53039c491210afc5b7f7a501336af02f6d11449be4"
+    },
+    "b18-warrior#64": {
+      "category": "mechanical",
+      "reason": "Das nicht unterstützte creature der Erstantwort erzeugt keinen Keiler. Die gebuchte Reise in den Wald bleibt erfolgreich. Der frühere Repair hätte ein gültiges creature.new geliefert.",
+      "previous": "sha256:ee6ccdff2bf94df354ca579fa2f887388d70e1dfcfe10ef93b4fc141033b2d72",
+      "fingerprint": "sha256:df7512460d86d0a7c571529a1a3035684f158b626bcb12f9949679ec97d6f00e"
+    },
+    "b18-warrior#65": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:6dd7d07233fa711ead1a845e63db3a9a5a3b998fd83eed448074077f1a42bffb",
+      "fingerprint": "sha256:526f910216aba4799c41e7da78a83b727de26021c0f028b24d6170545738799a"
+    },
+    "b18-warrior#106": {
+      "category": "mechanical",
+      "reason": "Am erreichten Mühlenort meldet die Erstantwort Maren als neue Person. Identitätsprüfung verweigert dies und die abhängige Erinnerung. Die richtige Orts-ID ist bereits erreicht, damit gibt es keinen offenen GO für einen Repair.",
+      "previous": "sha256:229011f37175fac0a46d06b4b53672949c27d550a7e10ef747c4dc56bc2be36d",
+      "fingerprint": "sha256:9f4b20a4cbfc8789cb9c0028c4b6d2c9e2d1ed8635905ebc021e23c3b6cc875d"
+    },
+    "b18-warrior#107": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:84411a30d24e5f07695bbf21fe24d5d562926f561eb860cb989e6f3626fea847",
+      "fingerprint": "sha256:fb45fa6b3ac81d22e8e4b8d4dafb019def0eeda19ed53ac9db24f7fb76336c2d"
+    },
+    "b18-warrior#158": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:314325eaca5c60c2c72bdecb19081fa03bd231977aa06211d89574de7f717ab6",
+      "fingerprint": "sha256:14b68681a7144ba420811dbd4794c42f444f28de115ae2314ccefb4152147c5c"
+    },
+    "b18-warrior#159": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:2ffc3e87892d6c0ccf310334bea4e38c08d8b053d2954d20d660ff7d2c474a3d",
+      "fingerprint": "sha256:b2c6e472d8eb37f4e90d1616f48a622618566d93564c58fcdd35af62968256c2"
+    },
+    "b18-warrior#160": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:15dfb8534aa7a572c19491ff1da60d83a6df6c75b6f03f1316cb7584cbcae576",
+      "fingerprint": "sha256:e4df8b6a8751cd2946c36956b521bebbdceec90771c875da0a5bf1a1d08812d1"
+    },
+    "b18-warrior#164": {
+      "category": "mechanical",
+      "reason": "Der Händler der Erstantwort besteht die person.new-Schemaprüfung nicht. Das Gebot eines abwesenden Käufers bleibt unwirksam. Kein Verkauf und keine Veränderung der gehaltenen Mengen.",
+      "previous": "sha256:28a8c0d4eca214425178cc7df82f351f31fec22e9cf9bbc4ccb8f40f73a25ad1",
+      "fingerprint": "sha256:99760dd90ce2daa0d3eefd829cac351412713fa3dbdb064bdf98a31556e5f1c8"
+    },
+    "b18-warrior#166": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:c26fd80be32790b8b39faaa8308f852bbc3d9103a8ee360ee4e914d384f142d9",
+      "fingerprint": "sha256:180825353883648e48a869a413d96590b1224b6acd25845dd0e193d4f8edf6c9"
+    },
+    "b18-warrior#171": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:eb15cbad43e03673f69549e2d338a3b737c6dd985317decf287b5a678639613a",
+      "fingerprint": "sha256:ee247d8f3cc077cc7c9eaefa6f150b598add3271963b152fcd6150ffaf1a3110"
+    },
+    "b18-warrior#187": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:a243bcbea7f94a8a8ed052e0b1124011cc7912eec089ad994ae9b3dbf1f4d508",
+      "fingerprint": "sha256:cab4934e8430b5b1754441476be723552a811a7db5f81a6cb207926d30e9d96c"
+    },
+    "b18-warrior#203": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:436ba7fedbe3b653665b198578e58e6d01bdb78af8593ab69ebb90c1fb509887",
+      "fingerprint": "sha256:bcfd5c6194945e12545fa2ea77739845e997953d9cbd60156459fd82a12d622e"
+    },
+    "b18-warrior#222": {
+      "category": "mechanical",
+      "reason": "Zwischen Ankunft in der Stadt und Ankunft in der Halle liegt ein ausdrücklich in der Halle angesiedeltes person.new. Der Clerk wird an dieser früheren Stelle nicht gebucht. Die tatsächliche Ankunft in der Halle bleibt gültig.",
+      "previous": "sha256:89075ac06cb48f9a2fc001b4ebbd2c19c767bd4cd434cd53ebd54837211a3ffe",
+      "fingerprint": "sha256:a1d136c3a92c6d9b88ca9fdb77d2209e5ac9f3f62a8ba6eda515c2d97ab2b6e5"
+    },
+    "b18-warrior#223": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:52fccd8f13aade99bf17a1e5950209189c03ab1d20b37ee62194d1eebaee83e6",
+      "fingerprint": "sha256:97f72940e7267feeef69c007668a57667d6074f1f1048abfad975cd9c9bae600"
+    },
+    "b18-warrior#231": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:94cc41d9198eaa4fc2451e1924e3ba467fc19ff0ef21587fefc6c6cb088aac65",
+      "fingerprint": "sha256:63c7ccedbcc719668775798db7621bfef81ae8a3b8cf41a52006ad869944b119"
+    },
+    "b18-warrior#260": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:7b2782411807836404775ac854dca5acf0acf0efd0800a5cfbc0e1f6972c20f3",
+      "fingerprint": "sha256:c8ec7bef1c5a3a38c25b07ff2c41f8daa1e7f69f54d351e28cb12cfb434040ac"
+    },
+    "b18-warrior#280": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:5aeebdd612c9f168a87ec90e8085758e7dba2ea185c1e4a5944cbcc06fda46e6",
+      "fingerprint": "sha256:b2350a2251e5af9797c79c08a7f86ea1161e07519aacaf289eb4b9722993fb30"
+    },
+    "b18-warrior#320": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:3a837dc0140312d0bad1353519e384b8c8be1143e64466c48471785d18892795",
+      "fingerprint": "sha256:fd53267116386ab2de20f616f79cbe08bb64da0a2cf9a5d070d2e72d64303f25"
+    },
+    "b18-warrior#334": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:dee4a5de5c1138eca7a8859fc4a17bdc23ae7aa9ec1b4d6f9a221434f2b0f9b1",
+      "fingerprint": "sha256:d49553cf3976cb45bf13425488bce81c290492d3dc01722f7812039c250ecf00"
+    },
+    "b18-warrior#343": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:0af869ad7467ed73f2bde62fc0b5d1a49c025788bf4d08ec84f8a6bb598b7f59",
+      "fingerprint": "sha256:8d7ff6f2abb57f7c394671e3f4bea8b6783c87ab4cc6837c00907a07b9092612"
+    },
+    "b19-mage#18": {
+      "category": "semantic",
+      "reason": "Die Regeln und Wegauskunft des Torwächters liegen vor dem späteren Ortswechsel. Die unabhängig etablierten Fakten bleiben am entsprechenden Schritt erhalten.",
+      "previous": "sha256:bf44e6de64f990f9c257d76122edb89c8b3d9e2da1456674aee26f473ea83845",
+      "fingerprint": "sha256:053837ef2512f73c75d9bcaa2b270668ffb11632eb868e1d7c8719bb97374c66"
+    },
+    "b19-mage#41": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:4ae81091200a3dc08204986899130f81f5645f464d5853e9969bf22ee9963c1b",
+      "fingerprint": "sha256:56678a475a81d31d2596c1263c044e7de1af2a4ae95844e1cac19c64cfaf677d"
+    },
+    "b19-mage#46": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:d4d59093d25730601d761c0d66aff3ae140e92c44bd13aecf7f497f7d57c2815",
+      "fingerprint": "sha256:65a445c244837dbd2eb0324c642f61944050cae0ec49b3623807e0ce6c939fb5"
+    },
+    "b19-mage#76": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f9bfc9c778215c7fa87c3485c34939ed645a02271982995bf45102fa4be7ba1a",
+      "fingerprint": "sha256:b72088977883a0639a9cd11684b888d68cd84a51440a946e6a2c71d1459a0d9c"
+    },
+    "b19-mage#77": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:233d2a8a60d13fb5560a0dc7b8c31ae571aee96eb74ad828085327d5e5397d98",
+      "fingerprint": "sha256:b8ecd887a8ab83d1a8058e51d760565ab72d9db6f8a699c931c41b6ee9a8156c"
+    },
+    "b19-mage#98": {
+      "category": "mechanical",
+      "reason": "Ein Fischer wird auf dem Weg gesehen. Das nachfolgende aware ohne Ortsangabe nimmt ihn mechanisch noch am Otterhundbau auf, da X keinen Zwischenhalt meldet. Seine Auskunft zur Quest und das Wissen über Alarics Aussehen bleiben erhalten. Die Ortsauflösung ist hier gröber als die Erzählung.",
+      "previous": "sha256:5984ed4667f1b963b951214b9868cb4428f9665bd90e5a2a8f5d869d4dc87391",
+      "fingerprint": "sha256:0e8594905cc4944d76993b3cfe15dafe614c37cd1452b100971c56ca9674f19e"
+    },
+    "b19-mage#104": {
+      "category": "mechanical",
+      "reason": "Das ungültige fact zur Auslage der Erstantwort fehlt. Die gebuchte Reise wird abgeschlossen. Es entsteht weder ein neuer Preis noch eine Transaktion aus dieser Beobachtung.",
+      "previous": "sha256:9f62951d73393d23448cfdb3af9d1123fe3c33d86b4c51ebbfe2eb1e6c049e31",
+      "fingerprint": "sha256:7e0f8bc0581d8b74220566a7b057fe05c08962fb87030e72a773447de918c06d"
+    },
+    "b19-mage#105": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:860f455fb118f52e9d2c56f450726104a81e7b96defe2b09dad5f4ad05dff30a",
+      "fingerprint": "sha256:555f0fad3294d0b11c33ef40d30e7ea153a04554d2626bdd1530d5d962b75634"
+    },
+    "b19-mage#132": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:1780c27f9e366dfedccd1d8a233e90bf03b97622437996134c8fcd3ea1456ed9",
+      "fingerprint": "sha256:343d639885a70918ab67db2dba1a3ab03f221f040bbfbb646e861932f915c88d"
+    },
+    "b19-mage#140": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:0b4dabbce22470d56c1f846025b70ba0d2d9f96a02af1bd2dd258a3975a9ab65",
+      "fingerprint": "sha256:706b595e550d0a912dec8d84afd3f26586c7ce6113645cfcd011b6c45b1874d7"
+    },
+    "b19-mage#145": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:82dcf6017847ec4f78b25a8c5195df1053ce5aff4bd9f835818b2f6a42347ee6",
+      "fingerprint": "sha256:cdceee62eee942cc8c30f3d92d4d9642c29dcf0d68716a6edb5e8732564fac42"
+    },
+    "b19-mage#146": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:55befb56e3d8e5e4e399cc2260c39d063205f8953060fa04066371ad894b972f",
+      "fingerprint": "sha256:f6d985cabf36347f0806bc20d9e87390ef297ed3667037ea8cc65c03e54c6eaf"
+    },
+    "b19-mage#152": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:9f9248faa00cbaa4b3ec77b0e436a774072cdb4be7926235be9c46101e119a1c",
+      "fingerprint": "sha256:d497692e3cef716f46098955a6ecfc3f844df53f9a7ce09e48c66b0db477bf07"
+    },
+    "b19-mage#179": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:4f6470f4ffbc8edebb59fde0012b0c41f9438b8ee4cea13c2439708efe0e8f51",
+      "fingerprint": "sha256:7e5068721b34a57779c635976fbdc8411105fbe3866ef0f8abda6d818520b170"
+    },
+    "b19-rogue#19": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:1595486359618ab3f33721faa6b09a1bdc8de69de03f4cf5c971240573666fc5",
+      "fingerprint": "sha256:930e47d935df13a5881778a651a039416cd30a9240a6c89aca3785450f5a2418"
+    },
+    "b19-rogue#23": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:fd58e5d2e4c1fc56dce2952c753afcb7762a31f50cc02a2bd74727484e1b6938",
+      "fingerprint": "sha256:516e2c5a4f5fe388075c3fac1537fca1ecd0a056a29bf36310e68b05639236ae"
+    },
+    "b19-rogue#32": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:c3f6571d93c02f06e1a4ade1988ce404b2e79ae34fd05b2e1ac308d8941210c9",
+      "fingerprint": "sha256:a99e1f3776fc232d17322e560dd6588fa87e20e22f76f91d58c008c48d3052d4"
+    },
+    "b19-rogue#38": {
+      "category": "protocol",
+      "reason": "Dieselbe Aussage zur Messerverfügbarkeit mit identischem Inhalt und Sprecher. Die Fakten-ID trägt die Sequenznummer der Erstantwort.",
+      "previous": "sha256:e1369a193a6f39da9500bd6d01542b58c73a8bbb4079c07651939af4db7b74f6",
+      "fingerprint": "sha256:7b85248530cd7a1b3b34ec8ce1091454817592e36963c55d430a51a42c60889b"
+    },
+    "b19-rogue#43": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:5165879ff78dffc6b80f3d2fbc034ae41d0e4a1714acc8e43d3138d9aa2236cb",
+      "fingerprint": "sha256:c4a280c115210e74afc74274020331c5111f5c1cc2df94a8f1cffe579d72ed73"
+    },
+    "b19-rogue#47": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:fa2edc1c0bd41ba33b6b27bdd42b122449ad5f125dc9b847e9ec2f3ec282c136",
+      "fingerprint": "sha256:09205027b0d3d56b162687c9d7a25cbe319b377ba9f0578197360918391d732d"
+    },
+    "b19-rogue#57": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:3f223a8a749161f797e04805188617a7facd45f79567b6e46f7a9a1d958ed7fb",
+      "fingerprint": "sha256:c834dc72a86b7548185e61c5d78157d8255922e6c36ad8781c880b5b7dae72c3"
+    },
+    "b19-warrior#49": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:23e6809b449374d6f5ff6b97e08b0a6d06b3430c51abec1d8d65eb9d08fdcbdc",
+      "fingerprint": "sha256:35a1afa8c7f3d4b5e0a3626f80c98b311d07c576dd61c382987dc7f47513c823"
+    },
+    "b19-warrior#78": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:502c7e4f30195e59d5ed39516af2c4cbbf084f1f68774782e2a73beb64383b86",
+      "fingerprint": "sha256:d5c5cf2d2aff8ca6260086f8a5ebcc8d424659ccc4cf567ea6a494ff4b6a6198"
+    },
+    "b19-warrior#80": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:7ed813482ba6908d603e21aae4e343655bd855ab6c6c5ff99fa28161deee5ed0",
+      "fingerprint": "sha256:c26dbc39c854a660415aeea91ab56bcc0a8e9bff13a501e1ee72f5ce47d2f769"
+    },
+    "b19-warrior#85": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:6409a620770fe5bcff1082c3cb32acc03244f73a333a12fcf85866122ede7f9f",
+      "fingerprint": "sha256:2a994c745a705e9fdb3095596d8a5f2838cc136cd2755f0fd30c1c71300dc954"
+    },
+    "b19-warrior#95": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:acbef27637113f26eb318809b64c8255736b6877345aa5bb4e9e84c27b18f4a8",
+      "fingerprint": "sha256:876dde11cfe90d2e523109d4a7d56a0ef39d6a5b16fc416062b9222ae6c03a4c"
+    },
+    "b19-warrior#108": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:b7198962bf2bd36f8bb2e633e5f493cdc5ebd95364424754cc8014afa9e352b2",
+      "fingerprint": "sha256:81052d4f147d480f2e424143e4d15cbee8eae24e0f5db44007fabc7d702ff131"
+    },
+    "b19-warrior#114": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:590ee280119d13c242c87ba9e1a7d272a2f73ff2473899ec437ac8289a201df0",
+      "fingerprint": "sha256:3ff78dfd2fd83e4ddd4bf5c81e40cb64aac1078da5430737257d5b54c4e864ff"
+    },
+    "b19-warrior#137": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f0c36a4a1a50c0007a37c7e58d8b2ee583cf56d548fa98dff5fdfe9297f9da79",
+      "fingerprint": "sha256:a8bcafe03909889fa5300dea26c101dcc122e7b55047e503cb8d0351f9ed6405"
+    },
+    "b19-warrior#162": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:4f8953ea4d128be85819ed147db10d1fd4d9f95fce089be5eafa05c63c7ffc0a",
+      "fingerprint": "sha256:ea4ce5b090a8a64f0f5c70882743854e4954741931f40284b2916e971ec96f14"
+    },
+    "b19-warrior#176": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:e4c64bd77650a69d5b0857bda0d885fd98c71a9d1105b9ffaf62c559c6867620",
+      "fingerprint": "sha256:d476f95039df3acadb7b07d7271716548a26f8822be7da23ae60f46929d930c0"
+    },
+    "b19-warrior#201": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:e5a2b86edbaa51b8c4d976e470542a1da1d3e89f77e9baf6c042317081a54f0e",
+      "fingerprint": "sha256:fb04f55f5c38d75922c3c25a4935cb44d12cca4f71a91888a7fe16c35aac2e69"
+    },
+    "b19-warrior#202": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:2af71139b4f30159592b9b32970c1addb436355d82491d656951784a5bdcd2bb",
+      "fingerprint": "sha256:5998b6c029b357859098276e4185e379293bce3f87c1c4f994feef1c131de3af"
+    },
+    "b19-warrior#208": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:10d1dca5b648852d84c0c34d13c0a067d2a8afbda925ca4a2fdc3b118aa9526f",
+      "fingerprint": "sha256:08ba137e1a5d4621b86493b262012b43ade1d1828b13d51501407986c6cd4b36"
+    },
+    "b19-warrior#230": {
+      "category": "mechanical",
+      "reason": "Ein ungültiges fact entfällt. Der gültige Spurenhinweis bleibt, der zweite im Repair formulierte Hinweis fehlt.",
+      "previous": "sha256:f93f7a28dd85b775ec250924f49e44888562d06610890e568a5d494bc998b9cf",
+      "fingerprint": "sha256:a84edfe4a0fbd9105f7d4fff94b49bdb50826c402621d3c1eb101dfc2106aad7"
+    },
+    "b19-warrior#244": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:842f3d5dbb1d270fb68e78215299a88b00eb8a46cf847b2fecd10cba84ae80fc",
+      "fingerprint": "sha256:dd297ae1f826061bb9b67dcbe340ed8828f4f4569876575c22494179af4d4dbe"
+    },
+    "b19-warrior#252": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:520aaa45c1efc0409b8597879c77afba5243fdee1f85607c07e2ef0a49f22002",
+      "fingerprint": "sha256:115d44a1b8efb87abf7b9f6587def482d713f9cce986de8a6a44d2c8e5c0f134"
+    },
+    "b19-warrior#253": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:5eeec7260cb1bca1fcdb55018f16192af485aec0ebb5b82760b41a8b20986e8f",
+      "fingerprint": "sha256:22054e74c4616e1c5dc68fbd6b8a79c9c48a93e5a738c66026f4c5a9ec2ae4c6"
+    },
+    "b19-warrior#256": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:62888700d051b9785e4f92083621fe9582f72423895dc229d9e8f91d3d5710f2",
+      "fingerprint": "sha256:58b9fe2837ea72ef3add636de02602b0fba1bf218431fd0d0c34fb8456a6bcc4"
+    },
+    "b19-warrior#258": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:17729b2887fa7424f3a0d09ac3e03f4d620fa370940de6d53e10eccfcee79d16",
+      "fingerprint": "sha256:0e0c8762a7bf16bd6b6b348c7e6aa1d410b2e1b2b7d2be00a2127b752ae7f740"
+    },
+    "b19-warrior#261": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:2e3da6c28f2238d8a0897789a58a7d073fb8d4608abd12c26c6910e0dee473f7",
+      "fingerprint": "sha256:fd5cd2484e9e4029593b3d1b36b1c25ffbe74d94214641cabad91b178d3281a5"
+    },
+    "b19-warrior#262": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:7601da0d458a80ea42589123c1f7b9fb31f83a8526f5810af21e647f6f1bd007",
+      "fingerprint": "sha256:3efade1246293d42b7a9d37b83d18a6f48129de69c262638e0505d1a1b04220e"
+    },
+    "b19-warrior#293": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:124bf5da4bb77d014ade07aaf1675fd13f893077cd154af73187c19667ed2004",
+      "fingerprint": "sha256:c5fe86259951a0fd15c4e13412fc32d62e9be61c4e67fbcf6815d1bc1a5b920d"
+    },
+    "b19-warrior#294": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:310ff7ef02e27148fb6af82bdb24681756b110e27f5aaa696feceeaa29ea1d19",
+      "fingerprint": "sha256:f7abc7472858f963bbf3816c49979d1202f2466b9e34e1b72c61246995d342e6"
+    },
+    "b19-warrior#297": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:f76fc67fda80e74277d41f848523beb30aad2cfc21097d31775e203f6f4f5a46",
+      "fingerprint": "sha256:fb748a819c39161178156c2257ba51a7d6dcc3cacb5a15befa3a93ee73d710ae"
+    },
+    "b19-warrior#310": {
+      "category": "mechanical",
+      "reason": "Bestätigte Gildenabgabe im Altsave. Der einzige anwesende Schaltermitarbeiter npc.npcguild_clerk_thornhollow erlangt Wissen über f.pc.completed.quest.cull_the_thornhollow_boar_sounder. Vergütung und XP entsprechen .251.",
+      "previous": "sha256:0491e203a0699d5ab29966e0bb14d349e4f4406a9602db12780cce5393014c5e",
+      "fingerprint": "sha256:9bac6245a8e8e2d77d7ab3ac5935dd9142064bbc853f23ef41aa9f85f63a5096"
+    },
+    "b19-warrior#313": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:208f54589a03fe0a6126f2544c89a38c19ed0696c9c968e5ef82931a48a26c30",
+      "fingerprint": "sha256:d12b796674d0c562825d0b0d0425429b28eca66e39f79c8bfdda958062b572b9"
+    },
+    "b19-warrior#314": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:0e851647dd954e662b967e8291f45ba3eab1a735e1ab270cad0fe85f6fab1e9c",
+      "fingerprint": "sha256:3e74f28942c7a30a95b29919a7d65a103ee4e83843793a6a3c6214e40bc06fc6"
+    },
+    "b19-warrior#315": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:d297c37c8900372c2d06875673d1a12bb2367e7deeba33704bc2f746f10a6650",
+      "fingerprint": "sha256:c09e158abc9b6baf299d6bd87072bd0fc1e47b633597dd67f93db1943ef5c4fb"
+    },
+    "b19-warrior#316": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, unused_answers, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:e714b1388f7f18586e5a803e3c5310f47acc2c70369667dbbe5dd828ebd32970",
+      "fingerprint": "sha256:ef83b20f8ac613dac7843df90d75b1eb3a1d44035d097742d4b667c9bed313ea"
+    },
+    "b19-warrior#326": {
+      "category": "protocol",
+      "reason": "Identische Aussage des Schmieds zur Rüstung und identischer Zeitpunkt. Die Fakten-ID folgt der ursprünglichen Delta-Sequenz. Die ungültige Waffenübergabe wird nicht gebucht.",
+      "fingerprint": "sha256:0ffd82b68a5a33994bd4b4f8e26672462f31a19e9cdd3d3f353e906d93ae2163"
+    },
+    "b19-warrior#328": {
+      "category": "mechanical",
+      "reason": "Zum ursprünglichen Preis von acht Kupfer kommt die belegte zweite Position von sechs Kupfer. Die erweiterten Optionen lösen keinen zusätzlichen Kauf und keine zweite Zahlung aus.",
+      "previous": "sha256:2ffc1a796f117328cbf274270cc2c545a378a1bf3098b16c10761e66100d5aea",
+      "fingerprint": "sha256:0b107ea668cd95a04dbe493c0ea7894206a95c97cbf57697599f1bc804bf5d0c"
+    },
+    "b19-warrior#332": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:4d518cadb779f5a9bba87a1a20444be68c15ee6d9243ef05abf8cc92357e4cb4",
+      "fingerprint": "sha256:2b3c8dd7dfbdb8ac7fe819109e83bc70fced4ef0280afb5bcb753a71e1289d41"
+    },
+    "b19-warrior#335": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:486dafc039ee006a37b960eca6ce79609363451acc6803a849d9b487af4ab991",
+      "fingerprint": "sha256:85505e09ae25a059de85ac961fcd146b5a4de466531acf95e6d57c9b1c26523b"
+    },
+    "b19-warrior#345": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:6f8dc5114c5d084888686646a41ee27734eab63a624ee1957624ddabc0f0477f",
+      "fingerprint": "sha256:a9b521c279811fb278c5cd4076aa02a501a15fb6e8f9bd59bc1e757d61257837"
+    },
+    "b19-warrior#390": {
+      "category": "protocol",
+      "reason": "Geänderte Felder events, corrections, rejected. Die geordneten Weltereignisse stimmen nach Ausklammern von Audit, Extraktionsdiagnose, NOTHING-TO-BOOK-Text und fehlendem gegenüber leerem Reichweitenwert überein.",
+      "previous": "sha256:b80b3065faeb7d81d0043c273f536b61d4f8ff9b0029b5c4f9ed261d559acd86",
+      "fingerprint": "sha256:bf6d4fd15de728809c34addb9cafe3f832278f08ffb505e837f601fe769b82e3"
+    },
+    "b19-warrior#400": {
+      "category": "mechanical",
+      "reason": "Bestätigte Gildenabgabe im Altsave. Der einzige anwesende Schaltermitarbeiter npc.npcguild_clerk_thornhollow erlangt Wissen über f.pc.completed.quest.boar_trouble_on_the_orchard_terraces. Vergütung und XP entsprechen .251.",
+      "previous": "sha256:0bebed328ae600a2b7fc4c79cf2ad0e2db64427afedf37e711cca605fce1d7bd",
+      "fingerprint": "sha256:af30ff4ce9963a04c5a87f6e2456e2cbcbf9c48cdf3b9eb6c39065660a32aefa"
+    }
+  }
+}

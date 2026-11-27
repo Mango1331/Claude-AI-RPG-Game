@@ -135,3 +135,16 @@ for (const [text,ok] of [
     await player(run,text,{act:'offer',quest,combat:true,share:'half',quote:text});
     assert.equal(Object.values(state(run).party?.agreements||{}).some(a=>a.phase==='open' && a.terms.half),ok);
 }
+
+for (const [name,answer,accept] of [
+    ['Ossen','Two of us, half each. Fair enough.',true],
+    ['Garrick','Two of us, half each. Fair enough.',false],
+    ['Ossen','Two of us, half each. Fair enough, but only for thirty copper.',false],
+]) {
+    const ch=structuredClone(original.slice(0,15));
+    await player(ch,ask,{act:'offer',quest,combat:true,share:'half',quote:ask});
+    const agreement=Object.keys(state(ch).party.agreements)[0];
+    await reply(ch,'“'+answer+'” He extended a hand. “Name’s '+name+'.”',
+        [{seq:1,type:'party',who,act:'accept',agreement,quote:answer}]);
+    assert.equal(Boolean(state(ch).party.members[who]),accept);
+}

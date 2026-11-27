@@ -54,7 +54,7 @@ import { freeObjectId, itemTraits, useOf, itemProfile, priceAudit, gearRetailPri
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, speciesAnchor, templateFor, npcTemplate, rulesetOf } from '../content.js';
-import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
+import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, livingOf, floorAt, slotMet, resolved, nextSlot, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
 import { knownAt } from './catalog.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
@@ -1486,9 +1486,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     newEntity(d, 'creature');
                     break;
                 }
-                const root = s.scene.approaching || s.scene.at;
-                const dungeon = livingOf(s, root);
-                const slot = dungeon?.run.floors[1]?.slots[0];
+                const interior = trueDungeonOf(s,s.scene.at);
+                const root = interior || s.scene.approaching;
+                const dungeon = livingOf(s,root);
+                const floor = interior ? floorAt(s,s.scene.at) : 1;
+                const section = s.places[s.scene.at]?.section;
+                const slot = dungeon && Number.isInteger(section)
+                    ? nextSlot(s,dungeon,floor,section+1)
+                    : dungeon?.run.floors[floor]?.slots[0];
                 const home = root;
                 const cues = d.desc || [];
                 if (!slot || slot.role !== 'minion' || slot.taken || resolved(s,slot) || slot.anchor !== d.anchor
@@ -1499,7 +1504,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     blockCreature(d);
                     break;
                 }
-                newEntity(d, 'creature', {slot:{root,floor:1,slot,existing:!!slot.entities.length,story_ref:d.ref},sightAt:home});
+                newEntity(d, 'creature', {slot:{root,floor,slot,existing:!!slot.entities.length,story_ref:d.ref},sightAt:home});
                 break;
             }
             case 'enter': {

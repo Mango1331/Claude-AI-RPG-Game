@@ -655,6 +655,10 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const entered = new Map();
     const present = new Set(state?.scene?.present || []), introduced = new Set();
     if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const { d, i } of value.deltas.map((d, i) => ({ d, i })).sort((a, b) => a.d.seq - b.d.seq)) {
+        if (d?.type === 'creature.new' && d.across && reply &&
+            [d.across,...(d.desc || [])].some(words=>findQuote(reply,words).state !== 'found')) {
+            semanticIssues.push({index:i,seq:d.seq,why:'For individuals seen through an opening copy across and each identifying desc as separate contiguous literal excerpts. Keep the observer at the current site. Report only a clue if they are not individually visible.'});
+        }
         if (d?.type === 'party' && reply && findQuote(reply,d.quote).state !== 'found') {
             semanticIssues.push({index:i,seq:d.seq,why:'party.quote: copy ONE verbatim, continuous decision by this speaker. Do not join separate passages or omit new conditions; if the decision is unclear, omit this delta.'});
         }

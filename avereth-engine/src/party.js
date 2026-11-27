@@ -48,14 +48,17 @@ function evidenceOf(s, who, source, words, actor, listener) {
     const next = source.indexOf('\n\n', at.end);
     const paragraph = source.slice(previous < 0 ? 0 : previous + 2, next < 0 ? undefined : next);
     const outside = paragraph.replace(/"[^"]*"|“[^”]*”/g,' ');
+    // A self-introduction begins the speaker's utterance ("Name’s …").
+    // A possessive description of someone else's name is not an introduction.
+    const introduces = name => new RegExp("(?:^|[.!?]\\s*|[\"“])(?:I am|I['’]m|(?:my )?name(?: is|['’]s)) "+escapedName(name)+'\\b','i').test(paragraph);
     const names = s.scene.present.filter(id => {
         const n = escapedName(s.entities[id]?.name);
         return n && (new RegExp('\\b'+n+"(?:'s|’s|\\b)",'i').test(outside)
-            || new RegExp("\\b(?:I am|I'm|I’m|name is) "+n+'\\b','i').test(paragraph));
+            || introduces(s.entities[id].name));
     });
     // Prefer an explicit speech tag to a name merely mentioned in narration.
     const tagged = names.filter(id => new RegExp('\\b'+escapedName(s.entities[id].name)+'\\s+(?:said|says|offers?|offered|replied|asks?|agrees?|accepts?|declines?|refuses?|answers?|calls?|tells?)\\b','i').test(outside));
-    const introduced = names.filter(id => new RegExp("\\b(?:I am|I'm|I’m|name is) "+escapedName(s.entities[id].name)+'\\b','i').test(paragraph));
+    const introduced = names.filter(id => introduces(s.entities[id].name));
     const owners = tagged.length ? tagged : introduced.length ? introduced : names;
     if (owners.length !== 1 || owners[0] !== who) return null;
     return passage ? source.slice(passage.start,passage.end) : paragraph;
@@ -106,7 +109,9 @@ function wrongFeeRecipient(s,words,who,actor) {
 function unchangedAnswer(s,content,agreement,words,statement,actor) {
     const terms=agreement.terms;
     statement=withoutAddress(s,statement);
-    if (!(yes.test(statement) || decisionOf(statement)==='accept') || statement.includes('?') ||
+    const restated = terms.half && halfShare.test(statement) && statement.split(/[.!]/).some(part =>
+        /^(?:fair enough|agreed|deal)$/i.test(part.trim()));
+    if (!(yes.test(statement) || decisionOf(statement)==='accept' || restated) || statement.includes('?') ||
         words.split(/[.!?;\n]/).some(part=>decisionOf(part)==='refuse') || no.test(words) || negated.test(words) || qualified.test(words)) return false;
     const fee=terms.installment ?? (s.quests[terms.quest] ? questFee(s.quests[terms.quest],terms) : null);
     const money=coinEvidence(words,content);

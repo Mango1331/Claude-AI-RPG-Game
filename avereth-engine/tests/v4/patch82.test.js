@@ -78,7 +78,7 @@ test('8.2 telemetry 2: the planner\'s call and the turn\'s local cost are on the
     assert.equal(timeless(lastUser(h).events), timeless(x.events), 'the same turn, the same events, whichever form the answer came in (the planner\'s time aside)');
 });
 
-test('8.2 telemetry 3: the extractor\'s calls, their ends and tokens are on the reply\'s record: an empty answer at the limit, without an open receipt', async () => {
+test('8.2 telemetry 3: the extractor\'s calls, their ends and tokens are on the reply\'s record: an empty answer at the limit, then its short repair', async () => {
     const g = live(36);
     const answer = JSON.stringify({ expected: {}, deltas: [] });
     const answers = [
@@ -89,11 +89,11 @@ test('8.2 telemetry 3: the extractor\'s calls, their ends and tokens are on the 
     g.chat.push(replyMsg('The lance struck the slime square in its milky flank, and it sagged, still quivering.'));
     const id = g.chat.length - 1;
     assert.equal(processReplyAny(g.chat, id, content, { narrationMs: 14200 }).extract, true);
-    await runExtraction(g.chat, id, content, g.llm);
-    assert.equal(rec(g.chat[id]).extraction.status,'failed');
+    const x = await runExtraction(g.chat, id, content, g.llm);
+    assert.equal(x.applied, true);
     const r = rec(g.chat[id]);
-    assert.ok(!r.extraction.repaired);
-    assert.deepEqual(r.extraction.llm.map((c) => [c.purpose, c.finish, c.completion]), [['extract', 'length', 2500]]);
+    assert.equal(r.extraction.repaired, true);
+    assert.deepEqual(r.extraction.llm.map((c) => [c.purpose, c.finish, c.completion]), [['extract', 'length', 2500], ['extract_repair', 'stop', 967]]);
     assert.deepEqual(r.narration, { ms: 14200 }, 'the narrator\'s time stays with the reply after its extraction');
     // the status line reads the same records
     const line = perfSummary(g.chat);
@@ -118,7 +118,7 @@ test('8.2 telemetry 5: the status line of a turn played under this build: wait, 
     processReplyAny(g.chat, id, content, { narrationMs: 9000 });
     await runExtraction(g.chat, id, content, g.llm);
     const line = perfSummary(g.chat);
-    assert.match(line, /^waited 8\.1 s · engine \d+\.\d s \(\d+ folds, \d+ ms\) · planner \d+\.\d s · narrator 9\.0 s · extractor \d+\.\d s \[length\]$/);
+    assert.match(line, /^waited 8\.1 s · engine \d+\.\d s \(\d+ folds, \d+ ms\) · planner \d+\.\d s · narrator 9\.0 s · extractor \d+\.\d s \(repaired\) \[length, length, length\]$/);
 });
 
 test('8.2 telemetry 6: a planner that fails keeps its calls and the turn\'s cost too; the turn aborts as before', async () => {

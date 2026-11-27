@@ -1185,6 +1185,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
             const p = req.negotiation ? parseNegotiation(req.state,content,response.content,chat[id].mes)
                 : parseExtraction(response.content, vocab, req.ids, req.expectedKeys,
                 { sceneRequired: req.sceneRequired, startScene: req.startScene, state: req.state, content, explicitArrivals: req.sceneRequired, reply: chat[id].mes, previous: parsed?.value });
+            if (p.discardedRoot) response.call.discarded_root = p.discardedRoot;
             if (emptyAnswers && p.issues?.some(x => req.expectedKeys?.[x.seq] === 'go')) movementReviewed = true;
             if (p.valid && (!parsed || ((p.issues?.length || 0) <= (parsed.issues?.length || 0)
                 && (p.complete || p.missing.length < parsed.missing.length)))) parsed = p;
@@ -1195,7 +1196,7 @@ export async function runExtraction(chat, id, content, llm, { hud = 'closed', co
             // An empty/transport answer never discards the last repairable candidate.
             if (++invalidAnswers >= 2) break;
         }
-        if (attempt === 2 || (!req.negotiation && !Object.keys(req.expectedKeys).length)) break;
+        if (attempt === 2 || (parsed && !req.negotiation && !Object.keys(req.expectedKeys).length)) break;
         // .127: no repair request on a record that broke while the answer was out
         const broke = blockedAt();
         if (broke) return { changed: false, foldBlocked: broke };

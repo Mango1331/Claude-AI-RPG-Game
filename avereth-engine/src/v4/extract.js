@@ -320,6 +320,7 @@ function normalizeSoftFields(value, vocab) {
     const specs = new Map((vocab.deltas || []).map((d) => [d.type, d]));
     const deltas = Array.isArray(value.deltas) ? value.deltas.map((d) => {
         if (!d || typeof d !== 'object') return d;
+        if (d.type === 'creature' || d.type === 'object' || d.type === 'person') d = {...d, type:d.type + '.new'};
         const spec = specs.get(d.type);
         if (!spec) return d;
         // The Guild clerk's route note was reported with all object.new fields under "object".
@@ -508,14 +509,22 @@ function deltaEnvelopeKeys(source) {
     return { duplicate, lists };
 }
 
+// A second list of records carrying Extractor discriminators cannot be treated as metadata.
+function containsDeltaList(value) {
+    if (!value || typeof value !== 'object') return false;
+    if (Array.isArray(value) && value.some(d => d && typeof d === 'object' && ('type' in d || 'seq' in d))) return true;
+    return Object.values(value).some(containsDeltaList);
+}
+
 function readDeltaEnvelope(answer) {
     const parsed = extractJsonObject(answer);
     const { value } = parsed;
     const original = String(answer ?? '').trim();
     const nested = Object.hasOwn(value?.expected || {}, 'deltas');
+    const extra = Object.keys(value || {}).filter(k => !['scene','expected','deltas'].includes(k));
     // Ordinary reports use the existing reader. A second list (even one hidden by
     // last-key-wins) needs a repair. Quoted evidence can itself contain the word deltas.
-    if (value && !nested && original.indexOf('deltas') === original.lastIndexOf('deltas') && !original.includes('\\u')) return parsed;
+    if (value && !nested && !extra.length && original.indexOf('deltas') === original.lastIndexOf('deltas') && !original.includes('\\u')) return parsed;
 
     // All seven archived reports had a complete expected object and delta list, but
     // lacked the final root brace. Never complete a truncated list or rewrite quoted evidence here.
@@ -531,14 +540,23 @@ function readDeltaEnvelope(answer) {
     let intact;
     try { intact = JSON.parse(source); }
     catch {
-        try { intact = JSON.parse(source + '}'); }
-        catch { return nested ? { ...parsed, value: null, error: 'Incomplete or ambiguous expected.deltas envelope.' } : parsed; }
+        if (nested) {
+            try { intact = JSON.parse(source + '}'); }
+            catch { return { ...parsed, value:null, error:'Incomplete or ambiguous expected.deltas envelope.' }; }
+        } else if (extra.length) return { ...parsed, value:null, error:'Ambiguous extractor envelope.' };
+        else return parsed;
     }
-    if (!Object.hasOwn(intact?.expected || {}, 'deltas')) return parsed;
-    const { deltas, ...steps } = intact.expected;
-    if (Object.hasOwn(intact, 'deltas') || !Array.isArray(deltas) || !keys || keys.duplicate || Object.values(steps).some(Array.isArray))
-        return { ...parsed, value: null, error: 'Ambiguous expected.deltas envelope. Supply a single root deltas array.' };
-    return { ...parsed, value: { ...intact, expected: steps, deltas } };
+    if (Object.hasOwn(intact?.expected || {}, 'deltas')) {
+        const { deltas, ...steps } = intact.expected;
+        if (Object.hasOwn(intact, 'deltas') || !Array.isArray(deltas) || !keys || keys.duplicate || Object.values(steps).some(Array.isArray))
+            return { ...parsed, value:null, error:'Ambiguous expected.deltas envelope. Supply a single root deltas array.' };
+        intact = { ...intact, expected:steps, deltas };
+    }
+    if (!extra.length) return nested ? { ...parsed, value:intact } : parsed;
+    if (!Array.isArray(intact?.deltas) || !keys || keys.duplicate || extra.some(k => containsDeltaList(intact[k])))
+        return { ...parsed, value:null, error:'Ambiguous extractor envelope. Supply a single root deltas array.' };
+    for (const k of extra) delete intact[k];
+    return { ...parsed, value:intact, discardedRoot:extra };
 }
 
 export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null, previous = null } = {}) {
@@ -703,6 +721,6 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             semanticIssues.push({ index: -1, seq: Number(k), why: `expected.${k}.priced is true, but no offer reports that price: if this reply has the seller name one binding total in coin for ${String(dec.what).slice(0, 60)}, report that offer (seller, lines with price_cp, said and pricing in the reply's own words); otherwise priced is false. Never make up an offer or a price` });
         }
     }
-    return {value, rejected:[...invalid.values()], issues:semanticIssues, valid:!errors.length, complete:!missing.length,
+    return {value, discardedRoot:parsed.discardedRoot, rejected:[...invalid.values()], issues:semanticIssues, valid:!errors.length, complete:!missing.length,
         errors:[...diagnostics.slice(0,8), ...missing.map(k => `expected key "${k}" not answered or invalid`)], missing, raw};
 }

@@ -42,7 +42,7 @@ export function contractValue(value, state, content, { prose = null } = {}) {
     const ordered = v.deltas.map((d, i) => ({ d, place: scoped[i] })).filter((x) => x.d && typeof x.d === 'object').sort((a, b) => (a.d.seq ?? 0) - (b.d.seq ?? 0));
     for (const { d, place } of ordered) {
         if (d.type === 'arrive') stepAt = placeKey(state, place.at, content);
-        if (d.type !== 'creature.new') continue;
+        if (d.type !== 'creature.new' && d.type !== 'creature') continue;
         if (d.life_stage == null) d.life_stage = namesYoung(content, d.species || '') ? 'young' : 'adult';
         if (d.population != null) continue;
         const named = d.scene != null && d.scene !== 'here' ? placeKey(state, place.scene, content) : null;
@@ -60,7 +60,7 @@ export function contractValue(value, state, content, { prose = null } = {}) {
 export function contractText(text, state, content, { prose = null } = {}) {
     if (typeof text !== 'string') return text;
     const { value } = extractJsonObject(text);
-    if (!value || typeof value !== 'object' || !Array.isArray(value.deltas) || !value.deltas.some((d) => d?.type === 'creature.new' || (gearVocab(content.deltaVocab) && d?.type === 'offer')
+    if (!value || typeof value !== 'object' || !Array.isArray(value.deltas) || !value.deltas.some((d) => ['creature.new','creature'].includes(d?.type) || (gearVocab(content.deltaVocab) && d?.type === 'offer')
         || (hasFinanceContract(content.deltaVocab) && ['bid', 'offer', 'coin.gift'].includes(d?.type)))) return text;
     return JSON.stringify(contractValue(value, state, content, { prose }));
 }

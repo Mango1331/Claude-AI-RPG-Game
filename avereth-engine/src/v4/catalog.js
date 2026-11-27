@@ -341,7 +341,7 @@ export function buildCatalog(state, content, { extraPlaces = [], known = false, 
     ];
     const party = partySummary(state);
     return { ...(party.length ? {party} : {}), privateQuests: privateQuestsOf(state),
-        here: { id: at, path: placePath(state, at), ...(state.scene.approaching ? {approaching:state.scene.approaching} : {}), ...(state.scene.focus ? {focus:state.scene.focus} : {}) },
+        here: { id: at, path: placePath(state, at), ...(state.scene.focus && state.scene.approaching ? {approaching:state.scene.approaching} : {}), ...(state.scene.focus ? {focus:state.scene.focus} : {}) },
         time: formatClock(state.clock.minute).split(' (')[0].replace(/^Day/, 'day'),
         alaric: alaricLine(state, content),
         present,

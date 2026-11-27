@@ -655,6 +655,9 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const entered = new Map();
     const present = new Set(state?.scene?.present || []), introduced = new Set();
     if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const { d, i } of value.deltas.map((d, i) => ({ d, i })).sort((a, b) => a.d.seq - b.d.seq)) {
+        if (d?.type === 'party' && reply && findQuote(reply,d.quote).state !== 'found') {
+            semanticIssues.push({index:i,seq:d.seq,why:'party.quote: copy ONE verbatim, continuous decision by this speaker. Do not join separate passages or omit new conditions; if the decision is unclear, omit this delta.'});
+        }
         if (d?.type === 'party' && d.agreement && !state.party?.agreements?.[d.agreement]) {
             const open = Object.values(state.party?.agreements || {}).filter(a => a.who === d.who && a.phase === 'open');
             semanticIssues.push({index:i,seq:d.seq,why:'party.agreement must be a stored ID, never dialogue. New proposal: null. Open for this NPC: '+

@@ -165,7 +165,7 @@ test('P3 positive: with a quote that shows her there, the widow the step names i
     assert.ok(r.state().scene.present.includes('npc.widow_hesse'));
 });
 
-test('P3 negative: someone the step does not name and nobody knows at the house, or a met at a place the step did not reach, books nothing', async () => {
+test('P3 negative: legacy met follows a confirmed arrival and checks the reported identity against state', async () => {
     const other = await reply191('r191', 26, metAs('npc.npcoldest_washing_wife', 'The widow came down one step of her stoop to meet him'));
     assert.ok(!(other.record.rejected || []).some(r => r.rule === 'met_not_known_here'));
     assert.ok(other.state().scene.present.includes('npc.npcoldest_washing_wife'));

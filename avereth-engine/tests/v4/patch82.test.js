@@ -78,7 +78,7 @@ test('8.2 telemetry 2: the planner\'s call and the turn\'s local cost are on the
     assert.equal(timeless(lastUser(h).events), timeless(x.events), 'the same turn, the same events, whichever form the answer came in (the planner\'s time aside)');
 });
 
-test('8.2 telemetry 3: the extractor\'s calls, their ends and tokens are on the reply\'s record: an empty answer at the limit, then its short repair', async () => {
+test('8.2 telemetry 3: the extractor\'s calls, their ends and tokens are on the reply\'s record: an empty answer at the limit, without an open receipt', async () => {
     const g = live(36);
     const answer = JSON.stringify({ expected: {}, deltas: [] });
     const answers = [
@@ -89,7 +89,7 @@ test('8.2 telemetry 3: the extractor\'s calls, their ends and tokens are on the 
     g.chat.push(replyMsg('The lance struck the slime square in its milky flank, and it sagged, still quivering.'));
     const id = g.chat.length - 1;
     assert.equal(processReplyAny(g.chat, id, content, { narrationMs: 14200 }).extract, true);
-    const x = await runExtraction(g.chat, id, content, g.llm);
+    await runExtraction(g.chat, id, content, g.llm);
     assert.equal(rec(g.chat[id]).extraction.status,'failed');
     const r = rec(g.chat[id]);
     assert.ok(!r.extraction.repaired);

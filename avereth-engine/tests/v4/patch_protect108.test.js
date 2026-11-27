@@ -51,7 +51,7 @@ goes('Before he could react, two men seized him and dragged him through the reed
 goes('The planks gave way under him and he tumbled into the gap in the rocks.', 'The planks gave way under him', 'a collapse whose fall the sentence goes on to tell');
 goes('A portal opened beneath him and swallowed him.', 'A portal opened beneath him and swallowed him', 'a portal that takes him, no destination told');
 
-test('protect108: a known person announced with a contracted will is no arrival', () => {
+test('protect108: an explicit known-person entry uses state even when its audit quote describes a future action', () => {
     const r = world([{ seq: 1, type: 'enter', who: 'npc.npcgate_guard', evidence: 'The gate guard’ll come down to the landing later' }], 'Corr shrugged. The gate guard’ll come down to the landing later.');
     assert.deepEqual(r.events.filter((e) => e.t === 'scene.entered').map((e) => e.d.id), ['npc.npcgate_guard']);
     assert.deepEqual(r.rejected.map((x) => x.rule), []);

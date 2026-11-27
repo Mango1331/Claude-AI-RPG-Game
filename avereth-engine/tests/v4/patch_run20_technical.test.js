@@ -33,7 +33,7 @@ test('Run20 repriced is terminal and replay-valid, unknown statuses still fail',
  assert.equal(run([{seq:1,type:'offer.accept',offer:'offer.test',lines:null,quote:'I accept.'}],s).events.some(e=>e.t==='transaction.completed'),false);
  s.offers['offer.test'].status='repriced_again';assert.ok(validateState(s,c).some(x=>/repriced_again/.test(x)));
 });
-test('Run20 original five-delta response needs the earlier thread scene; repair names the starting place',()=>{
+test('Run20 original five-delta response keeps the thread in the ordered scene before arrival',()=>{
  const q=f.extraction,p=parseExtraction(JSON.stringify(f.answer726),q.vocab,q.ids,q.expectedKeys,q);
  assert.equal(p.valid,true);assert.deepEqual(p.issues,[]);
  const applied=applyWorld(structuredClone(f.state252),c,p.value,{msg:505,prose:f.prose252});

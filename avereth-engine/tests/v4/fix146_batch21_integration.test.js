@@ -84,7 +84,7 @@ test('.146 T40: already correct enter has no additional repair; a closed shop ne
     }
 });
 
-test('.146 invented merchant IDs request correction, never become presence or money by themselves', () => {
+test('.146 an invented merchant ID cannot book presence or a payment', () => {
     const chat = pending40(), a = source(40).answer;
     a.deltas.find(d => d.type === 'offer').seller = 'npc.alderwatch_smith';
     const p = parsed(chat, a);

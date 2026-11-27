@@ -36,7 +36,7 @@ test('E2-A .171: "stood behind the counter and left / , then left before Alaric 
     }
 });
 
-test('E2-A .171: ", then went home" and a later sentence that she had left before he arrived leave explicit presence claims intact either', () => {
+test('E2-A .171: ", then went home" and a later sentence that she had left before he arrived leave explicit presence claims intact', () => {
     claimed(meet([{ who: CLERKS, evidence: 'The clerk stood behind the counter, then went home' }], 'The clerk stood behind the counter, then went home.'), CLERKS, 'went home');
     claimed(meet([{ who: CLERKS, evidence: SHORT }], 'The clerk stood behind the counter. She had left before Alaric arrived.'), CLERKS, 'later sentence');
     claimed(meet([{ who: CLERKS, evidence: SHORT }], 'The clerk stood behind the counter. The clerk had gone home before Alaric came in.'), CLERKS, 'later sentence, named');

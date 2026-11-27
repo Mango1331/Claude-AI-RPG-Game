@@ -128,7 +128,7 @@ test('Run16 correctly ordered T58 introduces three creatures exactly once, with 
     assert.deepEqual(replay, r.state);
     assert.deepEqual(applyWorld(s, content, contractValue(a, s, content), { msg: 116, prose: f.t58.text }).state, r.state);
 });
-test('Run16 repair uses the existing second call, then commits once and never retries an applied reply', async () => {
+test('Run16 a completed journey commits once while premature local claims stay refused', async () => {
     const chat = pending(), requests = [];
     const annotated = JSON.parse(f.t58.repair);
     annotated.deltas.find(d => d.type === 'quest.detail').scene = structuredClone(annotated.scene);

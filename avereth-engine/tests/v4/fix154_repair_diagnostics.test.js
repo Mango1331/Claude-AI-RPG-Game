@@ -13,16 +13,16 @@ const short='obj.loot.wolf.fang.f',full=short+'.enc_t51';
 function pending(kind,i){const chat=structuredClone(f[kind].slice(0,i+1));delete chat[i].extra.avereth;processReplyAny(chat,i,content);return chat;}
 function valid(chat){const x=foldChat(chat);assert.deepEqual(x.errors,[]);assert.deepEqual(validateState(x.state,content),[]);return x.state;}
 function parse(value,ids){return parseExtraction(JSON.stringify({...value,expected:{}}),worldVocab(content.deltaVocab,valid(f.rogue)),ids,{});}
-for(const [i,n]of [[172,251],[174,256],[176,260]])test(`154 original Rogue I${i}: repair names exact field, bad value and canonical IDs; sale is once`,async()=>{
- const chat=pending('rogue',i),requests=[],cp=valid(chat).entities.pc.sheet.coin_cp;
- await runExtraction(chat,i,content,async req=>{requests.push(req);return requests.length===1?f.answers[n]:f.answers[n].replaceAll(short+'"',full+'"');});
+for(const [i,n]of [[172,251],[174,256],[176,260]])test(`154 original Rogue I${i}: invalid sale ID is audited once; a separately supplied correct offer can be accepted`,async()=>{
+ const attempt=pending('rogue',i),requests=[],cp=valid(attempt).entities.pc.sheet.coin_cp;
+ await runExtraction(attempt,i,content,async req=>{requests.push(req);return f.answers[n];});
  assert.equal(requests.length,1);
- const denied=rec(chat[i]).rejected.find(r=>r.rule==='schema');
+ const denied=rec(attempt[i]).rejected.find(r=>r.rule==='schema');
  assert.ok(denied?.why.includes('.object'));
- assert.equal(valid(chat).entities.pc.sheet.coin_cp,cp);
- const amended=pending('rogue',i);
- await runExtraction(amended,i,content,async()=>f.answers[n].replaceAll(short+'"',full+'"'));
- chat.splice(0,chat.length,...amended);const s=valid(chat);
+ assert.equal(valid(attempt).entities.pc.sheet.coin_cp,cp);
+ const chat=pending('rogue',i);
+ await runExtraction(chat,i,content,async()=>f.answers[n].replaceAll(short+'"',full+'"'));
+ const s=valid(chat);
  const bid=Object.values(s.offers).findLast(o=>o.bid&&o.status==='open');assert.ok(bid);
  const text=`I accept the ${bid.price_cp} copper for these goods.`,plan=JSON.stringify({commands:[{seq:1,type:'offer.accept',offer:bid.id,lines:null,qty:null,quote:text}]});
  chat.push({mes:text,is_user:true,extra:{}});await prepareGenerationAsync(chat,content,{settings:{planner:true},llm:async()=>plan});
@@ -37,7 +37,7 @@ test('154 original Mage: unknown pricing repair names forbidden quote; independe
  assert.equal(rec(chat[72]).extraction.status,'applied');const s=valid(chat);assert.equal(s.entities.pc.sheet.coin_cp,cp);
  const offer=Object.values(s.offers).find(o=>o.id==='offer.t72.5');assert.deepEqual(offer.lines.map(l=>l.price_cp),[10,20]);
 });
-test('154 invalid ID remains invalid after repeated bad repair; no salvage or booking',async()=>{
+test('154 invalid sale ID is rejected once without changing assets or offers',async()=>{
  const chat=pending('rogue',176),before=valid(chat),requests=[];
  await runExtraction(chat,176,content,async req=>{requests.push(req);return f.answers[260];});
  assert.equal(requests.length,1);assert.equal(rec(chat[176]).extraction.status,'applied');

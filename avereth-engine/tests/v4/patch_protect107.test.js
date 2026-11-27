@@ -62,7 +62,7 @@ test('protect107: a leading clause of its own does not taint the narrated reloca
 // ------------------------------------------------------------------------------------------------ 2. known people
 const enter = (evidence, seq = 1) => ({ seq, type: 'enter', who: GUARD, evidence });
 
-test('protect107: enter of a known person from elsewhere without narrated evidence is no arrival', () => {
+test('protect107: an explicit enter admits a known person without a prose receipt', () => {
     const r = world([enter(null)], 'Corr set the pen down and priced the tooth.');
     assert.deepEqual(entered(r), [GUARD]);
     assert.deepEqual(rules(r), []);
@@ -72,7 +72,7 @@ for (const [name, prose, quote] of [
     ['a mere mention', 'He thought of the gate guard back in Ashbridge, waving people through.', 'He thought of the gate guard back in Ashbridge'],
     ['a denied arrival', 'The gate guard from Ashbridge was nowhere to be seen on the landing.', 'The gate guard from Ashbridge was nowhere to be seen'],
     ['hearsay', 'Corr said the gate guard from Ashbridge would come down to the landing tomorrow.', 'the gate guard from Ashbridge would come down to the landing'],
-]) test(`protect107: enter evidenced only by ${name} is no arrival`, () => {
+]) test(`protect107: the explicit enter claim controls presence even with ${name} as its audit text`, () => {
     const r = world([enter(quote)], prose);
     assert.deepEqual(entered(r), [GUARD], name);
     assert.deepEqual(rules(r), []);

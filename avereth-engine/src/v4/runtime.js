@@ -361,6 +361,28 @@ function unbookedArrival(msg, state) {
  * existing inputs (src/v4/planner.js mapPlan); the record has the same shape as A's, plus `plan`, so swipes and
  * regenerations reuse it exactly as they reuse the interpreter's (nothing is planned again for the same message).
  */
+// A single GO may contain two explicit decisions. Split the organisational prefix only when
+// the remainder is itself a chosen movement, so its agency proof quotes the actual traveller.
+function splitPartyDeparture(state, input, commands) {
+    if (commands.length !== 1 || commands[0].type !== 'go' || commands[0].needs != null ||
+        /[?]|\b(?:if|unless|might|would|tomorrow)\b/i.test(input)) return commands;
+    const parts = input.trim().match(/^(.+?)(?:,?\s+and\s+|[.;]\s*)((?:I|we|let(?:['’]s| us))\s+(?:go|walk|head|return|travel|set out)\b[^.!?]+)[.!]?$/i);
+    if (!parts) return commands;
+    const [, prefix, departure] = parts;
+    let act, who;
+    const follow = /^([^,]+),\s*(?:please\s+)?(?:follow me|come (?:along )?with me)(?: again)?$/i.exec(prefix);
+    if (follow) {
+        const matches = Object.values(state.party?.members || {}).filter(m => m.mode !== 'left' &&
+            state.scene.present.includes(m.who) && state.entities[m.who]?.name.toLowerCase() === follow[1].trim().toLowerCase());
+        if (matches.length !== 1) return commands;
+        act = 'follow';
+        who = matches[0].who;
+    } else if (/^I disband (?:my|our|the) party$/i.test(prefix)) {
+        act = 'disband';
+    } else return commands;
+    return [{type:'party', seq:1, act, who, quote:prefix}, {...commands[0], seq:2, quote:departure}];
+}
+
 async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previous = null, isCurrent = () => true }) {
     const msg = chat[u];
     const p = lastReplyIndex(chat, u);
@@ -415,6 +437,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         return executeMappedTurn(chat,content,{u,before,m:valid.mapped,inputHash,llm,previous,plan,interp,typed:true,
             irRec:{v:IR_VERSION,route:'v3',reason:'hud',links:[],acts:combatChoice.steps.map(s=>({...s,source:'player'}))}});
     }
+    if (!actionInput) pl.commands = splitPartyDeparture(before, msg.mes, pl.commands);
     const chosen = !actionInput && !pl.commands.length && chosenKnownRoute(before,msg.mes);
     if (chosen) pl.commands=[{seq:1,type:'go',to:chosen,quote:msg.mes.split(/[.!?]/)[0]}];
     const guarded = guardCommands(msg.mes, pl.commands.filter(c=>!hud?.bound.includes(c.seq)), guardContext(before, content, catalog));
@@ -426,7 +449,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
 
     const recruitment=pc?.type==='party' && (pc.act==='invite' || pc.act==='offer' && !pc.agreement &&
         (!before.party?.members[pc.who] || before.party.members[pc.who].mode==='left'));
-    if(pc?.type==='party' && pc.needs==null && rest.every(c=>['go','other'].includes(c.type)) && (recruitment || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who] && before.party.members[pc.who].mode!=='left')){
+    if(pc?.type==='party' && pc.needs==null && rest.every(c=>['go','other'].includes(c.type)) && (recruitment || pc.act === 'disband' || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who] && before.party.members[pc.who].mode!=='left')){
         const local=await partyControl(before,content,{act:recruitment?'invite':pc.act==='leave'?'remove':pc.act,ref:pc.who,source:msg.mes,revision:actionPrefix(chat,u),
             proposal:recruitment && (pc.act==='offer' || hasPartyTerms(msg.mes,content,pc)) ? pc : null},
             messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}));
@@ -435,7 +458,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         const organised=clone(before);
         for(const event of local.events) applyEvent(organised,event);
         const desired=pc.act==='wait'?'wait':pc.act==='leave'?'left':'follow';
-        const ready=organised.party?.members[pc.who]?.mode===desired;
+        const ready=pc.act === 'disband' ? !Object.values(organised.party?.members || {}).some(m=>m.mode!=='left') : organised.party?.members[pc.who]?.mode===desired;
         const joint=rest.some(c=>c.needs===pc.seq || c.type==='go' && /\b(?:together|let(?:['’]s| us)|only if)\b/i.test(c.quote)) ||
             /\bonly if\b/i.test(msg.mes);
         if (!ready && (joint || !recruitment)) return receipt;

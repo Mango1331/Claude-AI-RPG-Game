@@ -58,7 +58,7 @@ import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, 
 import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
 import { knownAt } from './catalog.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
-import { forcedRelocation, presenceInReply, narratedEvent, guildParticipationEvidence, metEvidence, deskHandlingEvidence, personProfile } from './narration_evidence.js';
+import { forcedRelocation, presenceInReply, visualDetail, narratedEvent, guildParticipationEvidence, metEvidence, deskHandlingEvidence, personProfile } from './narration_evidence.js';
 
 // Decision Ownership as an assertion (tests/helpers.js switches it on for the whole suite): every event of an extractor
 // delta must be a kind its type may write (src/v4/ownership.js DELTA_WRITES); off in the product
@@ -321,7 +321,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     };
     // the arrivals of this reply in story order, applied or refused (an escort's readiness, quest.ready below)
     const travel = [];
-    const refusedArrival = (d) => { if (d?.type === 'arrive') { travel.push({ seq: d.seq ?? 0, ok: false, away: leavesHere(d.at) }); } };
+    const refusedArrival = (d) => {
+        if (d?.type !== 'arrive') return;
+        // Repeating the actual site for an intra-scene approach cannot make
+        // observations at that site depend on a failed change of location.
+        if (auth.approach && !auth.gos?.length && !d.forced_by && d.at === s.scene.at) return;
+        travel.push({seq:d.seq ?? 0, ok:false, away:leavesHere(d.at)});
+    };
     const outcome = s.last?.outcome || {};
     const auth = outcome.auth || {};
     const camp = outcome.camp;
@@ -1500,16 +1506,16 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     ? nextSlot(s,dungeon,floor,section+1)
                     : dungeon?.run.floors[floor]?.slots[0];
                 const home = root;
-                const cues = d.desc || [];
+                const cues = (d.desc || []).map(label => visualDetail(prose,label));
                 if (!slot || slot.role !== 'minion' || slot.taken || resolved(s,slot) || slot.anchor !== d.anchor
                     || slot.at || d.count !== (slot.entities.length ? slot.entities.filter(id => statusOf(s,id) !== 'dead').length : slot.count)
                     || !d.present || !d.band || !narratedEvent(prose,d.across).ok || cues.length !== d.count
-                    || new Set(cues.map(normText)).size !== d.count || !cues.every(q => narratedEvent(prose,q,{minWords:2}).ok)) {
+                    || cues.some(label => !label) || new Set(cues.map(normText)).size !== d.count) {
                     reject(d,'dungeon_sight','A threshold sighting needs a view of identifiable individuals of the entrance encounter and their actual distance.');
                     blockCreature(d);
                     break;
                 }
-                newEntity(d, 'creature', {slot:{root,floor,slot,existing:!!slot.entities.length,story_ref:d.ref},sightAt:home});
+                newEntity({...d,desc:cues}, 'creature', {slot:{root,floor,slot,existing:!!slot.entities.length,story_ref:d.ref},sightAt:home});
                 break;
             }
             case 'enter': {

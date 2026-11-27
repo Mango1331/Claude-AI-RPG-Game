@@ -4,6 +4,7 @@
 // offers are spoken), not negated, not hypothetical or planned, not a memory, a thought or hearsay. This is a narrow
 // literal check of the extractor's own quote, no reading of the story: a clause it cannot confirm is refused, and the
 // story goes on as the engine has it (the person not here, Alaric where he was).
+import { findQuote } from './finance_evidence.js';
 import { coinFromWords } from '../economy.js';
 import { normText } from '../util.js';
 
@@ -45,6 +46,28 @@ const NEGATED = /\b(?:not|never|nobody|nothing|nowhere|neither|nor|no one|nearly
 const UNREAL = /\b(?:will|would|could|might|may|shall|should|must|going to|about to|if|unless|or else|threat\w*|plans?|planned|planning|intends?|intended|wants? to|wanted to|tries to|tried to|try to|attempt\w*|promis\w*|ready to|meant to|means to|expects?|expected)\b/;
 const RECALLED = /\b(?:remember\w*|recall\w*|reminisc\w*|dream\w*|imagin\w*|thought|thinks?|thinking|wonder\w*|pictur\w*|memor\w*|years ago|long ago|used to)\b/;
 const HEARSAY = /\b(?:heard|hears|rumou?rs?|rumou?red|news|letter|message|said that|says that|told him that|word was|mention\w*)\b/;
+
+/** A visual descriptor is a label. For a long, lightly paraphrased descriptor,
+ * the two unique quoted ends may identify one narrated sentence. Store only
+ * words from the actual source. This never supplies the separate sighting proof. */
+export function visualDetail(prose, descriptor) {
+    if (typeof descriptor !== 'string') return null;
+    if (narratedEvent(prose, descriptor, {minWords:2}).ok) return descriptor;
+    const words = descriptor.match(/[\p{L}\p{N}]+/gu) || [];
+    if (words.length < 9) return null;
+    const first = findQuote(prose, words.slice(0,4).join(' '));
+    const last = findQuote(prose, words.slice(-4).join(' '));
+    if (first.state !== 'found' || last.state !== 'found' || last.start < first.end) return null;
+    const source = prose.slice(first.start,last.end);
+    if (source.length > 240 || /[.!?\n]/.test(source)) return null;
+    const reported = words.map(word => word.toLowerCase());
+    const actual = source.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+    let left = 0, right = 0;
+    while (left < Math.min(actual.length, reported.length) && actual[left] === reported[left]) left++;
+    while (right < Math.min(actual.length, reported.length)-left && actual.at(-1-right) === reported.at(-1-right)) right++;
+    if (Math.max(actual.length,reported.length)-left-right > 2) return null;
+    return narratedEvent(prose,source,{minWords:2}).ok ? source : null;
+}
 
 /**
  * Is `quote` a literal clause of the reply's narration that states an actual event?

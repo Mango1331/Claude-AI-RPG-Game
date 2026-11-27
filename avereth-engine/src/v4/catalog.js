@@ -37,7 +37,7 @@ export function personLabel(state, content, id) {
     if (!e) return String(id);
     // Patch 4 (review): a creature of a group shows the group's ref, so a reply about one of two packs can name it
     // (Patch 8.1: never a ref that slipped into its descriptors, "glimmerdeep_grotto_c1_l1_e1 1")
-    if (e.kind === 'creature') return [e.species || e.descriptors?.[0] || 'creature', ...(e.descriptors || []).filter((d) => d !== e.species && !/_/.test(d)).slice(0, 2), ...(e.group ? [`group ${e.group}`] : [])].join(', ');
+    if (e.kind === 'creature') return [e.species || e.descriptors?.[0] || 'creature', ...(e.sight_at && e.traits ? [e.traits] : (e.descriptors || []).filter((d) => d !== e.species && !/_/.test(d)).slice(0, 2)), ...(e.group ? [`group ${e.group}`] : [])].join(', ');
     const role = truth(state, id, 'occupation')[0]?.o || (e.template && e.template !== 'commoner' ? content.templates.get(e.template)?.label?.toLowerCase() : null) || e.role || null;
     const look = e.traits ? String(e.traits).split(/[;,.]/)[0].trim() : (e.descriptors || []).find((d) => normText(d) !== normText(role || ''));
     return [e.name, role, look].filter(Boolean).filter((x, i, a) => a.findIndex((y) => normText(y) === normText(x)) === i).join(', ') || entityLabel(state, id);

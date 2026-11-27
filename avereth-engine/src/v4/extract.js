@@ -1,3 +1,4 @@
+import { visualDetail } from './narration_evidence.js';
 import { thresholdSlot } from './living.js';
 import { placeKey } from './place_refs.js';
 import { newPlaceScope } from './movement.js';
@@ -671,7 +672,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             semanticIssues.push({index:i,seq:d.seq,why:'This reserved encounter cannot be created as a separate remote group. If the observer sees these individuals, use present:true and across copied literally from the reply, one literal distinguishing phrase per individual in desc and the observed range. If only heard or reported, use a clue.'});
         }
         if (d?.type === 'creature.new' && d.across && reply &&
-            [d.across,...(d.desc || [])].some(words=>findQuote(reply,words).state !== 'found')) {
+            (findQuote(reply,d.across).state !== 'found' || (d.desc || []).some(words=>!visualDetail(reply,words)))) {
             semanticIssues.push({index:i,seq:d.seq,why:'For individuals seen through an opening copy across and each identifying desc as separate contiguous literal excerpts. Keep the observer at the current site. Report only a clue if they are not individually visible.'});
         }
         if (d?.type === 'party' && reply && findQuote(reply,d.quote).state !== 'found') {

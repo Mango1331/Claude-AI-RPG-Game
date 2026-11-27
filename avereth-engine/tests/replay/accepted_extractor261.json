@@ -1,0 +1,30 @@
+{
+  "inherits": "accepted_claim252.json",
+  "engine": "4.3.0-c.6.6.261",
+  "cases": {
+    "b16-rogue-sale#12": {
+      "category": "mechanical",
+      "reason": "Root-Feld time verworfen. Das Questbriefing wird aus dem ersten Bericht gebucht, der Gildenfakt weiterhin durch guild_canon abgelehnt.",
+      "previous": "sha256:06a137033ef2fc9e1dd0004f1722aa615b5f13be94b5b2c18a7fbc8268e6c21e",
+      "fingerprint": "sha256:f7474931e192cafcc30fc178cda3b76f70b8ed83af2bd8ae193c37a691e17b1f"
+    },
+    "b17-rogue#192": {
+      "category": "mechanical",
+      "reason": "Der bereits gemeldete Gegenstand crusted leather pouch wird aus dem Alias object mit dem berichteten Besitzer erzeugt.",
+      "previous": "sha256:948810fc0666618b22432c10d28257d93d08b81e894c76d003e4ad282c87640a",
+      "fingerprint": "sha256:d9cd07a0f80aceddcc42867bc8d6cfe71917fc1c02ac6a8cac6ead8373f626c9"
+    },
+    "b17-warrior#284": {
+      "category": "mechanical",
+      "reason": "Der Kadaver entsteht einmal. Der historische .132-Konverter kann die alten Kreaturenfelder nun auch beim Typalias bereitstellen. Der vierte Wolf erscheint mit den berichteten Sichtungs- und Distanzdaten.",
+      "previous": "sha256:ec7abc5dad3b2ff77dfef6a3aa254fdc359f83804586ff49b783971b0feeb70a",
+      "fingerprint": "sha256:44675aae27faea4ae05cb80f8e5d7ed84808a8ca3881e1f05cce5c9a7c672d3e"
+    },
+    "b18-warrior#64": {
+      "category": "mechanical",
+      "reason": "Der alte creature-Bericht läuft im Replay durch dieselbe historische .132-Konversion wie creature.new. Der Keiler erscheint einmal im Wald.",
+      "previous": "sha256:df7512460d86d0a7c571529a1a3035684f158b626bcb12f9949679ec97d6f00e",
+      "fingerprint": "sha256:7820ab6637f013059ce58ff0738a78bfe80f34f51db11416b42a572bee62625f"
+    }
+  }
+}

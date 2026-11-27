@@ -516,7 +516,7 @@ function containsDeltaList(value) {
     return Object.values(value).some(containsDeltaList);
 }
 
-function readDeltaEnvelope(answer) {
+function readDeltaEnvelope(answer, expectedKeys) {
     const parsed = extractJsonObject(answer);
     const { value } = parsed;
     const original = String(answer ?? '').trim();
@@ -552,6 +552,9 @@ function readDeltaEnvelope(answer) {
             return { ...parsed, value:null, error:'Ambiguous expected.deltas envelope. Supply a single root deltas array.' };
         intact = { ...intact, expected:steps, deltas };
     }
+    // A requested receipt at the root is a misplaced or competing action answer. Keep its
+    // existing schema error and repair guidance instead of discarding it as unrelated metadata.
+    if (extra.some(k => Object.hasOwn(expectedKeys || {}, k))) return parsed;
     if (!extra.length) return nested ? { ...parsed, value:intact } : parsed;
     if (!Array.isArray(intact?.deltas) || !keys || keys.duplicate || extra.some(k => containsDeltaList(intact[k])))
         return { ...parsed, value:null, error:'Ambiguous extractor envelope. Supply a single root deltas array.' };
@@ -560,7 +563,7 @@ function readDeltaEnvelope(answer) {
 }
 
 export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequired = false, startScene = null, state = null, content = null, explicitArrivals = sceneRequired, reply = null, previous = null } = {}) {
-    const parsed = readDeltaEnvelope(answer);
+    const parsed = readDeltaEnvelope(answer, expectedKeys);
     const { error, raw } = parsed;
     const resolved=resolveRepeatedScene(parsed.value,ids,expectedKeys);
     const value = state ? newPlaceScope(normalizeSoftFields(resolved, vocab), state) : normalizeSoftFields(resolved, vocab);

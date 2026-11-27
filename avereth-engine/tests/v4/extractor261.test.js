@@ -13,12 +13,12 @@ const fact = {seq:1,type:'fact',s:'pc',p:'observation',o:'The gate is blue.'};
 const report = {expected:{},deltas:[fact]};
 const parse = (text, keys = {}) => parseExtraction(text,content.deltaVocab,{},keys);
 
-async function conversation(answers) {
+async function conversation(answers, prose = 'The gate is blue.') {
     const g = new Chat4(content);
     await g.player('Mage');
     await g.player('Flame Lance and Arcane Ward');
     await g.player('What color is the gate?', []);
-    const id = g.chat.push({is_user:false,mes:'The gate is blue.',extra:{}}) - 1;
+    const id = g.chat.push({is_user:false,mes:prose,extra:{}}) - 1;
     processReplyAny(g.chat,id,content);
     const calls = [];
     const llm = async req => {
@@ -77,4 +77,12 @@ test('person alias and unknown spellings remain subject to the original schema',
     assert.deepEqual(run('person').rejected,run('person.new').rejected);
     assert.equal(run('person').value.deltas.length,0);
     assert.equal(run('Person').rejected[0].delta.type,'Person');
+});
+test('a complete person alias enters the scene with the canonical identity', async () => {
+    const d = {seq:1,type:'person',ref:'porter',name:'Rosa',role:'porter',desc:['a porter'],
+        present:true,relevant:true,threat:false,at:null,band:'SHORT'};
+    const {calls,record} = await conversation([JSON.stringify({expected:{},deltas:[d]})], 'Rosa, a porter, steps forward.');
+    assert.deepEqual(calls,['extract']);
+    assert.equal(record.events.filter(e=>e.t==='entity.created' && e.d.entity.name==='Rosa').length,1);
+    assert.equal(record.events.filter(e=>e.t==='scene.entered').length,1);
 });

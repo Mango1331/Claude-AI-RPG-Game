@@ -1,0 +1,103 @@
+# Stand 2 – Nachprüfung nach GPT-Gegenreview, Produkt 4933a5f005a86a381a922981d3d7377e8ba84b5c (2026-11-27)
+
+## recount_v2.py (Antworten über Inhalt physischer Extractor-Requests zugeordnet, je Arm einmal; nach Modellroute)
+openai/gpt-4.1-mini {'replies': 43, 'x_requests': 57, 'x_repair_requests': 14, 'replies_repaired': 14, 'met_evidence_rejections': 2, 'x_not_applied': 1}
+openai/gpt-5.4-mini {'replies': 30, 'x_requests': 34, 'x_repair_requests': 4, 'met_evidence_rejections': 5, 'replies_repaired': 4, 'x_not_applied': 1, 'met_rejected_absent_at_end': 2}
+z-ai/glm-5.3-flash {'replies': 150, 'x_requests': 198, 'x_repair_requests': 48, 'replies_repaired': 48, 'met_evidence_rejections': 17, 'met_rejected_absent_at_end': 8, 'x_not_applied': 2}
+TOTAL {'replies': 223, 'x_requests': 289, 'x_repair_requests': 66, 'replies_repaired': 66, 'met_evidence_rejections': 24, 'x_not_applied': 4, 'met_rejected_absent_at_end': 10}
+
+rejection rules (same selection): scene_context 55, met_evidence 24, party_decision 19, met_without_arrival 15, no_go 14, world_rule 13, desk_handler 8, offer 7, passage 6, quest 6, ambient 6, engine_owned_fact 6, guild_completion 5, time_authority 5, met_not_known_here 5, dungeon_sight 5, anchor_first_contact 5, attack_commitment 4, guild_payout 3, creature_continuity 3, anchor_scope 3, anchor_value 2, engine_owned_memory 2, dungeon_foe 2, entity_fact 2, dungeon_way 2, guild_canon 1, travel_time 1, party_wait 1, quest_dependency 1, anchor_absent 1, engine_booked 1, coin_already_received 1, pc_inventory 1
+
+met_evidence rejections (deduplicated by rejection event):
+  openrouter-20261127-ac-234 M71 [openai/gpt-5.4-mini] npc.npcguild_clerk_a present_at_end=True
+     quote: the clerk's iron-grey braids tucked over one shoulder as she looked up from her writing
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-ae-235 M71 [openai/gpt-5.4-mini] npc.npcguild_clerk_a present_at_end=True
+     quote: the clerk's iron-grey braids tied back as she bent over her ledger
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-ak-235 M76 [openai/gpt-5.4-mini] npc.npcguild_clerk_a present_at_end=True
+     quote: The clerk was still at the long counter, bent over her ledger with the same steady motion of pen on paper.
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-birch-247 M89 [z-ai/glm-5.3-flash] npc.npcbone_merchant present_at_end=False
+     quote: a squat woman with a chopper's forearms sorting through a tray of long yellowed bones
+     why: npc.npcbone_merchant: it does not show them here now
+  openrouter-20261127-elm-250 M83 [z-ai/glm-5.3-flash] npc.madge present_at_end=True
+     quote: He nodded at the counter, where Madge was drawing ale for two carters and taking their coppers without ceremony.
+     why: npc.madge: it shows a picture of them, not them
+  openrouter-20261127-hearth-243 M55 [z-ai/glm-5.3-flash] npc.npcmarketpickpocket_boy present_at_end=False
+     quote: Near the fountain, a pickpocket-thin boy lounged with his hands in his pockets, watching the crowd, or pretending to.
+     why: npc.npcmarketpickpocket_boy: it does not show them here now
+  openrouter-20261127-hearth-243 M59 [z-ai/glm-5.3-flash] npc.npcguild_clerk_a present_at_end=False
+     quote: broad, iron-grey braids, a ledger open under her hand
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-hearth-243 M61 [z-ai/glm-5.3-flash] npc.npcmarketpickpocket_boy present_at_end=True
+     quote: the pickpocket-thin boy still lounged, or a boy very like him, now sitting up on the fountain's rim with his elbows on his knees, watching the crowd
+     why: npc.npcmarketpickpocket_boy: it does not show them here now
+  openrouter-20261127-i-227 M37 [openai/gpt-4.1-mini] npc.npcguild_clerk_a present_at_end=True
+     quote: Behind the polished counter sat the clerk, her iron-grey braids caught in the morning light as she glanced up.
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-juniper-249 M83 [z-ai/glm-5.3-flash] npc.ossen present_at_end=False
+     quote: Ossen was where Alaric had left him, working a spoon one-handed with his bowl half gone
+     why: npc.ossen: it shows their place empty or them away
+  openrouter-20261127-juniper-249 M89 [z-ai/glm-5.3-flash] npc.npcbone_merchant present_at_end=True
+     quote: The bone merchant was there still—a squat woman with a chopper's forearms, sorting trays at her trestle
+     why: npc.npcbone_merchant: it does not show them here now
+  openrouter-20261127-martin-251 M17 [z-ai/glm-5.3-flash] npc.npcleatherworker present_at_end=False
+     quote: The leatherworker's stall sat where he'd left it, and she looked up from a half-stitched sheath as he came level with the counter.
+     why: npc.npcleatherworker: it does not show them here now
+  openrouter-20261127-n-231 M70 [openai/gpt-4.1-mini] npc.npcguild_clerk_a present_at_end=True
+     quote: the broad woman with iron-grey braids who served as the clerk was seated behind the long counter, her fingers moving swiftly over the ledger as she glanced up at their approach
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-oriole-251 M75 [z-ai/glm-5.3-flash] npc.npcmarketpickpocket_boy present_at_end=False
+     quote: A thin boy lounged near it with his hands in his pockets, watching the last carts leave
+     why: npc.npcmarketpickpocket_boy: it does not show them here now
+  openrouter-20261127-quill-244 M87 [z-ai/glm-5.3-flash] npc.npcguild_clerk_a present_at_end=True
+     quote: The clerk was still at her counter, ledger open, and she straightened when he came up to the manual shelf.
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-reed-251 M21 [z-ai/glm-5.3-flash] npc.npcfisherman_bridge present_at_end=True
+     quote: The eel-man was there. An old fellow sat on the gunwale, wiry, forearms like knotted rope, sorting through a bucket of squirming silver
+     why: npc.npcfisherman_bridge: the quote joins several places of the reply and none is evidence 
+  openrouter-20261127-rowan-244 M69 [z-ai/glm-5.3-flash] npc.npcguild_clerk_a present_at_end=False
+     quote: the clerk with her iron-grey braids, ledger under her hand
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-rowan-244 M83 [z-ai/glm-5.3-flash] npc.npcbonetrader present_at_end=True
+     quote: the trader was still at her bench under the arches, crate half-sorted, a lamp now lit at her elbow. She saw him coming and set her pliers down
+     why: npc.npcbonetrader: the quote joins several places of the reply and none is evidence on its
+  openrouter-20261127-rowan-244 M87 [z-ai/glm-5.3-flash] npc.npcguild_clerk_a present_at_end=False
+     quote: The clerk glanced up once when the door moved him through, gave the plate on his chest a brief flick of recognition, and went back to her ledger.
+     why: npc.npcguild_clerk_a: it looks back, not at them here now
+  openrouter-20261127-vale-242 M25 [z-ai/glm-5.3-flash] npc.npcguild_clerk_a present_at_end=True
+     quote: The clerk at the counter was stamping something; she glanced over once and went back to it
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-willow-247 M81 [z-ai/glm-5.3-flash] npc.madge present_at_end=True
+     quote: Madge ladled out bowls with the ease of long practice. 'Sit there. Two bowls?'
+     why: npc.madge: its words are not in the reply
+  openrouter-20261127-willow-247 M85 [z-ai/glm-5.3-flash] npc.npcbone_merchant present_at_end=True
+     quote: under it worked a squat woman with forearms like a chopper's, sorting through a shallow tray of bones on the counter
+     why: npc.npcbone_merchant: it does not show them here now
+  openrouter-20261127-x-233 M71 [openai/gpt-5.4-mini] npc.npcguild_clerk_a present_at_end=False
+     quote: The iron-grey-braided clerk looked up from her ledger when Alaric came in
+     why: npc.npcguild_clerk_a: it does not show them here now
+  openrouter-20261127-x-233 M71 [openai/gpt-5.4-mini] npc.garrick present_at_end=False
+     quote: Around them, the hall kept moving—paper rustling, a low exchange at another desk, boots crossing the floor
+     why: npc.garrick: the quoted words do not name them, or not them alone
+
+## Labels der 24 met_evidence-Ablehnungen (manuell an vollständiger Prosa geprüft)
+klar anwesend (20): ac-234 M71, ae-235 M71, ak-235 M76, birch-247 M89, elm-250 M83, hearth-243 M59, i-227 M37, juniper-249 M83, juniper-249 M89, martin-251 M17, n-231 M70, quill-244 M87, reed-251 M21, rowan-244 M69, rowan-244 M83, rowan-244 M87, vale-242 M25, willow-247 M81 (Zitattreue: X hängte Dialog an), willow-247 M85, x-233 M71 (Gildenmitarbeiterin)
+Identität unklar (3): hearth-243 M55, hearth-243 M61 ('or a boy very like him'), oriole-251 M75 ('A thin boy')
+richtig abgelehnt (1): x-233 M71 Garrick (Prosa nennt ihn nicht)
+am Ende des Antwortrecords abwesend: 7 der 20 klaren (birch M89, hearth M59, juniper M83, martin M17, rowan M69, rowan M87, x-233 Gilde), 2 der 3 unklaren, Garrick. Kein vollständiger Fold; Martin ist in Reed als fortgesetzte Divergenz belegt.
+
+## probe_known_route.mjs (chosenKnownRoute, kontrollierter Minimalzustand)
+known routes: [ 'loc.inn', 'loc.market' ]
+loc.inn      I go back to The Slaked Lime.
+loc.inn      I return to the common room of The Slaked Lime to see Madge.
+loc.inn      I head downstairs to The Slaked Lime.
+null         Back down to The Slaked Lime.
+null         Ossen and I head back to the market square.
+loc.market   Ossen, let us go back to the market square.
+loc.market   Let's go to the market square.
+null         I make my way back to the market square.
+null         I walk over to the market square.
+null         I leave the room and go down to the common room.
+null         Time to go to the market square, I think.

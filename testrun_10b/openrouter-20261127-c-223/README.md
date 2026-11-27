@@ -1,0 +1,5 @@
+# Zweiter Versuch mit Ossen · .223
+
+Fünf Züge ab User14 M14. Die Vollständigkeitsprüfung nimmt jetzt die echten Narratorantworten an und startet X. Der erste Vorschlag (M15) scheitert diesmal schon im Planner-Repair. M19 lässt der Planner ein Textfeld als vermeintliche Agreement-ID stehen. M21 erzeugt tatsächlich eine offene Halbteilungsvereinbarung. Der Planner lässt die ausdrücklich gewünschte Kampfzusammenarbeit leer. Der Narrator schildert außerdem ungefragten Aufbruch und Ankunft. World weist die Ankunft zurück. Ossens bejahende Rede und das offene Angebot führen auch nach M23 zu keiner bestätigten Mitgliedschaft. Der Chat bleibt in der Gildenhalle fortsetzbar.
+
+Die Feldbeschreibungen ließen insbesondere die zulässige Schreibweise der Halbteilung, den Unterschied zwischen Vorschlag und gespeicherter Agreement-ID und die Bindung der Kampfbeteiligung unklar. Die entgegengenommene Anfrage und die originalen, gelegentlich erfolglosen Repairs sind über die IDs 5–19 in requests.jsonl.gz auffindbar. [Manifest](SOURCE_MANIFEST.json)

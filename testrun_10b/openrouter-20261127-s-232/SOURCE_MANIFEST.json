@@ -1,0 +1,41 @@
+{
+  "build": "4.3.0-c.6.6.232",
+  "commit": "b21fdba0a2171b65e9007fb1791aef956099f86a",
+  "seed": 3042268705,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Unveränderter User15-Präfix M0–108, danach zwei native Itemdetails und Marktgeschäft.",
+  "savedMessages": 119,
+  "requests": 10,
+  "costUSD": "0.006524510",
+  "usage": {
+    "prompt_tokens": 143539,
+    "completion_tokens": 3040,
+    "total_tokens": 146579
+  },
+  "sha256": {
+    "actions.jsonl.gz": "d5112691148e9a61098f016792b15e9090412cfdf3aad0468613c5b46a25ae79",
+    "chat.jsonl.gz": "3035a8cf85625605eecaeead1beb1b37254c7c5934b39596770808cd6bdd646a",
+    "decisions.log.gz": "f6f5283166e4f2ed7d9664191cd914a53380f23ea30c7bcaab0f05d004ad87bf",
+    "events.json.gz": "1848f4abea075e787bf40a8647658b61a2e7ab38d2dc9200835126f5e0e47210",
+    "last-verified-world.json.gz": "4f51ff51bb6cde9cca746695a133f2aa1ad6d7a553f0da59684b73b0de744561",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "eb0c7cd411052b235a1c544a13de3a5a018e65a85f37a547038d810595147b0b",
+    "raw-236.gz": "114554946d7c91bdeb5306ed3f0940db048eba52010bc4ba08c34715b46d080e",
+    "raw-237.gz": "a360a4b3a58bca4d886bc9cb9583df49917dfc8aafbdd1612fedd1010641d33e",
+    "raw-238.gz": "1ee9a3f35b9f9adfb5d53ee39c81998b1bb2d1e063e14da533c88a679cadeed6",
+    "raw-239.gz": "2854ad2ac8565d72921b5b7f043490b6bf716e7c0b4afeacb2c74c3935ca6637",
+    "raw-240.gz": "63ead500b753879041a3fb683dea818a9987431a7ebe9e2883e7b2715bdbd36c",
+    "raw-241.gz": "2263df6fae1c4fdb17e5c81afdfafdf2a79bb7f80ebdc53e3723204e49687b3c",
+    "raw-242.gz": "d062d59f5402314173310401b4ade80c9c8e5856374433dd37b90224b27d4d16",
+    "raw-243.gz": "0b4d5125f3adc1a4de44d636c62a9d4f502f1c99de77509b038dd0e96b6ad1d4",
+    "raw-244.gz": "97ec7da5f1b3e901738eea88853e8f729411d6130bdb83cbe100a28864162286",
+    "raw-245.gz": "2fa725825df58bfd434c40b14d5ba5a7904ba049636fd2842c95df01e86e6029",
+    "requests.jsonl.gz": "ca2fc686d12a9439a3e70df41f29f0693704420132c4944f2eac436becf0f9e3",
+    "st.log.gz": "5e465b3ee34e8608973c550d1159ab07eba27dcb62f38152c0e35e8679cdd212",
+    "turns.jsonl.gz": "fc8bc2f855c65a44657f62b7387e89d1e8e9ced66cc04b4a581728b47f9f5a33",
+    "visible.json.gz": "0f24ea01020284918847b6d466e28cb0e87e07c08af6bef637dec9a6adb0ec2e"
+  }
+}

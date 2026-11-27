@@ -1,0 +1,35 @@
+{
+  "build": "4.3.0-c.6.6.232",
+  "commit": "b21fdba0a2171b65e9007fb1791aef956099f86a",
+  "seed": 3042268705,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Unveränderter User15-Präfix M0–88 vor Verfolgen der verräterischen Wolfsspuren.",
+  "savedMessages": 93,
+  "requests": 4,
+  "costUSD": "0.002677082",
+  "usage": {
+    "prompt_tokens": 55713,
+    "completion_tokens": 2026,
+    "total_tokens": 57739
+  },
+  "sha256": {
+    "actions.jsonl.gz": "4872d33e0a7382f59dbefea2973d87c4d4bf3527d1b96c4241adc5ae1d713266",
+    "chat.jsonl.gz": "131b6b048227fc99908849f5358d854e4a1d2e143eb564252aad5214a57a6749",
+    "decisions.log.gz": "a1a171743f2dd1395e9021dbd77028aafeb6bb5b176570470eba75b58c94ae16",
+    "events.json.gz": "002d9c3001d8e3d748e51b38f19d0418b6b8b7d9725274bb08b6559b0eb08fa2",
+    "last-verified-world.json.gz": "0fd5fa571930ff9aaa8cac5235cda93994502e3c943bfaa033d3cdc54848cd2d",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "258055bb152c56b3409e8c896db8b15f8593efa0378f35a375b5db02b77bf8e3",
+    "raw-246.gz": "c654f7163cc035b3708c5c7db98597093e7486d5d56af0ac77c72857f4911e88",
+    "raw-247.gz": "18092f224d9f893b36c7bfab26fd25e107d4fe0d2f8bfbc92cc8a2f156578986",
+    "raw-248.gz": "596cfad7a99b9588dae5efc3ac2030fd9bc0a65b45cc72b3ecad06e450f5e03b",
+    "raw-249.gz": "8b76b382bdf04fb37e7359f7317e9e3dce9938fc07b6b7d2b483c6906da9bdab",
+    "requests.jsonl.gz": "4df869d310c472305fcc8f3de716bb32d208678bf5c531658b749db07569c432",
+    "st.log.gz": "16f0aac70383b48d5efd00a9f3e76859b58dfc862f0cb61718c1afbcfa3b977f",
+    "turns.jsonl.gz": "c91b70927dcb4c8e9c2cdc6cf5af40e19e1fcd14b1451d35cb6623dc5f391486",
+    "visible.json.gz": "1abcc0a5c1ed62e27f249bf1ccde701038bd3469164b400b7f27f019430bc9df"
+  }
+}

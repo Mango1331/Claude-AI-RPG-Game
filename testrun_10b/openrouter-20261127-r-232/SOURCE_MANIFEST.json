@@ -1,0 +1,39 @@
+{
+  "build": "4.3.0-c.6.6.232",
+  "commit": "b21fdba0a2171b65e9007fb1791aef956099f86a",
+  "seed": 526138360,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "User16 M38, gleicher deklarierter Präfix wie Q, frisches GLM-X auf .232.",
+  "savedMessages": 41,
+  "requests": 6,
+  "costUSD": "0.004011758",
+  "usage": {
+    "prompt_tokens": 85839,
+    "completion_tokens": 2369,
+    "total_tokens": 88208
+  },
+  "sha256": {
+    "actions.jsonl.gz": "fb035c2c600817506f6ceb8795cb49986bb7cc2c8bc56478d53c064ee8485031",
+    "chat.jsonl.gz": "b719e3dabc9533a806d14089bf0d3121297833e751347d6b9dba0de451ea4602",
+    "decisions.log.gz": "c323d627b6bb313abef576f4adc7974bb785d1414fe872e60406911d5e5db16b",
+    "entry-boundary.json.gz": "bab451a8827230beafa86453f5fa1f677f3bf67a12aaa7be60225f1dae3b4a9e",
+    "events.json.gz": "40cc27c6bc7064c7b90568c2b9ac5ec5dd35bad460d057b80d2e526e961d28c2",
+    "interrupted-browser-chat.json.gz": "2ff8ba02490e034d8cda9845a5c58f0999f6db54233acb6fc148aa1d19814f60",
+    "last-verified-world.json.gz": "c6126d0e11bb3ba411d1420fe7bd0410c1cb72bbdf8e6d149fa56c23996959e1",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "df8ac4d3be7647d50111f31d990bf88ae83788ce738acc603d50781af32abde6",
+    "raw-230.gz": "77fe626a7e4f4d82382e9ade83435a15b4a8a814d20133c2bd0c9f1b076f62df",
+    "raw-231.gz": "fdd13029e7387013c7cb34ac54183002b6cfe1d8018fca5b8cc6d1b32bb39c70",
+    "raw-232.gz": "87fc6cbcde1912a7f8fca84b3f4c0b485cad89c2f8e49795247db53aad2d7f56",
+    "raw-233.gz": "05d3ed14bed1069e356303baf66914062170cc7b151ca44dba45f03cd9ffd36e",
+    "raw-234.gz": "2d652c647e93dac029feef3a02d3f4d418211d231cf0bb021ecb2740e3e67287",
+    "raw-235.gz": "0c228223a04c780ec2457b8ef818c05170720866bb6965fc03fc71bbea1367d7",
+    "requests.jsonl.gz": "73ba30cca42d1abc56822f950dc13b1dc12762277c87ff9cd09a6080a56ff0ee",
+    "st.log.gz": "408fc5b84c4fe545b019d1e58aa9a3cff466cc05b1e29092c35665c43b34e9ab",
+    "turns.jsonl.gz": "8def0d8dec96eae04e7f9e0b5dd15db7f816d434aaa1fb191117bc403b7f45f2",
+    "visible.json.gz": "92800b80a46f6f3b53664c702a75329c665a109f296838f17969b528695410ce"
+  }
+}

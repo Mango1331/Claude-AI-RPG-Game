@@ -1,0 +1,38 @@
+{
+  "build": "4.3.0-c.6.6.233",
+  "commit": "396bb2ffe125fad387afa14c377385f95e02cf24",
+  "seed": 526138360,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "User16 M38 nach demselben Testpräfix, neu extrahiert auf .233 durch GLM.",
+  "savedMessages": 43,
+  "requests": 6,
+  "costUSD": "0.003939076",
+  "usage": {
+    "prompt_tokens": 83986,
+    "completion_tokens": 2614,
+    "total_tokens": 86600
+  },
+  "sha256": {
+    "actions.jsonl.gz": "0ed15c52aab7e37794eb3b4e98950c6c829189389bc78b5f87ae7ee3a7610bec",
+    "chat.jsonl.gz": "3b2e086aecb47fcd42f8cc16c5d926131db8b734d91c73c71c049faf7c650d4c",
+    "decisions.log.gz": "b15f31056f9a269dbaa2fe277eb7f7548f10a1d07b885e829a22f664a7d624f9",
+    "entry-boundary.json.gz": "bab451a8827230beafa86453f5fa1f677f3bf67a12aaa7be60225f1dae3b4a9e",
+    "events.json.gz": "196778c269bde9de9eef6864d4e83759cfb429585641782f576af2a3f3bd62d3",
+    "last-verified-world.json.gz": "262aed4432d57681de2f2cc2bab11a55cbd8c4f211b5d93c65c6a85d83123f52",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "224b2435c85ce4e545bc8c4a3e663c750f274afce75dc06efcf736291dbb66e0",
+    "raw-250.gz": "e016d406004f97d049cb623aa275d5f15a0a1f68b63f62746215c0b3e4c5b278",
+    "raw-251.gz": "2b13d9749a22aecac69c0a057ab5b41d83b1178e4df5fe498b84f6eb4414783f",
+    "raw-252.gz": "a4d5f8c5df7873a53839737bb928dd7bcc6658239f2ca4e4e04befe64a1a8419",
+    "raw-253.gz": "b28eb3fe35d613b8e4fc0050e4556d6e39b07229e1591c952ace73fac130d9d8",
+    "raw-254.gz": "c350a844db11cf640bd6b19b78e38d9f9d4cd431cb98d31531eb228fdbc9d3fc",
+    "raw-255.gz": "415b87e8285e379083777f512296d3bdd40158fb24425faffdace2ccd0a75d11",
+    "requests.jsonl.gz": "e7b890007375c748a07ee292942a5d7120e502307e238ebaa6d4e7a06b0b4989",
+    "st.log.gz": "eb77857939f60c81fdbfa927c918d46b042ffb068bf3c2e0970bea63c5dff216",
+    "turns.jsonl.gz": "7cefa336168139abefc555627e81ae40af29d98f3e97741e23bbc22e9f8cca0e",
+    "visible.json.gz": "f9e7efc653e2b72dc31f807cda4d0d306aa30b768d7981c235855f0982e719a1"
+  }
+}

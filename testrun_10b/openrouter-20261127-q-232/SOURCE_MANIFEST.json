@@ -1,0 +1,38 @@
+{
+  "build": "4.3.0-c.6.6.232",
+  "commit": "b21fdba0a2171b65e9007fb1791aef956099f86a",
+  "seed": 526138360,
+  "model": "openai/gpt-4.1-mini",
+  "provider": "openai",
+  "reasoning": null,
+  "st": "1.19.0",
+  "prefix": "User16 M38, gleicher deklarierter Präfix wie O, frisches GPT-X auf .232.",
+  "savedMessages": 43,
+  "requests": 6,
+  "costUSD": "0.0145876",
+  "usage": {
+    "prompt_tokens": 83577,
+    "completion_tokens": 919,
+    "total_tokens": 84496
+  },
+  "sha256": {
+    "actions.jsonl.gz": "931551c34c870cd03c4ad4ec16450a20ad335b584815f487f1172fa41a154a5a",
+    "chat.jsonl.gz": "8896a1cfc10a874dce5b6ef2a151f2f1a3ee38b03ce9e79f46d09f737fa571f4",
+    "decisions.log.gz": "66bc3331228e0e2ba9096276b7f798acf01ba304a2ae2bc069f3366bb0ba7c6c",
+    "entry-boundary.json.gz": "bab451a8827230beafa86453f5fa1f677f3bf67a12aaa7be60225f1dae3b4a9e",
+    "events.json.gz": "87c414512658ac1238c03e02da3704228ba03146f61f252089f20c5de6f95069",
+    "last-verified-world.json.gz": "f98e607c22b87b579929bfd04d645f50fe5197c232a380d9f7fe033543cfa98c",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "0c692689657e04310279a7eea167d4d80d52768065e29cea6fa14b9e7f06878e",
+    "raw-224.gz": "d54bf186d07799d9ff9612661e5d2f1b31f99186a582ef7f973fe4450f44b68b",
+    "raw-225.gz": "fb83409ec9408b440d63c7adb8738b7490326745b300c1646bc113ba245e1ff3",
+    "raw-226.gz": "87e6e2b29055352ffac082d21d8174c653c09df933a0c16e70dd383f4a57fa30",
+    "raw-227.gz": "364b68470d7498878dc32b2239c942f32b8798f49e75c06412a14e632551009e",
+    "raw-228.gz": "575c9bf9ce497cbfcaa910d462f24a82807f646ce87f4754ca62ffd549e9d3b7",
+    "raw-229.gz": "5e30711fdedc5123d0519a3308642f9a0f932c69eb5f8cc1a23d0a9071272464",
+    "requests.jsonl.gz": "01d3a21a296839484df1351b8816836c3f8fc26f0811a884b558da97863d8571",
+    "st.log.gz": "985771b1b288b3bd43dab656a89c01db972844d47688962d7446c63f657f3f40",
+    "turns.jsonl.gz": "fea77a0774b10991749403fe25d72f34c0206386a395fb8086bfeb6901fa1a8b",
+    "visible.json.gz": "b32770d6f1b5f31681760a6e1c6977468c0528005e237fa5e506c99dc171f874"
+  }
+}

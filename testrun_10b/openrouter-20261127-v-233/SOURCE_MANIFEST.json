@@ -1,0 +1,36 @@
+{
+  "build": "4.3.0-c.6.6.233",
+  "commit": "396bb2ffe125fad387afa14c377385f95e02cf24",
+  "seed": 526138360,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Q M38: unveränderte bezahlte Antwort unter .233 lokal erneut verarbeitet. Ab dem Angriff vollständige neue GLM-Spielzüge; kein Modelltext ersetzt.",
+  "savedMessages": 43,
+  "requests": 5,
+  "costUSD": "0.003287334",
+  "usage": {
+    "prompt_tokens": 68155,
+    "completion_tokens": 2625,
+    "total_tokens": 70780
+  },
+  "sha256": {
+    "actions.jsonl.gz": "6fc05e6eca2e895ba326c148159fb4b516f2d2fb7b2b670323c4f275931da9c1",
+    "chat.jsonl.gz": "ebc740a27d59e682d137c63b26174b9cf9e4a70f6bfc79d284ebf3278de14988",
+    "decisions.log.gz": "542f1c3b5794cffc22ba5c295ba4651c9e5776e00a794bf0d1a2bd485e798ede",
+    "events.json.gz": "5606ec0ecf2bdab2ad95399f730efa0d281eee4ecdedf79dcc1d7356858d8fa4",
+    "last-verified-world.json.gz": "e0c860b606fd7db6a748b6511b4cb8c3ec409e4fd9990616a36da83d477ce12f",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "e6ed5949eeab3a1db8a7dfe9fdf055a54a2718e5b87d9c980678786f47d99332",
+    "raw-256.gz": "fecb409d3a1a5bb40aeaf1bb82bc945f58ca595ae2c3b1e51b862a2b3157b0c5",
+    "raw-257.gz": "ba859d27a932f788c72b61c0329d3781ba25152e8f66a9aec52be3916dabfa66",
+    "raw-258.gz": "750a000d272b91c116661aabca9dd3d0455871536d8798c94b5280028bc798ac",
+    "raw-259.gz": "b10c41b34cd64d5a16d6d3fafd91c1aa95b9d2f343a34e2668c265b631acd803",
+    "raw-260.gz": "684f1d22b7f2b42f786852f94242ea4c7e45b5637274b3ae46aa9a268407d20f",
+    "requests.jsonl.gz": "c4b2ba21eb606be7bdf93db4820efde53f103cb87239bc86c9875d8b7d108760",
+    "st.log.gz": "751df347cb556a84e53d9c791004fbb6ad79f1e1dce4e198af43ccad38015315",
+    "turns.jsonl.gz": "ed174d72fc3414b4f7a2f50a8ba21521ff1ca7484d7ecb7aa5d3b83e4b8d33d3",
+    "visible.json.gz": "5464a304ce8a7587ae8ca878758530ad10d955547f17b6e20fb7a0c5084b8893"
+  }
+}

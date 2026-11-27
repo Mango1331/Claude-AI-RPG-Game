@@ -11,4 +11,4 @@ Persönlicher Mage-Run, abgebrochen wegen wiederkehrender Reise-/Szenenblockade.
 - [Chat](originals/chat.jsonl), [Eventexport](originals/avereth-events.json).
 - [Redigiertes ST-Log](originals/st-log.txt.gz) importiert. Alle vier Archivquellen mit `python restore_log.py` verifiziert.
 
-Produktreferenz `cc327a1ae44b0aac3605f416078c693b2600ffff`, Build 4.3.0-c.6.6.220. Die nächste fachliche Entscheidung liegt bei Nutzer und GPT.
+Produktreferenz `cc327a1ae44b0aac3605f416078c693b2600ffff`, Build 4.3.0-c.6.6.220. Die anschließende Umsetzung und die getrennten Offline-Fortsetzungen sind im [.221-Fachbericht](../../recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md) dokumentiert.

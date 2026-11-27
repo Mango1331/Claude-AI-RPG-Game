@@ -1,12 +1,12 @@
 # Avereth Engine – aktueller Projektstand
 
-**Der persönliche Usertest 16 auf .220 endete nach zwei erfolglosen Annäherungen an den Dungeoneingang.** Beide Reviews liegen vor. Nutzer und GPT entscheiden als Nächstes über die Grenze zwischen lokaler Szenenhandlung und mechanischem Ortswechsel. Der Produktstand bleibt bei `cc327a1a`. [User16 mit Originalquellen und Gegenreview](testrun_10b/user-20261126-233937-220/README.md) · [Entscheidungsvorlage](recherche/AVERETH_USER16_ORTS_UND_SZENENARCHITEKTUR_ENTSCHEIDUNGSVORLAGE.md)
+**Build .221 liegt zum unabhängigen GPT-Diffreview vor.** Im verketteten User16-Replay erreicht Alaric den Türpfosten, beobachtet die beiden Goblins von außen und erinnert sich bei der späteren Gildenrückkehr an die bedingte Zusage. Grundlage sind Originalprosa und gezielt geänderte Offline-Modellantworten. Der persönliche Usertest 17 folgt auf die Reviewentscheidung. [Fachbericht, Installation und Produktdiff](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md)
 
 ## Aktuelle Referenzen
 
 | Zweck | Verifizierte Referenz |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`cc327a1a`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/cc327a1ae44b0aac3605f416078c693b2600ffff) · Build `4.3.0-c.6.6.220` |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`a3a46cf8`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/a3a46cf8a53336958c4b1535204bccd3485251ea) · Build `4.3.0-c.6.6.221` |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 

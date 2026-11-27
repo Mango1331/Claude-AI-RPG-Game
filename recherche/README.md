@@ -4,6 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
+| **.221 · Szenenarchitektur** | [Fachbericht, Abnahme und Installation](AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md) | [User16 und Entscheidungsvorlage](../testrun_10b/user-20261126-233937-220/README.md) |
 | **.220 · User16** | [Orts- und Szenenarchitektur zur Entscheidung](AVERETH_USER16_ORTS_UND_SZENENARCHITEKTUR_ENTSCHEIDUNGSVORLAGE.md) | [Gegenreview, Replay und isolierte Hostmessung](../testrun_10b/user-20261126-233937-220/CODEX_GEGENREVIEW.md) |
 | **.220 · Ereigniszeit und Mitreisende** | [Fach- und Abnahmebericht](AVERETH_220_REISEZEIT_UND_MITREISENDE.md) | [.219-Abnahme](AVERETH_219_USER15_FACH_UND_ABNAHME.md) · [User15](../testrun_10b/user-20261126-085419-218/) |
 | **.219 · Folgepaket aus User15** | [Fachbericht, Entscheidungen und Abnahme](AVERETH_219_USER15_FACH_UND_ABNAHME.md) | [User15](../testrun_10b/user-20261126-085419-218/) · [Reproduktion der 108 Folgen](../testrun_10b/user-20261126-085419-218/replay_219.mjs) |

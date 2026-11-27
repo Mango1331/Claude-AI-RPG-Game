@@ -2,6 +2,14 @@
 
 Der Kanon dokumentiert die Spielregeln des eingefrorenen Produkts `.200` und kennzeichnet spätere bestätigte Regeln mit ihrem Entwicklungsstand. **[VERBINDLICH]** kennzeichnet geltende Regeln, **[GEPLANT]** beschlossene spätere Änderungen und **[OFFEN]** unentschiedene Optionen. Für den persönlichen Test dokumentieren die Fachpläne die Änderungen seit dieser Produktfassung, darunter die gelockerten globalen Questboardquoten. [Aktueller Projektstand](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Ältere Kanonfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/292a4372654f027fb579bf8e338ff9d25d981da7/02_DESIGN_KANON.md)
 
+## Szene, Wahrnehmung und Erinnerung ab Entwicklungskandidat .221
+
+- **Lokale Bewegung.** In einer zusammenhängenden Szene kann Alaric einen anderen Standpunkt erreichen. Beobachter und Beobachtetes dürfen sich an verschiedenen Orten befinden. Eine bedeutsame Reise, ein tatsächlicher Eintritt oder ein Abschnittswechsel bindet weiterhin an den gebuchten Weg. Detection, Reichweite, Deckung, Kampf und individuelle Anwesenheit folgen der Engine.
+- **Wahrnehmung.** Gewöhnliches Umschauen, sichtbare Anhaltspunkte und soziale Kontaktaufnahme gehören zur Szene. Search mit PER gilt für eine unsichere, spielrelevante Entdeckung. Der Wurf, seine Wiederholbarkeit und das unabhängige PULSE behalten ihre bisherigen Regeln. Die Welt bestimmt, wer anwesend und zur Zusammenarbeit bereit ist.
+- **Erinnerung.** Ein Vorschlag kann als Vorgeschichte erhalten bleiben. Als Zusage zählt der tatsächlich vereinbarte Umfang einschließlich seiner Bedingungen. Gehörtes behält seine Quelle. Bei einem passenden Ort oder Gesprächspartner kann Alaric sich daran erinnern. Er entscheidet über eine Mitteilung, und der Empfänger erwirbt Wissen erst durch einen belegten Vorgang.
+
+Die Raststeuerung zeigt die vorhandenen Ausführungssperren an und wird nach Weltabgleich und Speicherung wieder bedienbar. [Fachbericht und Abnahme](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md)
+
 ## Party im Entwicklungskandidaten .217
 
 **Geltungsbereich.** Die folgenden bestätigten Regeln betreffen den Testkandidaten `4.3.0-c.6.6.217` auf dem Entwicklungsbranch. Die nachfolgenden historischen Regeln führen weiterhin ihren jeweiligen Produktstand. [Fachentscheidungen D1–D12](recherche/AVERETH_PARTY_SYSTEM_FACHPLANUNG.md#12-gemeinsame-designentscheidungen-nach-gpt-review) · [Implementierung und Abnahme](recherche/AVERETH_217_PARTY_SYSTEM.md)

@@ -980,7 +980,8 @@ export function catalogLines(s, { extractor = false } = {}) {
     const root = trueDungeonOf(s, s.scene.at);
     const x = livingOf(s, root);
     if (!x) {
-        const entrance = extractor && livingOf(s, s.scene.approaching);
+        if (!extractor) return [];
+        const entrance = livingOf(s, s.scene.approaching);
         const slot = entrance?.run.floors[1]?.slots[0];
         if (!slot || slotMet(slot) || slot.taken || slot.role !== 'minion') return [];
         return ['If individually visible across the threshold: creature.new ref "'+slot.ref+'", anchor "'+slot.anchor+'", count '+slot.count+', population "independent", across and separate desc quoted literally, actual band. Sounds alone are clues.'];

@@ -1027,6 +1027,13 @@ export function extractionRequest(chat, id, content) {
     if (typeof o.auth?.continuation === 'object' && o.auth.continuation) actions += '\nChosen possible continuation: '+JSON.stringify(o.auth.continuation)+'. Report arrive only after the actual movement, with its participants. If conditional, after quotes its concrete subject in the actual fulfilled prerequisite before arrival; evidence quotes the PC at the stop. No fulfillment or no agreement means no move.';
     else if (o.auth?.c && !o.auth.gos?.length && ordinaryChoice(state,player,o.auth.continuation)?.assisted)
         actions += '\nVoluntary assistance: if he was actually carried to the requested place, report arrive with the participants and forced_by:null. A request or promise alone is not an arrival.';
+    for (const go of o.auth?.gos || []) {
+        if (!go.section) continue;
+        const {root, from, name} = go.section;
+        actions += '\nGO '+go.seq+' from '+from+' to '+name+': if the reply takes him there, use {"new":{"name":"'+name+'","kind":"interior","parent":"'+root+'"}} or its narrated room name in expected.at AND arrive.at. If still at the departure point answer arrived:false.';
+    }
+    if (state.scene.approaching && Object.values(o.expected_keys || {}).includes('approach'))
+        actions += '\nAfter recording the standpoint, separately account for what is visible: individually distinguishable creatures at the threshold must be addressable via creature.new with across, desc per individual and band. A fact about the observer cannot record the individuals. For signs or voices alone use ordinary observations.';
     if (o.booked?.registration) actions += '\nThe measuring stone is part of the completed in-hall service. Report no arrival or escort for its routine movements; separate authorized travel still uses normal arrivals.';
     if (o.auth?.roam && o.search_checks?.some(check => check.success)) {
         actions += `\nSearch began at ${state.scene.at}. Set scene on evidence observed there before an arrival. At the sighting, use only a population established there or in its ancestry; otherwise independent.`;

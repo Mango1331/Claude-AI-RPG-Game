@@ -668,6 +668,11 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                 (open.map(a=>a.id).join(', ') || 'none')+'. Only report an actual attributed decision; quote its exact words.'});
         }
         if (d?.type === 'arrive') {
+            const section = state.last?.outcome?.auth?.gos?.find(g =>
+                g.section?.from === d.at && value.expected?.[g.seq]?.arrived === true && value.expected[g.seq].at === d.at);
+            if (section) {
+                semanticIssues.push({index:i,seq:d.seq,why:'GO '+section.seq+' reported arrival but both places name its departure room. If they entered the next chamber use {new:{name:"'+section.section.name+'",kind:"interior",parent:"'+section.section.root+'"}} in both arrivals; otherwise report arrived:false and omit the move.'});
+            }
             stepAt = placeKey(state, d.at, content);
             present.clear();
             for (const id of d.with || []) present.add(id);

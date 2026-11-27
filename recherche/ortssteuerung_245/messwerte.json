@@ -1,0 +1,478 @@
+{
+  "runs": {
+    "openrouter-20261127-birch-247": {
+      "commit": "c954742a98da31bcb56e70d708c278e67d3495e4",
+      "actions": 6,
+      "verifiedTurns": 6,
+      "savedMessages": 89,
+      "costUSD": "0.009398192",
+      "byRole": {
+        "extractor": {
+          "requests": 6,
+          "input": 94121,
+          "output": 1624,
+          "medianMs": 3143.5
+        },
+        "narrator": {
+          "requests": 5,
+          "input": 59666,
+          "output": 1863,
+          "medianMs": 5329
+        },
+        "planner": {
+          "requests": 4,
+          "input": 55965,
+          "output": 313,
+          "medianMs": 1470.5
+        }
+      },
+      "medianReadyMs": 14140.299999998882
+    },
+    "openrouter-20261127-cypress-250": {
+      "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+      "actions": 8,
+      "verifiedTurns": 8,
+      "savedMessages": 71,
+      "costUSD": "0.012807622",
+      "byRole": {
+        "extractor": {
+          "requests": 8,
+          "input": 129834,
+          "output": 4202,
+          "medianMs": 3640.5
+        },
+        "narrator": {
+          "requests": 6,
+          "input": 74461,
+          "output": 2911,
+          "medianMs": 4006.0
+        },
+        "planner": {
+          "requests": 6,
+          "input": 71808,
+          "output": 483,
+          "medianMs": 1031.0
+        }
+      },
+      "medianReadyMs": 12945.449999999255
+    },
+    "openrouter-20261127-elm-250": {
+      "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+      "actions": 3,
+      "verifiedTurns": 3,
+      "savedMessages": 87,
+      "costUSD": "0.004565570",
+      "byRole": {
+        "extractor": {
+          "requests": 4,
+          "input": 62880,
+          "output": 1287,
+          "medianMs": 1626.5
+        },
+        "narrator": {
+          "requests": 3,
+          "input": 36393,
+          "output": 1176,
+          "medianMs": 4892
+        }
+      },
+      "medianReadyMs": 14463.79999999702
+    },
+    "openrouter-20261127-fern-250": {
+      "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+      "actions": 2,
+      "verifiedTurns": 2,
+      "savedMessages": 25,
+      "costUSD": "0.003464742",
+      "byRole": {
+        "extractor": {
+          "requests": 3,
+          "input": 46946,
+          "output": 2179,
+          "medianMs": 4399
+        },
+        "narrator": {
+          "requests": 1,
+          "input": 11756,
+          "output": 422,
+          "medianMs": 3449
+        },
+        "planner": {
+          "requests": 1,
+          "input": 13789,
+          "output": 12,
+          "medianMs": 769
+        }
+      },
+      "medianReadyMs": 9948.699999999255
+    },
+    "openrouter-20261127-hazel-248": {
+      "commit": "a9471388e98410bd4a33e15b34a1afa2f45c629e",
+      "actions": 5,
+      "verifiedTurns": 5,
+      "savedMessages": 25,
+      "costUSD": "0.013541398",
+      "byRole": {
+        "extractor": {
+          "requests": 9,
+          "input": 142544,
+          "output": 4965,
+          "medianMs": 4086
+        },
+        "narrator": {
+          "requests": 5,
+          "input": 61650,
+          "output": 2688,
+          "medianMs": 5587
+        },
+        "party_decision": {
+          "requests": 1,
+          "input": 257,
+          "output": 48,
+          "medianMs": 881
+        },
+        "planner": {
+          "requests": 6,
+          "input": 84328,
+          "output": 1002,
+          "medianMs": 1667.5
+        }
+      },
+      "medianReadyMs": 19020.199999999255
+    },
+    "openrouter-20261127-heron-250": {
+      "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+      "actions": 8,
+      "verifiedTurns": 8,
+      "savedMessages": 127,
+      "costUSD": "0.014121220",
+      "byRole": {
+        "board": {
+          "requests": 2,
+          "input": 6415,
+          "output": 2076,
+          "medianMs": 6920.0
+        },
+        "extractor": {
+          "requests": 7,
+          "input": 111919,
+          "output": 3382,
+          "medianMs": 2484
+        },
+        "narrator": {
+          "requests": 7,
+          "input": 85991,
+          "output": 2711,
+          "medianMs": 3893
+        },
+        "planner": {
+          "requests": 7,
+          "input": 98569,
+          "output": 416,
+          "medianMs": 943
+        }
+      },
+      "medianReadyMs": 13023.300000000745
+    },
+    "openrouter-20261127-juniper-249": {
+      "commit": "c9891834fd88d859c8a5e45a87d1e87464fabbff",
+      "actions": 6,
+      "verifiedTurns": 6,
+      "savedMessages": 89,
+      "costUSD": "0.010475734",
+      "byRole": {
+        "extractor": {
+          "requests": 7,
+          "input": 110021,
+          "output": 3719,
+          "medianMs": 2325
+        },
+        "narrator": {
+          "requests": 5,
+          "input": 59025,
+          "output": 2134,
+          "medianMs": 3829
+        },
+        "planner": {
+          "requests": 4,
+          "input": 55609,
+          "output": 695,
+          "medianMs": 1563.5
+        }
+      },
+      "medianReadyMs": 9973.60000000149
+    },
+    "openrouter-20261127-kestrel-250": {
+      "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+      "actions": 2,
+      "verifiedTurns": 2,
+      "savedMessages": 5,
+      "costUSD": "0",
+      "byRole": {},
+      "medianReadyMs": null
+    },
+    "openrouter-20261127-linden-246": {
+      "commit": "9a7cfe732da964165ed25267f64625ed5c5c8737",
+      "actions": 1,
+      "verifiedTurns": 1,
+      "savedMessages": 79,
+      "costUSD": "0.002775540",
+      "byRole": {
+        "extractor": {
+          "requests": 2,
+          "input": 31709,
+          "output": 1289,
+          "medianMs": 5244.5
+        },
+        "narrator": {
+          "requests": 1,
+          "input": 11967,
+          "output": 539,
+          "medianMs": 5336
+        },
+        "planner": {
+          "requests": 1,
+          "input": 14126,
+          "output": 146,
+          "medianMs": 2402
+        }
+      },
+      "medianReadyMs": 20550.300000000745
+    },
+    "openrouter-20261127-martin-251": {
+      "commit": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
+      "actions": 5,
+      "verifiedTurns": 5,
+      "savedMessages": 17,
+      "costUSD": "0.009068474",
+      "byRole": {
+        "extractor": {
+          "requests": 5,
+          "input": 70656,
+          "output": 3200,
+          "medianMs": 5460
+        },
+        "narrator": {
+          "requests": 5,
+          "input": 57235,
+          "output": 2368,
+          "medianMs": 5445
+        },
+        "planner": {
+          "requests": 5,
+          "input": 64282,
+          "output": 621,
+          "medianMs": 1721
+        }
+      },
+      "medianReadyMs": 15627.10000000149
+    },
+    "openrouter-20261127-oriole-251": {
+      "commit": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
+      "actions": 7,
+      "verifiedTurns": 7,
+      "savedMessages": 85,
+      "costUSD": "0.010601772",
+      "byRole": {
+        "extractor": {
+          "requests": 6,
+          "input": 97296,
+          "output": 5310,
+          "medianMs": 8308.5
+        },
+        "narrator": {
+          "requests": 5,
+          "input": 63264,
+          "output": 3057,
+          "medianMs": 7454
+        },
+        "planner": {
+          "requests": 4,
+          "input": 58030,
+          "output": 185,
+          "medianMs": 1480.5
+        }
+      },
+      "medianReadyMs": 17466.199999999255
+    },
+    "openrouter-20261127-pine-250": {
+      "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+      "actions": 1,
+      "verifiedTurns": 0,
+      "savedMessages": 23,
+      "costUSD": "0.002722332",
+      "byRole": {
+        "extractor": {
+          "requests": 2,
+          "input": 31495,
+          "output": 1346,
+          "medianMs": 4641.5
+        },
+        "narrator": {
+          "requests": 1,
+          "input": 12189,
+          "output": 454,
+          "medianMs": 4719
+        },
+        "planner": {
+          "requests": 1,
+          "input": 13698,
+          "output": 156,
+          "medianMs": 1757
+        }
+      },
+      "medianReadyMs": null
+    },
+    "openrouter-20261127-reed-251": {
+      "commit": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
+      "actions": 3,
+      "verifiedTurns": 3,
+      "savedMessages": 23,
+      "costUSD": "0.005924232",
+      "byRole": {
+        "extractor": {
+          "requests": 4,
+          "input": 57103,
+          "output": 1297,
+          "medianMs": 3115.0
+        },
+        "narrator": {
+          "requests": 3,
+          "input": 34909,
+          "output": 1422,
+          "medianMs": 5325
+        },
+        "planner": {
+          "requests": 3,
+          "input": 38664,
+          "output": 177,
+          "medianMs": 701
+        }
+      },
+      "medianReadyMs": 11408.89999999851
+    },
+    "openrouter-20261127-rook-250": {
+      "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+      "actions": 6,
+      "verifiedTurns": 6,
+      "savedMessages": 17,
+      "costUSD": "0.009556458",
+      "byRole": {
+        "extractor": {
+          "requests": 6,
+          "input": 83997,
+          "output": 3846,
+          "medianMs": 3853.0
+        },
+        "narrator": {
+          "requests": 5,
+          "input": 54818,
+          "output": 2400,
+          "medianMs": 4339
+        },
+        "planner": {
+          "requests": 5,
+          "input": 63970,
+          "output": 266,
+          "medianMs": 1103
+        }
+      },
+      "medianReadyMs": 11255.199999999255
+    },
+    "openrouter-20261127-sage-248": {
+      "commit": "a9471388e98410bd4a33e15b34a1afa2f45c629e",
+      "actions": 9,
+      "verifiedTurns": 9,
+      "savedMessages": 111,
+      "costUSD": "0.012982874",
+      "byRole": {
+        "extractor": {
+          "requests": 7,
+          "input": 108066,
+          "output": 1769,
+          "medianMs": 1865
+        },
+        "narrator": {
+          "requests": 8,
+          "input": 84980,
+          "output": 2858,
+          "medianMs": 4431.0
+        },
+        "planner": {
+          "requests": 7,
+          "input": 97983,
+          "output": 616,
+          "medianMs": 1372
+        }
+      },
+      "medianReadyMs": 12935.10000000149
+    },
+    "openrouter-20261127-swift-250": {
+      "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+      "actions": 2,
+      "verifiedTurns": 2,
+      "savedMessages": 5,
+      "costUSD": "0",
+      "byRole": {},
+      "medianReadyMs": null
+    },
+    "openrouter-20261127-willow-247": {
+      "commit": "c954742a98da31bcb56e70d708c278e67d3495e4",
+      "actions": 3,
+      "verifiedTurns": 3,
+      "savedMessages": 85,
+      "costUSD": "0.005533762",
+      "byRole": {
+        "extractor": {
+          "requests": 5,
+          "input": 79346,
+          "output": 2663,
+          "medianMs": 3286
+        },
+        "narrator": {
+          "requests": 3,
+          "input": 36371,
+          "output": 1467,
+          "medianMs": 5809
+        }
+      },
+      "medianReadyMs": 16430.199999999255
+    }
+  },
+  "requests": 396,
+  "byRole": {
+    "board": {
+      "requests": 2,
+      "input": 6415,
+      "output": 2076,
+      "medianMs": 6920.0
+    },
+    "extractor": {
+      "requests": 154,
+      "input": 2422272,
+      "output": 83423,
+      "medianMs": 3886.5
+    },
+    "narrator": {
+      "requests": 117,
+      "input": 1408502,
+      "output": 53660,
+      "medianMs": 4892
+    },
+    "party_decision": {
+      "requests": 4,
+      "input": 1013,
+      "output": 154,
+      "medianMs": 831.5
+    },
+    "planner": {
+      "requests": 119,
+      "input": 1596443,
+      "output": 12146,
+      "medianMs": 1240
+    }
+  },
+  "costUSD": "0.252571994",
+  "newCostUSD": "0.127539922",
+  "remainingUSD": "0.747428006"
+}

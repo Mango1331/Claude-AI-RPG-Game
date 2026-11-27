@@ -4,7 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
-| **.245–.250 · Bekannte Wege und gemeinsame Ortswechsel** | [Fachbericht, Abnahme und Installation](AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md) | [Prüfprogramm](ortssteuerung_245/verify_series.mjs) |
+| **.245–.251 · Bekannte Wege und gemeinsame Ortswechsel** | [Fachbericht, Abnahme und Installation](AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md) | [Prüfprogramm](ortssteuerung_245/verify_series.mjs) |
 | **.236–.244 · Party und exploratives Spiel** | [Fachbericht und Abnahme](AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md) | [Läufe](../testrun_10b/README.md) |
 | **.222–.235 · Modellserie nach User16** | [Serienabnahme](AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) · [Gegenreview R1–R4 und Party-Entscheidungsvorlage](AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md) | [Archive und Messwerte](AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) |
 | **.221 · Szenenarchitektur** | [Fachbericht, Abnahme und Installation](AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md) | [User16 und Entscheidungsvorlage](../testrun_10b/user-20261126-233937-220/README.md) |

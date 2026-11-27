@@ -1,12 +1,12 @@
 # Avereth Engine – aktueller Projektstand
 
-**.250 ist der Kandidat für den unabhängigen GPT-Gesamtreview vor Usertest 17.** Das getrennt gespeicherte Gasthauszimmer lässt sich über Freitext und die Ortswahl verlassen. Madge, Mahlzeit, Markt und die tatsächlichen Mitreisenden wurden im Modellspiel geprüft. Dieselbe Party hat zwei Gildenaufträge abgeschlossen. Der gekaufte Primer führte im fortgesetzten Spiel zum erlernten und benutzten Heilskill. [Gegenreview, Originalarchive, Abnahme und Installation](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md)
+**.251 ist der Kandidat für den unabhängigen GPT-Gesamtreview vor Usertest 17.** Das getrennt gespeicherte Gasthauszimmer lässt sich über Freitext und die Ortswahl verlassen. Madge, Mahlzeit, Markt und die tatsächlichen Mitreisenden wurden im Modellspiel geprüft. Dieselbe Party hat zwei Gildenaufträge abgeschlossen. Der gekaufte Primer führte im fortgesetzten Spiel zum erlernten und benutzten Heilskill. [Gegenreview, Originalarchive, Abnahme und Installation](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md)
 
 ## Aktuelle Referenzen
 
 | Zweck | Verifizierte Referenz |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`b67de589`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b67de58941526d877964a0e669ccbb8b4ef0fb68) · Build `4.3.0-c.6.6.250` |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`4933a5f0`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/4933a5f005a86a381a922981d3d7377e8ba84b5c) · Build `4.3.0-c.6.6.251` |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 

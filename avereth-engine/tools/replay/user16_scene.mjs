@@ -29,7 +29,8 @@ function adapted(i, raw, at) {
         const promise = raw.deltas.find(d => d.kind === 'promise' && !d.id);
         promise.text = 'Dammar accepted a good word with the Guild clerk if his information proves true. Alaric made no promise of forage rights.';
         promise.recall_at = hall;
-        promise.player_words = original[21].mes.split('*').at(-1).trim();
+        // Even an incomplete literal excerpt must not drop limits elsewhere in the same decision.
+        promise.player_words = 'i can put a word in for you';
         raw.deltas.push({seq:9,type:'thread',id:'thread.t10.2',kind:'request',status:'resolved',who:['npc.dammar'],
             text:'Dammar’s original request for forage rights',resolution:'He accepted the narrower conditional offer of a good word.'});
     }
@@ -111,7 +112,7 @@ const current = state();
 assert.equal(current.threads['thread.t10.2'].kind,'request');
 assert.equal(current.threads['thread.t10.2'].status,'resolved');
 assert.match(current.threads['thread.t10.2'].text,/row about the mushroom beds$/);
-assert.match(current.threads['thread.t11.1'].player_words,/if your information is true/);
+assert.equal(current.threads['thread.t11.1'].player_words, original[21].mes);
 assert.equal(current.threads['thread.t10.1'].status,'open');
 assert.equal(current.threads['thread.t9.2'].status,'open');
 const outside = current.scene.at;
@@ -177,3 +178,54 @@ assert.equal(told.next.threads['thread.t10.1'].status,'open');
 assert.equal(told.next.threads['thread.t15.1'].status,'open');
 if (process.argv[4]) fs.writeFileSync(process.argv[4],JSON.stringify(guild.run));
 console.log('Turn 24: private terms delivered at Guild hall; later explicit disclosure reaches clerk separately.');
+
+const road = 'realm.duskreach.old_quarry_track_east_of_ashbridge';
+const seek = 'I head back to the old quarry track.';
+const arrivedRoad = 'Alaric follows the road east and reaches the old quarry track.';
+const familiar = 'Dammar, the familiar fisherman with his reed creel, is sitting on the bank in front of Alaric.';
+const reunited = await branch(casual.run,seek,go(road,seek),arrivedRoad+' '+familiar,
+    {scene:road,expected:{1:{arrived:true,at:road,with:null,met:null}},deltas:[
+        {seq:1,type:'arrive',at:road,evidence:arrivedRoad,with:null},
+        {seq:2,type:'enter',who:'npc.dammar',evidence:familiar,scene:road}]});
+assert(reunited.next.scene.present.includes('npc.dammar'));
+const chatAgain = await branch(reunited.run,'I greet the fisherman.',[]);
+assert.match(chatAgain.step.context.text,/Wenna banned him/);
+assert.match(chatAgain.step.context.text,/strider/i);
+const offsite = 'I leave the hall and return to the verge.';
+const verge = 'loc.ashbridge.verge', walk = 'Alaric leaves the hall and walks back to the verge of Ashbridge.';
+const out = await branch(casual.run,offsite,go(verge,offsite),walk,{scene:verge,expected:{1:{arrived:true,at:verge,with:null,met:null}},
+    deltas:[{seq:1,type:'arrive',at:verge,evidence:walk,with:null}]});
+assert.equal(out.next.scene.at,verge);
+const ordinary = await branch(out.run,'I straighten my collar.',[]);
+assert(!ordinary.step.context.sections.some(s=>s.name==='private_recall'));
+const scouting = await branch(chat,'I study the hill.',[]);
+assert.match(scouting.step.context.text,/sinkhole/i);
+const two = 'I walk to the slab and then approach the doorway.';
+const pair = await branch(chat,two,[...go({scene:'the slab'},'I walk to the slab'),
+    {seq:2,type:'go',to:{scene:'the doorway'},quote:'then approach the doorway'}],
+    entry.replace('steps through the doorway and enters the first tunnel of the Mossback Warrens','reaches the outside of the doorway'),
+    {scene:'here',expected:{2:{standpoint:'Alaric reaches the outside of the doorway'}},deltas:[]});
+assert.equal(pair.next.scene.at,outside);
+assert.equal(pair.next.scene.focus,'Alaric reaches the outside of the doorway');
+console.log('Reunion retrieves prior encounter and Wenna, unrelated stop has no private recall; two local approaches share one final standpoint.');
+
+const revised = JSON.parse(JSON.stringify(chat));
+assert.deepEqual(host.foldChat(revised).state,current);
+revised[38].mes = 'Alaric pauses in the shadow. He hears nothing more.';
+runtime.onEditedV4(revised,38,content);
+assert.equal(runtime.pendingExtraction(revised),38);
+assert.equal(host.foldChat(revised).state.scene.focus,host.foldChat(chat.slice(0,37)).state.scene.focus);
+await runtime.runExtraction(revised,38,content,async()=>JSON.stringify({scene:'here',expected:{1:{standpoint:null}},deltas:[]}));
+assert(!host.foldChat(revised).state.threads['thread.t16.1']);
+revised[38].mes = chat[38].mes;
+runtime.onEditedV4(revised,38,content);
+assert.deepEqual(host.foldChat(revised).state,current);
+console.log('Reload and revision restore the original standpoint and hearsay once.');
+
+for (const words of ['Is anyone here looking for company?', 'I glance around the room for someone on their own.']) {
+    const social = await branch(chat.slice(0,15),words,[],'Everyone at the tables is already in company.',
+        {scene:'here',expected:{},deltas:[]});
+    const inputEvents = host.rec(social.run.at(-2)).events;
+    assert(inputEvents.some(e=>e.t==='pulse.rolled') && !inputEvents.some(e=>e.t==='check.recorded'));
+    assert(!social.next.party && !social.events.some(e=>e.t==='entity.created'));
+}

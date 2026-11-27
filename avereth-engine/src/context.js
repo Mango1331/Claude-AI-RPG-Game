@@ -585,7 +585,10 @@ function mergeIdentical(items) {
 }
 
 // Occasion-specific cues compete within the normal context allowance. Keep whole source statements.
-function privateRecall(state, outcome, budget) {
+function privateRecall(state, outcome, allowance) {
+    const heading = 'Private recall for Alaric. He decides whether to speak. Others know only what they witnessed.';
+    let remaining = allowance - estimateTokens(heading) - 1;
+    if (remaining <= 0) return '';
     const sites = new Set([state.scene.at, ...(outcome?.auth?.gos || []).map(g => g.to)]
         .flatMap(id => lineage(state,id)).filter(id => state.places[id].kind !== 'realm'));
     const present = new Set(state.scene.present.filter(id => id !== 'pc' && statusOf(state,id) !== 'dead'));
@@ -617,13 +620,15 @@ function privateRecall(state, outcome, budget) {
                 && other.who?.some(id => id !== 'pc' && t.who?.includes(id)));
             if (!currentAgreement) continue;
         }
-        const text = t.kind === 'promise' && t.player_words ? t.text+' His words: “'+t.player_words+'”' : t.text;
+        const text = occasion && t.kind === 'promise' && t.player_words ? t.text+' His words: “'+t.player_words+'”' : t.text;
         const label = t.kind === 'request' ? 'Original request' : t.kind;
-        rows.push({score:t.status === 'open' && t.kind === 'promise' ? 6 : t.kind === 'request' ? 4 : occasion && t.kind === 'mystery' ? 3.5 : 3,
-            text:label+': '+text});
+        let score = 3;
+        if (t.kind === 'request') score = partyHere && !occasion ? 7 : 4;
+        else if (t.kind === 'promise' && t.status === 'open') score = 6;
+        else if (occasion) score = 3.5;
+        rows.push({score, text:label+': '+text});
     }
     const picked = new Set();
-    let remaining = Math.min(195, Math.floor(budget * 0.16));
     for (const row of rows.sort((a,b) => b.score-a.score)) {
         const cost = estimateTokens(row.text)+2;
         if (cost > remaining || picked.has(row.text)) continue;
@@ -631,7 +636,7 @@ function privateRecall(state, outcome, budget) {
         remaining -= cost;
         if (picked.size === 3) break;
     }
-    return picked.size ? 'Private recall for Alaric. He decides whether to speak. Others know only what they witnessed.\n'+[...picked].join('\n') : '';
+    return picked.size ? heading+'\n'+[...picked].join('\n') : '';
 }
 
 /**
@@ -769,8 +774,6 @@ export function buildContext(state, content, opts = {}) {
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
     // Reserve room for the visible identities when people participate in a fight.
-    if (v4 && state.mode !== 'creation' && !state.encounter && !opts.systemQuery)
-        add('private_recall', privateRecall(state,opts.outcome,budget), 1);
     const groupResolution=!!state.encounter?.line || !!opts.outcome?.ended?.xp_shares;
     const npcFight=groupResolution || Object.values(state.encounter?.combatants || {}).some(c=>state.entities[c.id]?.kind==='npc');
     if (!npcFight && !privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift && (x.turn === state.turn || state.scene.present.includes(x.gift.from))).slice(-4).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
@@ -998,6 +1001,10 @@ export function buildContext(state, content, opts = {}) {
 
     // pack by priority under budget (priority 0 always kept; sections with their own allowance don't count)
     let used = sections.filter((s) => s.priority === 0 && !s.own).reduce((a, s) => a + s.tokens, 0);
+    if (v4 && state.mode !== 'creation' && !state.encounter && !opts.systemQuery) {
+        const allowance = Math.min(215, Math.floor(budget * 0.16), budget - used);
+        add('private_recall', privateRecall(state, opts.outcome, allowance), 0.5);
+    }
     const kept = new Set(sections.filter((s) => s.priority === 0));
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }

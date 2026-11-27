@@ -654,7 +654,9 @@ const HANDLERS = {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT GO — not while the fight runs.' };
         if (typeof c.to?.scene === 'string') {
             const focus = c.to.scene.trim();
-            if (!focus || focus.length > 200 || c.within || ctx.auth.approach) return {status:'refused', line:'A local approach needs a focus in this scene.'};
+            if (!focus || focus.length > 200 || c.within) return {status:'refused', line:'A local approach needs a focus in this scene.'};
+            // The narration can cover several ordinary steps. Only its final standpoint persists.
+            if (ctx.auth.approach) delete ctx.expectedKeys[String(ctx.auth.approach.seq)];
             const previous = ctx.auth.gos.at(-1);
             ctx.auth.approach = {seq:c.seq, at:previous ? previous.to : s.scene.at,
                 focus, stealth:c.manner?.kind === 'stealth' || !!c.sneak};

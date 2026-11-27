@@ -90,7 +90,7 @@ const TURNS = [
 const turnOf = (text) => TURNS.find((t) => text.includes(`PLAYER MESSAGE:\n${t.player}`));
 const finance = financeTurns(plan);
 const { tradeHudSmoke, tradeTurns } = process.env.AVERETH_SMOKE_TRADE_HUD === '1'
-    ? await import('./trade_hud_smoke.mjs') : { tradeTurns: [] };
+    ? await import(process.env.AVERETH_SMOKE_SCENE221 === '1' ? './user16_scene_smoke.mjs' : './trade_hud_smoke.mjs') : { tradeTurns: [] };
 const allTurns = [...tradeTurns,...actionHudTurns, ...TURNS, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns, ...campTurns];
 
 // ------------------------------------------------------------------------------------------------ setup (as run_v4.mjs)
@@ -167,7 +167,7 @@ const mock = http.createServer(async (req, res) => {
     // the planner: its own role in a fight, the interpreter's prompt with the planner's section outside one
     if (system.startsWith('You are the intent planner') || (system.startsWith('You are the command interpreter') && system.includes('Actions with skills, in fights and on things'))) {
         purpose = 'plan';
-        const t = turnOf(users) || [...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns, ...campTurns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
+        const t = turnOf(users) || [...tradeTurns, ...finance, ...stealthTurns, ...uiTurns, ...continuityTurns, ...board159Turns, ...qol160Turns, ...ui161Turns, ...pulse162Turns, ...pulse164Turns, ...pulse167Turns, ...npc169Turns, ...npc172Turns, ...pilot01Turns, ...bossloot193Turns, ...campTurns].find(t => users.includes(`PLAYER MESSAGE:\n${t.player}`));
         text = JSON.stringify(actionHudPlan(users) || (t ? t.plan : { commands: [] }));
     } else if (system.startsWith('You are the command interpreter')) {
         purpose = 'interpret';

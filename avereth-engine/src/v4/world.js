@@ -1684,7 +1684,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 let who = null;
                 const occasion = typeof d.recall_at === 'string' && s.places?.[d.recall_at] ? d.recall_at : null;
                 const terms = typeof d.player_words === 'string' ? d.player_words.trim() : '';
-                if (terms && (d.kind !== 'promise' || !d.who?.includes('pc') || (!s.last?.input?.includes(terms) || !s.scene.present.some(id => id !== 'pc' && d.who.some(ref => mapRef(ref) === id))))) {
+                const playerInput = s.last?.input || '';
+                const witness = d.who?.some(ref => ref !== 'pc' && s.scene.present.includes(mapRef(ref)));
+                if (terms && (d.kind !== 'promise' || !d.who?.includes('pc') || !playerInput.includes(terms) || !witness)) {
                     reject(d, 'promise_evidence', 'player terms must quote this player decision');
                     break;
                 }
@@ -1695,7 +1697,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     const faceToFace = npcs.some((x) => s.scene.present.includes(x));
                     if (npcs.length) who = ids.filter((x) => x !== 'pc' || faceToFace).slice(0, 3);
                 }
-                v3({ threads: [{ id: d.id || null, text: text.text, kind: d.kind, status: d.status, resolution: resolution.text || null, ...(occasion ? {recall_at:occasion} : {}), ...(terms ? {player_words:terms} : {}), ...(who ? { who } : {}) }] }, d);
+                v3({ threads: [{ id: d.id || null, text: text.text, kind: d.kind, status: d.status, resolution: resolution.text || null, ...(occasion ? {recall_at:occasion} : {}), ...(terms ? {player_words:playerInput} : {}), ...(who ? { who } : {}) }] }, d);
                 break;
             }
             case 'guild.branch': {

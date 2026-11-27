@@ -1,0 +1,42 @@
+{
+  "build": "4.3.0-c.6.6.243",
+  "commit": "ece9390771f77dc8ae27d05c9bd4643f2f6aefc4",
+  "seed": 526138360,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Vollständiger, unveränderter Y-Endstand wie Slate. Expliziter Eintritt und Wahrnehmung ab dem tatsächlichen Standort.",
+  "savedMessages": 47,
+  "requests": 7,
+  "costUSD": "0.004547406",
+  "usage": {
+    "prompt_tokens": 97319,
+    "completion_tokens": 2731,
+    "total_tokens": 100050
+  },
+  "sha256": {
+    "actions.jsonl.gz": "0e39e56115f760b43c7f0ab02a4df3c36739f0a76fd078f6f59da5007a892ca4",
+    "chat-0.jsonl.gz": "5e778975f2c48d84ae89220c8b8119d8ee0efe85eb68b5bd0b3720295dbf4451",
+    "chat.jsonl.gz": "2d8326417f761e72e7aedbd0e8e03d0a197588cd562d86cc65fb16dd77e2e961",
+    "events.json.gz": "9255160f1b1c27b0a03c20ace8ea4bb5e3e2aafce3277fcf6405c564ae8d6736",
+    "explore.log.gz": "4a18ecb807f996a531c5a3c176e64a51f493d30305c1192a8487c077078bc26a",
+    "last-verified-world.json.gz": "06c9faef5a79816b04881a9686cc13826849c6121e6b9193de2d4bacef03c257",
+    "parent-check.json.gz": "12c0b5aae9f7358c832c587a15231c90dec269bab64581f8545bd6a394671566",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "4738fae6800adc584ecea1977119c56e9d8d013bedfbcd9c2a26023305315cf0",
+    "raw-85.gz": "6c29cd331755d59f88182f0896c5cb85067e6d0891cdb7c76dc6a91c9c232e85",
+    "raw-86.gz": "363e742a1cddbc2ea1c6b8339d605151af16ce73fc832f72585fd2ea73be670a",
+    "raw-87.gz": "c52e1fc51f5f7a9f72a31b5d70d4c555269d013ec400dc662ac72e866742b068",
+    "raw-88.gz": "48d47eb6ed51a37b07cf9975d92181a3206997b874632b2e026af8745c11a8bd",
+    "raw-89.gz": "d6b74c22031f08484608bfea967d93a9b1ded97ae5d0e6f15484dd735103c06f",
+    "raw-90.gz": "2c33720ab62ace76ec28428c0139ddece6d0ad99cae0ec07270dce1b4858d8cf",
+    "raw-91.gz": "108ddc555bdb9a60654ba6bfcb1a7bcb5096e45586f57feedf0153100bc72c44",
+    "requests.jsonl.gz": "a72020c233327f05ae0bb6faa10c6fd0828f535c57bdb76289e18bd258559490",
+    "response.json.gz": "3db3ec02bd5040122cf66300da46b181dfa46e344429cddbcab47cb7b21de52d",
+    "st.log.gz": "7df216a0f73fd4755c0b7a5c99ccda3fb2b3f549956211b6069aeae9f77010e2",
+    "turns.jsonl.gz": "b87976e098579276c968834cc013c8fdf8078162cef10ad0cae6a44ed9f962ba",
+    "visible.json.gz": "cdd8eca98e479fd739661524ca36dbe099cafd5f54fbd892bc06651725e1efd9",
+    "world-0.json.gz": "39372d0aa144620fbb0fd528820463497c113a6179330dce540df0b8266acd79"
+  }
+}

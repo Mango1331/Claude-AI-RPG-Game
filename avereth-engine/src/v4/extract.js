@@ -632,6 +632,10 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         if (d.evidence === null) delete d.evidence;
         if (d.after === null) delete d.after;
     }
+    if (!errors.length) for (const d of value.deltas) if (d.type === 'thread') {
+        if (d.recall_at === null) delete d.recall_at;
+        if (d.player_words === null) delete d.player_words;
+    }
     const semanticIssues = [];
     let placeHintAdded = false;
     for (const [errorIndex,error] of [...errors].entries()) {

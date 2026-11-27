@@ -584,6 +584,55 @@ function mergeIdentical(items) {
     return [...byLabel.values()].map((it) => (it.count > 1 ? { ...it, label: `${it.label} (×${it.count})` } : it));
 }
 
+// Occasion-specific cues compete within the normal context allowance. Keep whole source statements.
+function privateRecall(state, outcome, budget) {
+    const sites = new Set([state.scene.at, ...(outcome?.auth?.gos || []).map(g => g.to)]
+        .flatMap(id => lineage(state,id)).filter(id => state.places[id].kind !== 'realm'));
+    const present = new Set(state.scene.present.filter(id => id !== 'pc' && statusOf(state,id) !== 'dead'));
+    const siteWords = tokenize(state.places[state.scene.at]?.name || '');
+    const pairs = siteWords.slice(1).map((w,i) => siteWords[i]+' '+w);
+    const rows = [];
+    for (const q of Object.values(state.quests)) {
+        if (q.status !== 'active' || !questVisible(state,q)) continue;
+        const target = q.dungeon || q.hunt?.at;
+        const notes = (q.notes || []).slice().reverse();
+        const matches = notes.filter(note => {
+            const words = ' '+tokenize(note).join(' ')+' ';
+            return pairs.some(pair => words.includes(' '+pair+' '));
+        });
+        if (!sites.has(target) && !matches.length) continue;
+        if (target && matches.length) sites.add(target);
+        for (const note of [...matches,...notes]) rows.push({score:3, text:'Reported for '+q.title+': '+note});
+    }
+    const threads = Object.values(state.threads);
+    for (const t of threads) {
+        if (!t.recall_at && !t.player_words) continue;
+        const partyHere = (t.who || []).some(id => present.has(id));
+        const occasion = sites.has(t.recall_at);
+        if (!partyHere && !occasion) continue;
+        if (t.status === 'resolved' && !partyHere) {
+            const currentAgreement = t.kind === 'request' && threads.some(other =>
+                other.kind === 'promise' && other.status === 'open' && other.recall_at === t.recall_at
+                && other.who?.some(id => id !== 'pc' && t.who?.includes(id)));
+            if (!currentAgreement) continue;
+        }
+        const text = t.kind === 'promise' && t.player_words ? t.text+' His words: “'+t.player_words+'”' : t.text;
+        const label = t.kind === 'request' ? 'Original request' : t.kind;
+        rows.push({score:t.status === 'open' && t.kind === 'promise' ? 6 : t.kind === 'request' ? 4 : occasion && t.kind === 'mystery' ? 3.5 : 3,
+            text:label+': '+text});
+    }
+    const picked = new Set();
+    let remaining = Math.min(195, Math.floor(budget * 0.16));
+    for (const row of rows.sort((a,b) => b.score-a.score)) {
+        const cost = estimateTokens(row.text)+2;
+        if (cost > remaining || picked.has(row.text)) continue;
+        picked.add(row.text);
+        remaining -= cost;
+        if (picked.size === 3) break;
+    }
+    return picked.size ? 'Private recall for Alaric. He decides whether to speak. Others know only what they witnessed.\n'+[...picked].join('\n') : '';
+}
+
 /**
  * The retrieval query (Patch 1, live run 18.10.2026): the player's message says what this turn is about. The last reply
  * adds only the known names it mentions (people, places, Quests), not its prose: 1,500 characters of narration matched
@@ -719,6 +768,8 @@ export function buildContext(state, content, opts = {}) {
     const add = (name, text, priority, own = false) => text && sections.push({ name, text, priority, own, tokens: estimateTokens(text) });
 
     // Reserve room for the visible identities when people participate in a fight.
+    if (v4 && state.mode !== 'creation' && !state.encounter && !opts.systemQuery)
+        add('private_recall', privateRecall(state,opts.outcome,budget), 1);
     const groupResolution=!!state.encounter?.line || !!opts.outcome?.ended?.xp_shares;
     const npcFight=groupResolution || Object.values(state.encounter?.combatants || {}).some(c=>state.entities[c.id]?.kind==='npc');
     if (!npcFight && !privateQuestsOf(state)) add('help', 'FREE HELP — only Guild contracts are formal quests. NPCs may request help, offer paid work, make promises and react freely. Preserve requests, deeds, relationships and outcomes as ordinary world continuity; no private Quest acceptance, objectives, READY, turn-in, work certificate, automatic reward or Quest XP. A present NPC may voluntarily hand over a credible gift or payment now; promises/recounts are not new money. Already recorded handovers: ' + ((state.credits || []).filter(x => x.gift && (x.turn === state.turn || state.scene.present.includes(x.gift.from))).slice(-4).map(x => `${x.gift.from}: ${x.cp} cp (${x.gift.why})`).join('; ') || 'none'), 0);
@@ -950,7 +1001,7 @@ export function buildContext(state, content, opts = {}) {
     for (const s of sections.filter((x) => x.priority > 0).sort((a, b) => a.priority - b.priority)) {
         if (used + s.tokens <= budget) { kept.add(s); used += s.tokens; }
     }
-    const order = ['header', 'where', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'learning_sources', 'paid_here', 'npc_continuity', 'named', 'combat', 'party', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
+    const order = ['header', 'where', 'pc', 'creation', 'npc_compact', 'npc_arrival', 'present', 'settlement', 'world_area', 'world_populations', 'gear_market', 'price_contract', 'learning_sources', 'paid_here', 'npc_continuity', 'named', 'combat', 'party', 'guild_authority', 'help', 'facts', 'features', 'dungeon', 'quests', 'goals', 'private_recall', 'relevant', 'lore', 'rules', 'envelope', 'corrections', 'chronicle', 'resolved', 'report'];
     const final = order.map((n) => sections.find((s) => s.name === n && kept.has(s))).filter(Boolean);
     const text = final.map((s) => s.text).join('\n\n');
     const describe = section => ({ name: section.name, tokens: section.tokens, own: section.own,

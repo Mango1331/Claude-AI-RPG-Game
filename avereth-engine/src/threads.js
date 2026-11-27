@@ -193,7 +193,7 @@ export function threadEvents(state, th, { at, src, place = null, prose = '' }) {
     const id = cur?.id || newThreadId(state);
     // a resolution keeps the matter's words and adds how it ended; an update may say it better, an agreement's never
     // (D1: its words are what was agreed; a later report's wording is not taken over)
-    const text = (status === 'resolved' || agreement) && cur ? cur.text : String(th.text).slice(0, 200);
+    const text = (status === 'resolved' || agreement) && cur ? cur.text : String(th.text);
     // NPC E2-B (R7): the parties of an agreement stay with it: an update adds parties, never drops one; a resolution
     // keeps them; a thread without parties gets them by its id or its exact words only (matchThread)
     const parties = Array.isArray(th.who) && th.who.length ? th.who : null;
@@ -201,7 +201,9 @@ export function threadEvents(state, th, { at, src, place = null, prose = '' }) {
     const thread = {
         id, text, kind: cur?.kind || th.kind || 'mystery', status, since: cur?.since || at, updated: at, source: cur?.source || src,
         at: cur?.at ?? place ?? null,
-        ...(status === 'resolved' ? { resolution: String(th.resolution || th.text).slice(0, 200) } : {}),
+        ...(cur?.recall_at || th.recall_at ? { recall_at: cur?.recall_at || th.recall_at } : {}),
+        ...(cur?.player_words || th.player_words ? { player_words: cur?.player_words || th.player_words } : {}),
+        ...(status === 'resolved' ? { resolution: String(th.resolution || th.text) } : {}),
         ...(who ? { who } : {}),
     };
     return { events: [{ t: 'thread.set', d: { thread } }], accepted: `thread ${status}: ${text}` };

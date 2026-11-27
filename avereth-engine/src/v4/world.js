@@ -1682,14 +1682,20 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 // NPC E2-B (R7): an agreement's parties – living people of the record (or of this answer) and Alaric,
                 // who is one only face to face (one of the people present); without a person it stays unbound
                 let who = null;
-                if (cPath && rulesetOf(s) >= 2 && ['promise', 'debt'].includes(d.kind) && Array.isArray(d.who) && d.who.length) {
+                const occasion = typeof d.recall_at === 'string' && s.places?.[d.recall_at] ? d.recall_at : null;
+                const terms = typeof d.player_words === 'string' ? d.player_words.trim() : '';
+                if (terms && (d.kind !== 'promise' || !d.who?.includes('pc') || (!s.last?.input?.includes(terms) || !s.scene.present.some(id => id !== 'pc' && d.who.some(ref => mapRef(ref) === id))))) {
+                    reject(d, 'promise_evidence', 'player terms must quote this player decision');
+                    break;
+                }
+                if (cPath && rulesetOf(s) >= 2 && (['promise', 'debt', 'request'].includes(d.kind) || occasion) && Array.isArray(d.who) && d.who.length) {
                     const ids = [...new Set(d.who.map((x) => (x === 'pc' ? 'pc' : mapRef(x))))]
                         .filter((x) => x === 'pc' || (s.entities[x]?.kind === 'npc' && statusOf(s, x) !== 'dead'));
                     const npcs = ids.filter((x) => x !== 'pc');
                     const faceToFace = npcs.some((x) => s.scene.present.includes(x));
                     if (npcs.length) who = ids.filter((x) => x !== 'pc' || faceToFace).slice(0, 3);
                 }
-                v3({ threads: [{ id: d.id || null, text: text.text, kind: d.kind, status: d.status, resolution: resolution.text || null, ...(who ? { who } : {}) }] }, d);
+                v3({ threads: [{ id: d.id || null, text: text.text, kind: d.kind, status: d.status, resolution: resolution.text || null, ...(occasion ? {recall_at:occasion} : {}), ...(terms ? {player_words:terms} : {}), ...(who ? { who } : {}) }] }, d);
                 break;
             }
             case 'guild.branch': {
@@ -1897,7 +1903,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     if (!cut.kept.length) { reject(d, cut.other.length || cut.altered.length ? 'guild_quest_detail' : 'engine_owned_detail', 'a Guild contract note keeps the story; its status, payout, XP, rank and (for a hunt) the proof are the engine\'s'); break; }
                     note = cut.kept.join(' ');
                 }
-                emit({ t: 'quest.detailed', d: { id: q.id, note: note.slice(0, 200), schedule: d.schedule ? String(d.schedule).slice(0, 80) : null } });
+                emit({ t: 'quest.detailed', d: { id: q.id, note, schedule: d.schedule ? String(d.schedule).slice(0, 80) : null } });
                 break;
             }
             case 'quest.progress':

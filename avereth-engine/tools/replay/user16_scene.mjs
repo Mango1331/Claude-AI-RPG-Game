@@ -2,13 +2,14 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
 import {engineAt} from './replay.mjs';
 import {statusOf} from '../../src/knowledge.js';
 import {actionPrefix} from '../../src/action_input.js';
 
 const [archive, output] = process.argv.slice(2);
-const {host, runtime, content} = await engineAt(resolve(import.meta.dirname, '../..'));
+const {host, runtime, content} = await engineAt(fileURLToPath(new URL('../../',import.meta.url)));
 const original = fs.readFileSync(resolve(archive, 'originals/chat.jsonl'), 'utf8').trim().split('\n').slice(1).map(JSON.parse);
 const answers = JSON.parse(execFileSync('python3', [resolve(archive, 'pruefung/st_antworten.py')], {encoding:'utf8'}));
 const chat = structuredClone(original);
@@ -18,6 +19,20 @@ const anchored = (d, at) => ({...d, scene:at});
 
 function adapted(i, raw, at) {
     if (i === 15) return {commands:[]};
+    const hall = 'loc.ashbridge.guild_hall';
+    if (i === 20) {
+        const request = raw.deltas.find(d => d.kind === 'promise');
+        Object.assign(request,{kind:'request',who:['npc.dammar'],recall_at:hall});
+        raw.deltas.find(d => d.kind === 'mystery').recall_at = 'loc.mossback_warrens';
+    }
+    if (i === 22) {
+        const promise = raw.deltas.find(d => d.kind === 'promise' && !d.id);
+        promise.text = 'Dammar accepted a good word with the Guild clerk if his information proves true. Alaric made no promise of forage rights.';
+        promise.recall_at = hall;
+        promise.player_words = original[21].mes.split('*').at(-1).trim();
+        raw.deltas.push({seq:9,type:'thread',id:'thread.t10.2',kind:'request',status:'resolved',who:['npc.dammar'],
+            text:'Dammar’s original request for forage rights',resolution:'He accepted the narrower conditional offer of a good word.'});
+    }
     if (i === 35 || i === 37) {
         const go = raw.commands[0];
         return {commands:[{...go, to:{scene:i === 35 ? 'the other voices' : 'the goblins'}}]};
@@ -79,7 +94,7 @@ async function branch(prefix, text, commands, prose, extract) {
         return JSON.stringify(value);
     };
     run.push({is_user:true,mes:text,extra:{}});
-    const step = await runtime.prepareGenerationAsync(run,content,{llm:respond('plan',{commands})});
+    const step = await runtime.prepareGenerationAsync(run,content,{settings:{budget:1400,rulesBudget:800,recentTurns:4,engineLore:false},llm:respond('plan',{commands})});
     if (prose) {
         assert.equal(step.action,'context',text);
         run.push({is_user:false,mes:prose,extra:{}});
@@ -90,9 +105,16 @@ async function branch(prefix, text, commands, prose, extract) {
     }
     const {state:next,errors} = host.foldChat(run);
     assert.deepEqual(errors,[]);
-    return {next,events:host.rec(run.at(-1)).events,step};
+    return {run,next,events:host.rec(run.at(-1)).events,step};
 }
-const outside = state().scene.at;
+const current = state();
+assert.equal(current.threads['thread.t10.2'].kind,'request');
+assert.equal(current.threads['thread.t10.2'].status,'resolved');
+assert.match(current.threads['thread.t10.2'].text,/row about the mushroom beds$/);
+assert.match(current.threads['thread.t11.1'].player_words,/if your information is true/);
+assert.equal(current.threads['thread.t10.1'].status,'open');
+assert.equal(current.threads['thread.t9.2'].status,'open');
+const outside = current.scene.at;
 const dungeon = 'loc.mossback_warrens';
 const go = (to,quote,other={}) => [{seq:1,type:'go',to,quote,...other}];
 const listen = await branch(chat,'I stay here and listen.',[],'Another laugh echoes from below.',
@@ -127,3 +149,31 @@ const mixed = await branch(chat,withdraw,go({scene:'the slab'},withdraw),movemen
 assert.equal(mixed.next.scene.at,outside);
 assert(mixed.events.some(e=>e.t==='thread.set') && mixed.events.some(e=>e.t==='delta.rejected'));
 console.log('Separate continuations: listening, backing away, Dungeon entry, target check, opposed local stealth, independent observation.');
+
+const hall = 'loc.ashbridge.guild_hall', clerk = 'npc.npcguild_clerk';
+let returning = structuredClone(chat);
+for (const text of ['I listen to the wind.','I check the sky.','I brush dust from my sleeve.',
+    'I study the leaves by my boots.','I stretch my fingers.','I adjust my cloak.']) {
+    const turn = await branch(returning,text,[],'The wind stirs the grass along the path.',
+        {scene:'here',expected:{},deltas:[]});
+    returning = turn.run;
+}
+const back = "I head back along the quarry road to the Adventurers' Guild hall in Ashbridge.";
+const arrived = 'Alaric follows the quarry road to Ashbridge and arrives in the Guild hall.';
+const seen = 'The familiar thin Guild Clerk with ink-stained fingers and low spectacles is at the counter in front of him.';
+const guild = await branch(returning,back,go(hall,back),arrived+' '+seen,{scene:hall,expected:{1:{arrived:true,at:hall,with:null,met:null}},
+    deltas:[{seq:1,type:'arrive',at:hall,evidence:arrived,with:null},{seq:2,type:'enter',who:clerk,evidence:seen,scene:hall}]});
+assert.equal(guild.next.scene.at,hall);
+assert(guild.next.scene.present.includes(clerk));
+const casual = await branch(guild.run,'I greet the clerk and ask what is new in town.',[],'The clerk sets down her quill.',{scene:hall,expected:{},deltas:[]});
+assert.match(casual.step.context.text,/if your information is true/);
+assert.match(casual.step.context.text,/Wenna banned him two years back/);
+assert.deepEqual(casual.next.knowledge[clerk],current.knowledge[clerk]);
+const told = await branch(casual.run,"I tell the clerk that Dammar warned me about the lookout, which I saw.",[],
+    'Alaric tells the clerk that Dammar warned him about the lookout and that he saw it himself. The clerk listens.',
+    {scene:hall,expected:{},deltas:[{seq:1,type:'learn',who:clerk,s:'npc.dammar',p:'reported',o:'warned Alaric about the lookout he later saw',how:'told'}]});
+assert.notDeepEqual(told.next.knowledge[clerk],casual.next.knowledge[clerk]);
+assert.equal(told.next.threads['thread.t10.1'].status,'open');
+assert.equal(told.next.threads['thread.t15.1'].status,'open');
+if (process.argv[4]) fs.writeFileSync(process.argv[4],JSON.stringify(guild.run));
+console.log('Turn 24: private terms delivered at Guild hall; later explicit disclosure reaches clerk separately.');

@@ -894,6 +894,7 @@
             "mystery",
             "threat",
             "sign",
+            "request",
             "promise",
             "debt",
             "rumor",
@@ -906,6 +907,8 @@
             "resolved"
           ]
         },
+        "recall_at": { "type": "string", "nullable": true },
+        "player_words": { "type": "string", "nullable": true },
         "resolution": {
           "type": "string",
           "nullable": true
@@ -915,7 +918,7 @@
           "nullable": true
         }
       },
-      "summary": "a story thread that will matter again, or one THIS reply settles. id: the THREADS id when the reply updates or resolves a listed thread (never a new thread for a listed matter, however it is worded now), null for a new one; for a promise or debt the same matter is the same parties and the same thing promised or owed: another promise or debt, even of the same person (a debt of theirs to someone else), is a new thread with id null. kind: sign = a fresh trace, sound or sight here that may fade; threat = a danger here; mystery, promise, debt, rumor = what lasts. status resolved only when this reply shows the matter settled (found, answered, ended, proved false; a promise kept, a debt paid, also when it is paid as part of a trade), with resolution saying how; leaving a place, time passing or a guess resolves nothing. promise/debt: only an agreement made here between named parties (a firm promise, an owed favour or debt, an offer explicitly deferred with its condition: an agreement to ask again, never an acceptance); who: its parties (ids, pc = Alaric only when he himself promised or is owed). Not: a report about someone (they sent for help, they are ill, they owe someone else: a fact or a rumor), an unanswered request, a politeness, a declined offer, an offer to anyone, an engine trade or contract"
+      "summary": "Preserve source and conditional terms. An NPC proposal is kind request, never Alaric’s promise. When narrower terms are agreed, resolve the original request by id, keeping its history, and store only the actual agreement as promise. player_words: his literal terms including conditions and limits for a new undertaking, otherwise null. recall_at: known PLACES id where this information or promise matters again, otherwise null. who includes the speaker of a report. Separate reported claims from witnessed facts. id: the THREADS id when the reply updates or resolves a listed thread (never a new thread for a listed matter, however it is worded now), null for a new one; for a promise or debt the same matter is the same parties and the same thing promised or owed: another promise or debt, even of the same person (a debt of theirs to someone else), is a new thread with id null. kind: sign = a fresh trace, sound or sight here that may fade; threat = a danger here; mystery, promise, debt, rumor = what lasts. status resolved only when this reply shows the matter settled (found, answered, ended, proved false; a promise kept, a debt paid, also when it is paid as part of a trade), with resolution saying how; leaving a place, time passing or a guess resolves nothing. promise/debt: only an agreement made here between named parties (a firm promise, an owed favour or debt, an offer explicitly deferred with its condition: an agreement to ask again, never an acceptance); who: its parties (ids, pc = Alaric only when he himself promised or is owed). Not: a report about someone (they sent for help, they are ill, they owe someone else: a fact or a rumor), an unanswered request, a politeness, a declined offer, an offer to anyone, an engine trade or contract"
     },
     {
       "type": "place.reported",

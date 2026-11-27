@@ -1,0 +1,5 @@
+# Zwei Gefechte mit Ossen in den Old Crown Catacombs
+
+Der reale Weltabgleich zu H M18 bucht Ossens Zustimmung, den kampfbereiten Beitritt, sein ausgerüstetes Magierprofil und die Halbteilung. Die Gruppe reist zusammen. In Runde 9 fallen zwei Gegner, Alaric und Ossen erhalten je 90 XP. In Runde 17–18 fällt die nächste Gruppe. Die native Rast regeneriert beide individuell. Jeder abgeschlossene Zug wurde aus der ST-Speicherung neu geladen.
+
+Nach dem ersten Gefecht meldet X die ganze Ebene als erledigt. Der Save setzt ready, die Gilde verweigert zu Recht die Auszahlung. Die eigene Teststeuerung vertraute dem falschen Marker und wiederholte die Abgabe. Später prüfte sie das tatsächliche Clear. Natürliche Vormarschansagen wurden wiederholt mit der Abreise-ID extrahiert. Ossens erzählte Dolche und Schwerter widersprechen seinem gebuchten Stab. .228 bindet Bereitschaft an die vorhandene Clear-Prüfung und liefert konkretere Orts- und Ausrüstungsdaten an die Modelle aus. Am Ende dieses Laufs ist Sektion 2 erreicht, der Wächter noch offen. [Quellen, Commit und Abrechnung](SOURCE_MANIFEST.json)

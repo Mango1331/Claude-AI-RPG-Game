@@ -24,6 +24,8 @@ test('the report is found, parsed tolerantly and removed from the visible text',
     assert.equal(r.report.time, 5);
     assert.equal(r.report.new[0].species, 'cat');
     assert.equal(extractReport('no report here').report, null);
+    assert.deepEqual(tolerantJson('{"desc":["“the one doing the chewing”"]}').value,
+        {desc:['“the one doing the chewing”']}, 'valid quoted evidence survives typographic delimiters inside the string');
     assert.equal(tolerantJson('[1,2]').error, 'report is not a JSON object');
     assert.equal(tolerantJson('{broken').error, 'report is not valid JSON');
 });

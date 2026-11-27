@@ -635,6 +635,15 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             ids = {...ids, places:[...(ids.places || []), section.id]};
         }
     }
+    const entrance = thresholdSlot(state);
+    if (entrance && Array.isArray(value.deltas)) {
+        for (const delta of value.deltas) {
+            if (delta?.type === 'creature.new' && delta.present === true && delta.across &&
+                delta.ref === entrance.ref && delta.count === entrance.count && !Object.hasOwn(delta,'anchor')) {
+                delta.anchor = entrance.anchor;
+            }
+        }
+    }
     const missing = want.filter((k) => !exp[k] || typeof exp[k] !== 'object');
     // A missing expected answer may remain incomplete, but a schema-valid partial extraction is still useful state.
     const schema = deltaSchema(vocab, ids, Object.fromEntries(Object.entries(expectedKeys || {}).filter(([k]) => !missing.includes(k))));

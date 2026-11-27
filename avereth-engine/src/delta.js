@@ -68,10 +68,11 @@ function balanced(s) {
 
 export function tolerantJson(text) {
     let s = String(text).trim().replace(/^```(?:json)?\s*|\s*```$/g, '');
+    const original = s;
     s = s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
     const noTrailing = s.replace(/,\s*([}\]])/g, '$1');
     const quotedKeys = noTrailing.replace(/([{,]\s*)([A-Za-z_][\w]*)\s*:/g, '$1"$2":');
-    for (const attempt of [s, noTrailing, quotedKeys, balanced(noTrailing), balanced(quotedKeys)]) {
+    for (const attempt of new Set([s, original, noTrailing, quotedKeys, balanced(noTrailing), balanced(quotedKeys)])) {
         try {
             const v = JSON.parse(attempt);
             if (v && typeof v === 'object' && !Array.isArray(v)) return { value: v };

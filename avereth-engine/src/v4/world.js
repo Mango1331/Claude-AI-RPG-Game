@@ -3147,6 +3147,13 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     }
 
     function arrive(id, party = [], voluntary = true) {
+        const routes=(auth.gos || []).filter(go=>go.to===id && go.followers);
+        if (voluntary && routes.length===1) {
+            const route=routes[0];
+            const companions=following(s).filter(m=>route.followers.includes(m.who)).map(m=>m.who);
+            party=route.solo ? party.filter(who=>!route.followers.includes(who))
+                : [...new Set([...party,...companions])];
+        }
         arrivals.add(id);
         sceneEpoch++;
         const town = locationOf(s, id);

@@ -813,6 +813,11 @@ const HANDLERS = {
             if (known && s.places[c.to]?.dungeon?.real && (c.gateFirst || (GATE_WORDS.test(`${wordsFor} ${c.quote || ''}`) && !entersThisDungeon(c.quote,placeName(s,c.to))))) go.way_in = true;
             if (section) go.section = section;
             Object.assign(go, stepFields(s, go));
+            const followers = following(s).filter(m=>m.standard).map(m=>m.who);
+            if (go.mode==='local' && followers.length) {
+                go.followers=followers;
+                go.solo=/\b(?:alone|on my own|by myself)\b/i.test(c.quote || '');
+            }
         }
         ctx.auth.go = go;
         ctx.auth.gos.push(go);

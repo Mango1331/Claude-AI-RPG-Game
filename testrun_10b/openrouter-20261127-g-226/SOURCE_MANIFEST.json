@@ -1,0 +1,38 @@
+{
+  "build": "4.3.0-c.6.6.226",
+  "commit": "3c022c89d284b40a30138fb4f508e4f48157f236",
+  "seed": 526138360,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "E .224 unverändert bis zum Abschluss von E6/M46; beide neuen Entscheidungen auf .226",
+  "savedMessages": 51,
+  "requests": 8,
+  "costUSD": "0.005362138",
+  "usage": {
+    "prompt_tokens": 113433,
+    "completion_tokens": 3672,
+    "total_tokens": 117105
+  },
+  "sha256": {
+    "actions.jsonl.gz": "b42a9ab407053837eff6f9e77d6709eb8ec60ff467380c90838a019229e2c9e7",
+    "chat.jsonl.gz": "7ca48a717aa419eb6041c0a0915b2324a96da0d20dffed0dc70a2b22b3fd7871",
+    "events.json.gz": "23cc11da34b7399b1236b3c027260e1111f05fdeb92ce41920dc4af8ffec8400",
+    "last-verified-world.json.gz": "f9c53d3a9b4acdebba21c0c2006163b571f49022440f01f007dccc37aa221ec5",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "8617b317548a4f001f35c40b7350a1905d6f0544582b1c188016955e25240aae",
+    "raw-85.gz": "c81b43255aac68e0ed5d592707266224dedf32397d59d457ad128add6d5f364d",
+    "raw-86.gz": "13f902005edaba3417010cdd57ec448143b4103ad2ecb2f2dd890927f8e54763",
+    "raw-87.gz": "f3630817d460e955f9008878817ff3df83b4592be0dad1ee9f7c8ee7c3879127",
+    "raw-88.gz": "fffba9888b6722dafd282fb53775aafff07efb2ca7ec4f305b0a5503df1212f9",
+    "raw-89.gz": "c10fa25f8fb7c0cdd311c96760a777b9a82012d763c79fbbb7ee893ce0f018cd",
+    "raw-90.gz": "156c45d7d89f9c096dddf1e2c1bd29da450be4d67acce3e6bd7c6cf3869b1175",
+    "raw-91.gz": "f39bdd941d292d9cda044e96b508ba40edba13bd8bfec9712e3ff0cb5a69cdcb",
+    "raw-92.gz": "2290ede094073abc5ed9559337b1e5e359f10a494c35f9b84e9bc67b82a2aba7",
+    "requests.jsonl.gz": "20ecf57467803244b5b29d84101c685fb9e062953d526b1607afbf0d05dacadc",
+    "st.log.gz": "dab51e5bbf0cd593aea9aee2d6bd4c634816f539084c63c1304e399ad84f1181",
+    "turns.jsonl.gz": "c8ee6ef3ae36e49be7ce1651e005a5f600b47fc32b537f3fdb4525c180135531",
+    "visible.json.gz": "461ebea8e60b13bc1cf2cbe6041e9964cd72d0c4a2ba9aba2ed5d2b703689528"
+  }
+}

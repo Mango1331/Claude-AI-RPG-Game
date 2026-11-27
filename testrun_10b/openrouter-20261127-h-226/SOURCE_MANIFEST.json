@@ -1,0 +1,34 @@
+{
+  "build": "4.3.0-c.6.6.226",
+  "commit": "3c022c89d284b40a30138fb4f508e4f48157f236",
+  "seed": 3509323178,
+  "model": "openai/gpt-4.1-mini",
+  "provider": "openai",
+  "reasoning": null,
+  "st": "1.19.0",
+  "prefix": "User14 M0–14, Modellvergleich GPT-4.1 mini",
+  "savedMessages": 19,
+  "requests": 4,
+  "costUSD": "0.0190536",
+  "usage": {
+    "prompt_tokens": 56478,
+    "completion_tokens": 429,
+    "total_tokens": 56907
+  },
+  "sha256": {
+    "actions.jsonl.gz": "1705ae755bfae0bcbecf10c43fa165676b08aa8b27f3fa6d727a4367a883294a",
+    "chat.jsonl.gz": "ecbf6798a64e60c75c9a4def3457433f059a9afe563ca4b017091d80e89b2595",
+    "events.json.gz": "3b111a9c2df6c5cd9491471eb2819356abae3cd583c3065ce2e61f4ca0a58c4a",
+    "last-verified-world.json.gz": "f502d9c59bd7fa45977d27dbc3f910f7f02961213d2e5854877fcee9a5f8a4fd",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "bba530150e9edbaea10b733e1347abf4567da0980b09ba33bcf536ec14d5032c",
+    "raw-93.gz": "10fb170f907b831f5efce7fba69a716fd007bb328af8b05d5511e0389994921f",
+    "raw-94.gz": "c1bc28ee914b9df7fccd2252fa42b560dadbd11c7dbc3ba60e82276c3de0d5e0",
+    "raw-95.gz": "4a7ea9b6377ed528e20c2ed40b659ec20490c538f98fea44e71cf9a570d74617",
+    "raw-96.gz": "433a1c9940838de8232a109288a494aa85b710256a8e9cd92969faf032321768",
+    "requests.jsonl.gz": "901c6405b198e292d5c40dc6339dd1ab99eceded6514cd3c1c9f2a4cdad948de",
+    "st.log.gz": "1603d7c7d505d5d14ccdcf213162ba0dfdb007732eb93c96ee33c3159dba7045",
+    "turns.jsonl.gz": "ee09abe029860b052354d8525ae15d93b9b7ce815d76f480d5d9241afa313b7c",
+    "visible.json.gz": "b3477f274d0a4cee93f8fe2572e1f8f43136a4cfa31adf415dc9f9c43746db11"
+  }
+}

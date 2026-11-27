@@ -1,0 +1,3 @@
+# Benannter Dungeoneintritt im Modellnachtest
+
+Der exakte gespeicherte Stand nach Lauf E, Zug 6, und derselbe Eintrittswunsch wie im fehlgeschlagenen E7. Der neue Planner wählt den richtigen Dungeon. Die Engine bucht die erste Sektion, Verbindung und Dungeonfortschritt. Im Innern beschreibt N zwei weitere Goblins in der Galerie. X meldet sie als Blick über die Schwelle mit paraphrasierten Belegen. Die Außenbeobachtungsregel weist diesen separaten Vorgang zurück. Folgeschritt und Gegnerzustände stehen im Weltabbild des zweiten Zugs. Diese Sichtung innerhalb eines bereits betretenen Dungeons ist ein eigener offener Befund. [Archiv](SOURCE_MANIFEST.json)

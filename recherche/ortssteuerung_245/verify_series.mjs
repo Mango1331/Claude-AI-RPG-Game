@@ -32,7 +32,7 @@ for(const run of runs){
     const original=foldChat(source), seeded=foldChat(initial);
     assert.deepEqual(original.errors,[]);assert.deepEqual(seeded.errors,[]);
     assert.deepEqual(original.state,seeded.state);
-    assert.deepEqual(seeded.state,JSON.parse(gz(dir,'world-0.json')));
+    assert.deepEqual(JSON.parse(JSON.stringify(seeded.state)),JSON.parse(gz(dir,'world-0.json')));
     assert.equal(digest(JSON.stringify(seeded.state)),profile.initial.world);
     if(start.parent.includes('verified turn')){
         const n=Number(start.parent.split(' ').at(-1));
@@ -40,7 +40,7 @@ for(const run of runs){
         assert.equal(initial.length,target.messages);
         assert.equal(profile.initial.world,target.world);
     }else if(!start.parent.includes('before input')){
-        assert.deepEqual(original.state,JSON.parse(gz(parent,'last-verified-world.json')));
+        assert.deepEqual(JSON.parse(JSON.stringify(original.state)),JSON.parse(gz(parent,'last-verified-world.json')));
     }
     const requests=rows(dir,'requests.jsonl'), done=requests.filter(r=>r.kind==='end');
     assert.equal(done.length,manifest.requests);assert.equal(requests.length,2*done.length);
@@ -54,7 +54,7 @@ for(const run of runs){
     assert.equal(cost,Math.round(Number(manifest.costUSD)*1e9));
     nanoDollars+=cost;
     const final=foldChat(rows(dir,'chat.jsonl').slice(1));
-    assert.deepEqual(final.errors,[]);assert.deepEqual(final.state,JSON.parse(gz(dir,'last-verified-world.json')));
+    assert.deepEqual(final.errors,[]);assert.deepEqual(JSON.parse(JSON.stringify(final.state)),JSON.parse(gz(dir,'last-verified-world.json')));
     console.log(run,initial.length,done.length,(cost/1e9).toFixed(9));
 }
 assert.ok(nanoDollars<=1e9);

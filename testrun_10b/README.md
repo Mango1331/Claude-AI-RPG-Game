@@ -2,6 +2,8 @@
 
 **Neue Runs werden im jeweils eigenen Ordner vollständig archiviert.** Persönliche Usertests: Nach dem Upload der Originale erstellt GPT unmittelbar den Runordner auf main, sichert Originalchat, Eventexport, ST-Log und unverändertes Spielerfeedback (ggf. dokumentierte lokale Pfadredaktion), prüft die Quellen und veröffentlicht seinen unabhängigen Review. Danach folgt Codex' unabhängiger Gegenreview im selben Ordner. Ergänzende Nutzerideen werden getrennt von bestätigten Befunden und von freigegebenen Designentscheidungen dokumentiert. Implementierung erst nach gemeinsamer Patchentscheidung; keine Produktänderungen während der Archivierung. Dieser Index wird **pro Etappe** ergänzt, nicht nach jeder Einzelantwort. Originalchats, Providerlogs, Screenshots, Messwerte und Reviews nicht in der Status-/Fachübersicht wiederholen.
 
+**Modellserie ab .245.** Der [Fachbericht mit Laufverzeichnis](../recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md) verbindet die Gasthaus-, Party-, Ausbildungs- und Abenteuerläufe mit ihren jeweiligen Elternständen.
+
 | Etappe | Runordner und Auswertung |
 |---|---|
 | **.236–.244 · Party und exploratives Spiel** | [Archivregister, Originalmessungen und Auswertung](../recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md#modellläufe-und-messwerte) |

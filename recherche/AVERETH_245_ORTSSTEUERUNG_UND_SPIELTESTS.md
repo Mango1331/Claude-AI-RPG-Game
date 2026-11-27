@@ -1,4 +1,4 @@
-# Avereth .245–.249 · Bekannte Wege, Partyhandlungen und tatsächliche Spielverläufe
+# Avereth .245–.250 · Bekannte Wege, Partyhandlungen und tatsächliche Spielverläufe
 
 ## Gegenreview auf .244
 
@@ -15,6 +15,7 @@
 | .247 | Den tatsächlich gewählten Zugang zum soeben bezahlten Zimmer an die gebuchte Leistung binden. Bestehende freiwillige Mitgliedschaften können dieselben Organisationsaktionen verwenden. | [c954742a](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c954742a98da31bcb56e70d708c278e67d3495e4) |
 | .248 | Für ein lokales GO die tatsächlich anwesenden Standardbegleiter festhalten. Bei bestätigter freiwilliger Ankunft die immer noch folgenden Teilnehmer mitnehmen, auch wenn X sie auslässt. Alleingehen und erzwungene Bewegung gesondert behandeln. | [a9471388](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/a9471388e98410bd4a33e15b34a1afa2f45c629e) |
 | .249 | Bei einem einzigen GO mit ausdrücklicher organisatorischer Einleitung die Erklärung des Spielers und die anschließende eigene Bewegung getrennt an die vorhandenen Handler geben. Hazel lieferte das Original für Wiederaufnahme und Aufbruch. Die Auflösung mit eigenem Aufbruch ist zusätzlich synthetisch geprüft. | [c9891834](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c9891834fd88d859c8a5e45a87d1e87464fabbff) |
+| .250 | Rückkehr zu einem Standardbegleiter, der beim letzten lokalen Wechsel am Ziel zurückgeblieben ist. Beobachteter Ort und gespeicherter NPC-Aufenthalt müssen übereinstimmen. Er wird erst am Ziel wieder angetroffen und erhält keine Mana-Regeneration für den Weg dorthin. Juniper mit unverändertem P/N/X war vor der Korrektur rot und danach grün. | [b67de589](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b67de58941526d877964a0e669ccbb8b4ef0fb68) |
 
 **Bedienung.** Im Ortsbereich „Bekannte Wege“ ein erreichbares, zuvor besuchtes Ziel wählen, alternativ direkt `#go <Orts-ID>` senden oder die Bewegung ausspielen. Im Freitext bleiben Fenster, Tresen und andere Standpunkte gewöhnliche Bewegung innerhalb der Szene. Ein bekanntes Gasthaus oder ein Markt mit eigenem Szenenzustand erhält beim tatsächlichen Wechsel einen GO-Schritt. Ein ausdrücklich bezogenes Zimmer darf als neuer relevanter Ort entstehen. Die Engine führt keinen neuen Graphen und migriert keine bestehenden Räume. Eine Ortsauswahl löst keinen Kauf, Angriff oder Schlaf aus.
 
@@ -36,4 +37,10 @@ Die Mutterläufe liefern die Vorgeschichte. Jeder neue Arm übernimmt seine voll
 | Noch getrennt bewerten | Eine größere Gruppe, erneute Kapitulation und eine andere Modellroute benötigen jeweils eigene Spielbelege. Eine erfolgreiche technische Regression ersetzt diese Spielerfahrung nicht. |
 
 **Kleine RPG-Bedienhilfen.** Das bestehende Handels-HUD zeigt konkrete Angebote mit Gegenpartei, Zeile und Preis und hat in Willow eine angebotene Mahlzeit tatsächlich gebucht. Bei mehreren gleich nahen Schildkröten hat die Engine die drei konkreten Optionen angezeigt und keine Ressourcen verbraucht. Der Spieler kann ein bestimmtes Ziel nennen oder im Kampf auswählen. Eine erneute Frage nach demselben „nächsten“ Ziel bringt keine zusätzliche Information. Eine direkte Auswahl schon bei der ersten Klärung vor Kampfbeginn wäre eine sinnvolle spätere Bedienverbesserung. Beim Lernen lassen sich Quelle, aktuelle LP und Zielwert am bestehenden Lernziel ablesen. Ein weiterer Vertrag oder ein eigener Modellaufruf pro Lernfortschritt ist dafür nicht erforderlich.
+
+## Installation seit persönlichem Build .220
+
+SillyTavern schließen und den persönlichen Save sichern. Aus dem Produktcommit den vollständigen Ordner `avereth-engine` in das bestehende Extension-Verzeichnis kopieren. Bei benutzerspezifischer Installation liegt es unter `SillyTavern/data/<user>/extensions/avereth-engine/`, bei globaler Installation unter `SillyTavern/public/scripts/extensions/third-party/avereth-engine/`. Die vorhandene Installation ersetzen, damit ST die Erweiterung nur einmal lädt. Danach ST starten, den Browser vollständig neu laden und Version, lokales Partyfenster und Ortswähler prüfen. Der Ortswähler setzt einen bekannten Rückweg voraus.
+
+Für ein manuelles Dateiupdate enthält der Installationsdiff alle Änderungen seit .220. Neben den Extension-Dateien müssen Card, separat importierter Narrator Contract, Preset, Lorebook und Regex nicht erneut importiert werden. [Vollständiger Installationsdiff](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/cc327a1ae44b0aac3605f416078c693b2600ffff...b67de58941526d877964a0e669ccbb8b4ef0fb68) · [Produktdiff ab .244](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/630abc2099b28155dae5ea573d0c8fbf08156086...b67de58941526d877964a0e669ccbb8b4ef0fb68)
 

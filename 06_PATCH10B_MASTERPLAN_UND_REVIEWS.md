@@ -4,6 +4,7 @@ Nur **abgeschlossene Entwicklungs-/Forschungsetappen** werden hier aufgenommen; 
 
 | Etappe | Fachlicher Abschluss und Gegenreview | Originale / Abnahmen |
 |---|---|---|
+| **.245–.250 · Bekannte Wege und gemeinsame Ortswechsel** | [Fachbericht, Abnahme und Installation](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md) | [Prüfprogramm](recherche/ortssteuerung_245/verify_series.mjs) |
 | **.236–.244 · Party und exploratives Spiel** | [Dauerhafte Party und Dungeonzugang](recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md) | [Spielarchive](testrun_10b/README.md) |
 | **.222–.235 · R1 und echte Party-Spielserie** | [Fachbericht und Entscheidung zu User17](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) · [Gegenreview R1–R4 und Party-Entscheidungsvorlage](recherche/AVERETH_235_PARTY_GEGENREVIEW_UND_ENTSCHEIDUNGSVORLAGE.md) | [Prüfbare Originalarchive je Versuch](recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) |
 | **.221 · Szene, Wahrnehmung, Erinnerung und Rast** | [Fachbericht und Abnahme](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md) | [Originalfall User16](testrun_10b/user-20261126-233937-220/README.md) |

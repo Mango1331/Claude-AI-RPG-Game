@@ -12,6 +12,12 @@ Der Kanon dokumentiert die Spielregeln des eingefrorenen Produkts `.200` und ken
 
 Die Raststeuerung zeigt die vorhandenen Ausführungssperren an und wird nach Weltabgleich und Speicherung wieder bedienbar. [Fachbericht und Abnahme](recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md)
 
+## Ortswahl und gemeinsame Wege ab Entwicklungskandidat .245
+
+Alaric kann einen bereits besuchten und aus seiner aktuellen Umgebung erreichbaren Ort im HUD wählen oder das Ziel im Spiel benennen. Ein gewöhnlicher Standpunkt innerhalb derselben Szene braucht keine eigene Orts-ID. Ein Zimmer mit eigenem Personenbestand und eine öffentliche Gaststube bleiben getrennte Orte. Belegte Hindernisse, Dungeonzugang, Reisezeit und Ereignisse gelten auf beiden Eingabewegen.
+
+Eine freiwillige Einladung lässt sich mit einem gemeinsamen Aufbruch verbinden. Ein ausdrücklich nur gemeinsam gewählter Weg setzt die Aufnahme voraus. Ein unabhängig gewählter eigener Weg bleibt nach der Ablehnung möglich. Warten, Wiederaufnahme und Auflösung richten sich nach dem bestehenden Partyzustand. Bei einem bestätigten lokalen Wechsel begleiten tatsächlich anwesende Standardmitglieder im Folgemodus Alaric, sofern er gemeinsam aufbricht. Alleingehen, reale Trennung und individuelles Eigentum bleiben wirksam. [Produktstand und Abnahme](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md)
+
 ## Dauerhafte Party ab der Serie .236–.244 [VERBINDLICH]
 
 Eine freiwillig gebildete Party kann zusammen reisen, kämpfen und mehrere Aufträge übernehmen. Der erfolgreiche Abschluss eines Auftrags beendet die Mitgliedschaft nicht. Spieler und NPC können die Zusammenarbeit beenden. Der Zweck der ursprünglichen Einladung ist für weitere Unternehmungen unerheblich.

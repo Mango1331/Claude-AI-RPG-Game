@@ -1,0 +1,40 @@
+{
+  "build": "4.3.0-c.6.6.250",
+  "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Pine am bytegeprüften unterbrochenen Diskchat. Ein gezielter nativer X-Retry und Fortsetzung nach Wiederaufnahme.",
+  "savedMessages": 25,
+  "requests": 5,
+  "costUSD": "0.003464742",
+  "usage": {
+    "prompt_tokens": 72491,
+    "completion_tokens": 2613,
+    "total_tokens": 75104
+  },
+  "sha256": {
+    "actions.jsonl.gz": "022729d93b7d99a7c80846f00e3aa148361bc67f1d7b7827370f4ed441d5fb9d",
+    "chat-0.jsonl.gz": "b993e2f690243fd6a4b099ae7930e95b8059d80dc375b77fe12e454c144baac9",
+    "chat.jsonl.gz": "ad3e98ae666f558149e256e21e826a10a758e7983efd6a55bb440dc831ead015",
+    "events.json.gz": "5718e97b6ce597272ddcc8f95b17f57f4e5b6eb3e6612e7c605d5eb24b3c8e1d",
+    "explore.log.gz": "ce15db53f84347726dc2ca2c81c2cb68ac0bf492ad13abc98cd267d2c13874e6",
+    "last-verified-world.json.gz": "9324f1b6b119f4773f0f838a5c8dc5ead30cdfa9e2fa9aa9e2fbc87b04c6b7f4",
+    "parent-check.json.gz": "69297fca04d6ccf00f17f6baf1bf8723a4de8c3941a91360bb2639aa48f89822",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "06c91fcfc2d22bd894034c715073076866720116bc4e44e3823f9c42019a88b9",
+    "raw-336.gz": "46abb8c9c7bbf35e154d0dd00003b6ebfae3b96a0d034e56721dbcbf39ab56e5",
+    "raw-337.gz": "b97a9b91df85cb284b71ea6c524bf4d422461c95867f9baf85cf3eddb646dba5",
+    "raw-338.gz": "f271122d7aecdbc3488571a9d88c5ca0fe1fee39aa487dcd92f54c9ece678fa2",
+    "raw-339.gz": "f4943a76205f9c488b5ff23f9a321f69705c2a8bb5484be797e7b52882c8eb9d",
+    "raw-340.gz": "0febc42f5ad6fe2f3d5bc0fed6cb4cb63fed7318550c50e54e94924cf55a71f3",
+    "requests.jsonl.gz": "3fc03f3758cdc6bca87462669ba6d508021f97b1e8ee3cbafc703d70996b58b4",
+    "response.json.gz": "90c8a7c96f4f1c3b5ee266253a0858a30bf6a481822da4b0afb0f22094156df2",
+    "st.log.gz": "c51e83c728f586b57e80f2e9de4ca97783c968ba3f361ff438d99175d317e2dd",
+    "turns.jsonl.gz": "082b5e91c523160b42bc3bacdc1329f4213144c3aae82cb75b1dcf0ad7b2c6b5",
+    "visible.json.gz": "dd7713c0bd1a5da77a00d2f4cd3c6ba7f5aed63ec1265dc53668a723cc70c154",
+    "world-0.json.gz": "3ef4b10916fbbaf6f52fa23ec53063c06c5ea70e8181ec82f714f8f943eeab3f"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "build": "4.3.0-c.6.6.250",
+  "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "AI vor Klassenwahl. Neuer Ranger, Ausrüstung und Fletscherei, eigene Spurensuche ohne Gildenauftrag.",
+  "savedMessages": 5,
+  "requests": 0,
+  "costUSD": "0",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "sha256": {
+    "actions.jsonl.gz": "106630f9293c45f310eb91e018e2d2ac85930c82676e31c61fa62de0ce88711e",
+    "chat-0.jsonl.gz": "18654c2acd567962d691ecb1355cd54209391456a0a9e44af9654a8a48f5ceeb",
+    "chat.jsonl.gz": "b2afd476f98091700d46a87e55b98e3b1907676e6b2cf6df3bbbef4a0903a490",
+    "events.json.gz": "f7fbe265aa6f1ea66a8ba6b9354751cd0a21ff94864336939c3cb355155ce844",
+    "explore.log.gz": "7bfaf1f727d94700eb321668393fff7ed0bbaecc311a13e44bbecc8c8527aa42",
+    "last-verified-world.json.gz": "4dd4a3f38455ec95ca36828ff2c8e9bcadd3a825288c11e11046528b37ba8cc5",
+    "parent-check.json.gz": "013fbc7d1f27b2738a01fc58228daee42e38ee418bd6fa8d6b6acb024bf96333",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "b29d0644115d095e2cc8f592c687b331e0d032885fd28ddd7bf9832c7c528214",
+    "requests.jsonl.gz": "34d5848c995803cfd00c2f7f02d807e2069b51ffca60a40f05d2d7229ef13b69",
+    "response.json.gz": "9c7f8e03683457fcce9e6779180947e7dc664b0803e76b7e812e82d3d6e867c6",
+    "st.log.gz": "954361362a2f05066bdd12e95738819cd68fb6752c380604f1e299b40201716e",
+    "turns.jsonl.gz": "1b7c747aeb7eadcd3b6b4729fe0e43a1046ac6c8a96b8ba2225f0fce00155a1d",
+    "visible.json.gz": "b501281dce219cda7b11ec4a2b8386d1fd28c00134c1f6969807fdd011cdee58",
+    "world-0.json.gz": "18ae070405a1239cfff57c50701c5edfc5c2a85c694f24c8cd4d6e6b3df183e5"
+  }
+}

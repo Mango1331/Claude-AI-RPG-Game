@@ -39,6 +39,10 @@ for(const run of runs){
         const target=rows(parent,'turns.jsonl').find(x=>x.n===n).checked;
         assert.equal(initial.length,target.messages);
         assert.equal(profile.initial.world,target.world);
+    }else if(start.parent.endsWith(' interrupted disk')){
+        const browser=JSON.parse(gz(parent,'interrupted-browser-chat.json'));
+        assert.equal(digest(JSON.stringify(foldChat(browser).state)),digest(JSON.stringify(original.state)));
+        assert.equal(source.at(-1).extra.avereth.extraction.status,'failed');
     }else if(!start.parent.includes('before input')){
         assert.deepEqual(JSON.parse(JSON.stringify(original.state)),JSON.parse(gz(parent,'last-verified-world.json')));
     }

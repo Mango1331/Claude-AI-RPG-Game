@@ -1,0 +1,35 @@
+{
+  "build": "4.3.0-c.6.6.250",
+  "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+  "seed": 3509323178,
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "AI vor Klassenwahl. Regulärer Rogue-Start, Handel und Erkundung am Wasser ohne Gildenauftrag.",
+  "savedMessages": 5,
+  "requests": 0,
+  "costUSD": "0",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "sha256": {
+    "actions.jsonl.gz": "cc08536b2e966ede3367963509884a3214468686a01c8b77336236c424a98659",
+    "chat-0.jsonl.gz": "e2ca0085e2ccfe57a9ca968b93246c341372029e71c2febb1c39605a3135434f",
+    "chat.jsonl.gz": "249ca63de95dd248da774a72db7b14bc206b9ed22a2bf59ecb6622bf90f2f9ad",
+    "events.json.gz": "83498e8ab581d3521394990e741ce4b983a511c449d84645069f3c2d87f0c996",
+    "explore.log.gz": "3431d8950c67561fa97e36baa6d16059f0947eee1c38966454a186265af442ae",
+    "last-verified-world.json.gz": "3276c689de44bbd7ea55d63f3a4eba31e4cd334d0c201582553eff6a1fdf6a30",
+    "parent-check.json.gz": "013fbc7d1f27b2738a01fc58228daee42e38ee418bd6fa8d6b6acb024bf96333",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "b29d0644115d095e2cc8f592c687b331e0d032885fd28ddd7bf9832c7c528214",
+    "requests.jsonl.gz": "34d5848c995803cfd00c2f7f02d807e2069b51ffca60a40f05d2d7229ef13b69",
+    "response.json.gz": "a3319036ddfb261386d0747d8dd0932f45a1758016279f0b9911b217e36730c6",
+    "st.log.gz": "a188c7f9ddf75dd1ad1ffb023e86934f328383e36f9e7416b96cbccba73f5cc6",
+    "turns.jsonl.gz": "7e3295769d315975af0dc7e88a77551e6ccf7cd08de6787ddddc0e7798001f61",
+    "visible.json.gz": "5d64f627aaeecfdbb3b05b8d5f9727c5d5115fff64ec880b7517aec49d164d1e",
+    "world-0.json.gz": "18ae070405a1239cfff57c50701c5edfc5c2a85c694f24c8cd4d6e6b3df183e5"
+  }
+}

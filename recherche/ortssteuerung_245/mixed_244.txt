@@ -1,0 +1,12 @@
+mode undefined decision accept local NPC call false
+accept joint context
+mode undefined decision accept local NPC call false
+accept independent context
+mode undefined decision decline local NPC call false
+decline joint context
+mode undefined decision decline local NPC call false
+decline independent context
+mode undefined decision counter local NPC call false
+counter joint context
+mode undefined decision counter local NPC call false
+counter independent context

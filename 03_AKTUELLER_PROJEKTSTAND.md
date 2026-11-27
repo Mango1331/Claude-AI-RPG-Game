@@ -1,12 +1,12 @@
 # Avereth Engine – aktueller Projektstand
 
-**.244 ist der Kandidat für den unabhängigen GPT-Gesamtreview.** Die dauerhafte Party hat den Old-Crown-Auftrag gemeinsam abgeschlossen und eine zweite Unternehmung angetreten. Der Eintritt durch das beobachtete Mossback-Tor ist mit denselben individuellen Gegnern erneut geprüft. Die offene Rückkehr aus einem separat gespeicherten Gasthauszimmer verhindert eine allgemeine GO-Empfehlung für Usertest 17. Über den persönlichen Test entscheidet der Nutzer nach dem Diffreview. [Fachbericht, Spielarchive und Installation](recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md)
+**.250 ist der Kandidat für den unabhängigen GPT-Gesamtreview vor Usertest 17.** Das getrennt gespeicherte Gasthauszimmer lässt sich über Freitext und die Ortswahl verlassen. Madge, Mahlzeit, Markt und die tatsächlichen Mitreisenden wurden im Modellspiel geprüft. Dieselbe Party hat zwei Gildenaufträge abgeschlossen. Der gekaufte Primer führte im fortgesetzten Spiel zum erlernten und benutzten Heilskill. [Gegenreview, Originalarchive, Abnahme und Installation](recherche/AVERETH_245_ORTSSTEUERUNG_UND_SPIELTESTS.md)
 
 ## Aktuelle Referenzen
 
 | Zweck | Verifizierte Referenz |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`630abc20`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/630abc2099b28155dae5ea573d0c8fbf08156086) · Build `4.3.0-c.6.6.244` |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [`b67de589`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/b67de58941526d877964a0e669ccbb8b4ef0fb68) · Build `4.3.0-c.6.6.250` |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 

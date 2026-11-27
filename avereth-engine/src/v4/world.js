@@ -1982,9 +1982,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
 
     // 3. what the extractor answered about the player's commands
     step = { kind: 'expected' };
+    let standpoint = null;
     for (const [k, type] of Object.entries(outcome.expected_keys || {})) {
         const e = expected[k];
         if (!e) continue;
+        if (type === 'approach' && String(auth.approach?.seq) === k) standpoint = e.standpoint;
         if (explicitTravel && type === 'go' && e.arrived === true && !answer.deltas.some(d => d.type === 'arrive' && samePlace(s, d.at, e.at, content))) {
             reject({ seq: Number(k), type: 'expected' }, 'arrival_evidence', 'reported arrival has no corresponding arrive delta; movement was not booked');
             corrections.push('An arrival was reported without its arrive event. Use the confirmed location; no implicit travel was booked.');
@@ -2206,7 +2208,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     // Arrival resets visibility as always. Only now, after this room's complete population (including
     // the Living Dungeon fallback), can the existing opposed Stealth check resolve this one GO.
     const approach = auth.approach;
-    const standpoint = approach && expected[approach.seq]?.standpoint;
     const local = approach && approach.at === s.scene.at && !s.encounter && typeof standpoint === 'string'
         && standpoint.length <= 400 && sceneMatches(answer.scene) && !travel.some(t => !t.ok)
         && narratedEvent(prose, standpoint).ok;

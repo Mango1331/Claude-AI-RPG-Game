@@ -132,7 +132,7 @@ test('c.6.6 journeys: a delivery that is READY has reached its destination; the 
 
 // ------------------------------------------------------------------------------------------------ 9, 10. route, sight
 test('c.6.6 route and sight: the planner keeps the destination and leaves the route to the story; the extractor reports no arrival for a place he only sees', () => {
-    assert.match(MECH_RULES, /7b\. go\.to is the destination, never the way there\./);
+    assert.match(MECH_RULES, /For a journey or crossing, go\.to is the destination, never the way there\./);
     assert.match(MECH_RULES, /A route is never a place of its own\./);
     const go = content.deltaVocab.expected.go.summary;
     assert.match(go, /arrived is true only when the reply ends with him at the place \(seeing it ahead or passing it is false\)/);

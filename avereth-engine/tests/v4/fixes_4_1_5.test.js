@@ -100,7 +100,7 @@ test('a quest note drops what is the engine\'s (status, payout, XP, rank) and ke
     const note = "Contract registered and active; payout 60 cp from the Alderwatch drawer. Proof at turn-in: boar tusks, or Harl Cotter's own mark signing for them alive or dead. Cotter has already gone through three adventurers this season; the boars return after dark and he has lost patience.";
     const detail = (s, n) => applyWorld(after(s), content, { expected: {}, deltas: [{ seq: 1, type: 'quest.detail', quest: 'quest.boars', note: n, schedule: null }] }, { msg: 9 });
     const r = detail(listed, note);
-    assert.deepEqual(r.state.quests['quest.boars'].details.map((x) => x.note), ["Proof at turn-in: boar tusks, or Harl Cotter's own mark signing for them alive or dead. Cotter has already gone through three adventurers this season; the boars return after dark and he has lost patience.".slice(0, 200)], 'a note keeps 200 characters');
+    assert.deepEqual(r.state.quests['quest.boars'].details.map((x) => x.note), ["Proof at turn-in: boar tusks, or Harl Cotter's own mark signing for them alive or dead. Cotter has already gone through three adventurers this season; the boars return after dark and he has lost patience."], 'the complete remaining story clauses survive');
     assert.ok(r.corrections.some((c) => /is still LISTED on the Guild board: Alaric has not accepted it/.test(c)), '4.1.4: stored as memory, no correction');
     // the claim is true: nothing to correct
     const active = contract(structuredClone(base), 'quest.boars', boarListing, 'active');

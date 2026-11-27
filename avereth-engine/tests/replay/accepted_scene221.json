@@ -1,0 +1,457 @@
+{
+  "inherits": "accepted_travel220.json",
+  "cases": {
+    "b16-rogue-sale#12": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.thin_the_stranglewillow_sprouts at event 2: 200 → 405 characters. Exact formerly omitted suffix: \"low ground. The ditch-bank mud takes boots. The sprout is a wet-ground plant-beast, arthropod-bodied, root-hands and woody hide; it won't chase far from its water, so withdrawing briskly is a sound tactic.\". All other fields equal .220.",
+      "fingerprint": "sha256:a21d75190afd184b20fc7b96feca7e541559bcfc65906a7d919e985eeeb4e2ad"
+    },
+    "b16-rogue-sale#18": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t8.1 at event 4: 200 → 233 characters. Exact formerly omitted suffix: \" reach and cannot land from here.\". All other fields equal .220.",
+      "fingerprint": "sha256:de1b696c7ac321e28256a9b274886fa083ed22c34ee6e1a768173a117eb2c101"
+    },
+    "b16-rogue-sale#26": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_gravel_bar_otterhounds at event 2: 200 → 344 characters. Exact formerly omitted suffix: \"aken bait off hooks and fingers off drunkards wading at the weir. Ferrymen's client money is already in the till; payment guaranteed on turn-in.\". All other fields equal .220.",
+      "fingerprint": "sha256:1d01dcc721262751e90b5b6771539c0d534ff19e80a0bd8a3c173465012dca23"
+    },
+    "b16-rogue-sale#28": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_gravel_bar_otterhounds at event 10: 200 → 324 characters. Exact formerly omitted suffix: \". They lie flat on the bars in sun or in their holes; keep off the wet stones — they hear a footstep on them a long way off.\". All other fields equal .220.",
+      "previous": "sha256:bd8063cc3551d24f6dac84834bd5e0fe7426b72f8901dd56582603eb0f3346d9",
+      "fingerprint": "sha256:35c7458b27591de8270c99c4ab92e69d6aa0472c6034ef345aeca08fab510bd5"
+    },
+    "b17-mage#10": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.a_wolf_at_the_turnip_rows at event 2: 200 → 295 characters. Exact formerly omitted suffix: \"he deep wood. If a second wolf or tracks of more than one are found, walk away and report back.\". All other fields equal .220.",
+      "fingerprint": "sha256:263258a275004015927f0589ffd0bfb62eaf37b55c1db0c40fc016a740008307"
+    },
+    "b17-mage#74": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.take_the_starved_yearling_at_the_lowfields_crofts at event 1: 200 → 229 characters. Exact formerly omitted suffix: \"d stupid but still dangerous.\". All other fields equal .220.",
+      "fingerprint": "sha256:0ae75b48ff1634f8927ee0e20138a59ab681318b033f127e88e2b72157b70847"
+    },
+    "b17-mage#76": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.take_the_starved_yearling_at_the_lowfields_crofts at event 9: 200 → 306 characters. Exact formerly omitted suffix: \"h; nobody is keen to go looking. It is not afraid of the crofters anymore; careful near the well at night.\". All other fields equal .220.",
+      "previous": "sha256:fdcf4ca909896703ff34c42d6713df94b4cce50aae3c818842aa238a284d3d23",
+      "fingerprint": "sha256:7ebf8ccf5867ae76eb6c94c5a43a6a6a1d40126645b96b74e55cc1171ac11135"
+    },
+    "b17-mage#86": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.clear_the_fen_adders_from_the_eel_weirs at event 1: 200 → 243 characters. Exact formerly omitted suffix: \"walk if the flood channels haven't shifted.\". All other fields equal .220.",
+      "fingerprint": "sha256:36d824987a3154b395e0c500ff349c1afe3a3211cc2aab9f948fe2cd57c37c9a"
+    },
+    "b17-mage#98": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t40.1 at event 2: 200 → 208 characters. Exact formerly omitted suffix: \"an once.\". All other fields equal .220.",
+      "fingerprint": "sha256:1783f2577d74ef067c04f5d717607eeca93bbb79b686620e9536e4fca5f65a6b"
+    },
+    "b17-mage#120": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.clear_the_fen_adders_from_the_eel_weirs at event 12: 200 → 285 characters. Exact formerly omitted suffix: \"e hollow — a wounded adder goes down the stool's core and is a hazard at hay-cutting.\". All other fields equal .220.",
+      "previous": "sha256:a340bf5fc9313dd491ff8ecb61b9cb692f13d5fe5b7d13d2b19b9cbaee9e4913",
+      "fingerprint": "sha256:e36feb49064b00e7821b1c18bec88489ef74f732994a7a06457524d7b0870857"
+    },
+    "b17-rogue#12": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.take_the_garden_serpent_of_millrace_lane at event 1: 200 → 281 characters. Exact formerly omitted suffix: \" about — they've been complaining all week. Guild pays on the slip, nothing else.\". All other fields equal .220.",
+      "fingerprint": "sha256:d1953a9053c03512f15fcc1d55338644ea20c8b33fa3c0af22d768e05586efed"
+    },
+    "b17-rogue#14": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.take_the_garden_serpent_of_millrace_lane at event 15: 200 → 241 characters. Exact formerly omitted suffix: \"artled and returns to the rock by midday.\". All other fields equal .220.",
+      "previous": "sha256:28403ddca377ceb1ec3b4ac345592f1943164f16868d10ea2877dc1eb4f794f3",
+      "fingerprint": "sha256:f94d5f667a46c1bc7a7782b9c1d36c13c5b1d5babe71e097739fdd3d64900c09"
+    },
+    "b17-rogue#104": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.snake_at_the_washing_stones at event 1: 200 → 407 characters. Exact formerly omitted suffix: \" flat rock where the linen is beaten. Yellow-banded, thick as a forearm, long as a man is tall. In the water it is quicker than expected and wet rock is slippery. A bench on the dry bank is free for waiting.\". All other fields equal .220.",
+      "previous": "sha256:5085dde58244663d38df03232c882c9bbcb489bb655bf839d20c43c40e669f12",
+      "fingerprint": "sha256:6e9a1f0af8911a416005ccf97eb3e956da3d106fa09eebe04909a12f89de88c5"
+    },
+    "b17-rogue#120": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_bog_striders_at_the_eel_weirs at event 1: 200 → 285 characters. Exact formerly omitted suffix: \"ing that way. Warning: striders are quick on their legs and the flats are soft going.\". All other fields equal .220.",
+      "fingerprint": "sha256:a23d4a4057d59b6ce7bb3251eb92eee977d55bc5b27aced365efc2b0e1e32424"
+    },
+    "b17-rogue#122": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t54.1 at event 5: 200 → 203 characters. Exact formerly omitted suffix: \"ing\". All other fields equal .220.",
+      "previous": "sha256:173c333450b62a40c3bf702cbf99872a0e85980a5313b59f05bd559e38ef37ae",
+      "fingerprint": "sha256:322638f6d3c794832ed4d9aeef9f8ae859c654bf0f00408b8c1bc1f96adbb3da"
+    },
+    "b17-rogue#130": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t56.1 at event 7: 200 → 219 characters. Exact formerly omitted suffix: \"h tracks lead away.\". All other fields equal .220.",
+      "previous": "sha256:71724b9232f8e907e39192e8278ab7dad22d81419a239ad5684f3ca201b0a5b7",
+      "fingerprint": "sha256:378c83b2db15bec055973530ec4bdbecf4e69d61af734e0bc1e13405e314528c"
+    },
+    "b17-rogue#160": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.clear_glimmerdeep_grotto_level_1_2 at event 1: 200 → 228 characters. Exact formerly omitted suffix: \"attled from level one alone.\". All other fields equal .220.",
+      "fingerprint": "sha256:6d47b0b5a0a0ab97dc8c4015ca771bcd6e02f5c36efa4087123267743ecd1dbc"
+    },
+    "b17-rogue#236": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t102.1 at event 6: 200 → 213 characters. Exact formerly omitted suffix: \"ailing light.\". All other fields equal .220.",
+      "previous": "sha256:403e053a5a179c4fd8f056d6756e7f6243a88933153c162a0da1375c0503ecc2",
+      "fingerprint": "sha256:881fb6713b58b8091b822bc08d2e71e3bfa2d582b67baf127a525ff127abe339"
+    },
+    "b17-rogue#250": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t110.1 at event 1: 200 → 275 characters. Exact formerly omitted suffix: \"flooded ground from the east, then a second, fainter tapping farther south.\". All other fields equal .220.",
+      "previous": "sha256:bee639a7efd447ec6e32a6f02ecb190ea3710de028d7a90ef092c82399d85c29",
+      "fingerprint": "sha256:3613a186e11c7191b845de0da79afecd37512afa366512206c681375b7f0a8d0"
+    },
+    "b17-rogue#272": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_bog_striders_at_the_eel_weirs_2 at event 6: 200 → 315 characters. Exact formerly omitted suffix: \"e suggests a wounded one may have crawled off to die uncounted, or two of the four were the same animal seen twice.\". All other fields equal .220.",
+      "previous": "sha256:7366a10061ec15725fa9c1ed17dff3e8c52e67dd94b79ac34ed49b2a5788241b",
+      "fingerprint": "sha256:83249e1531f28cfb671987efbb62d4c7b8a95250c5ff8596e4cfc0a4760000bd"
+    },
+    "b17-rogue#274": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_bog_striders_at_the_eel_weirs_2 at event 2: 200 → 268 characters. Exact formerly omitted suffix: \" only shows the contract has been worked, not that the count is met.\". All other fields equal .220.",
+      "fingerprint": "sha256:d9472fd3e21a26bd2b79875e2d4a2bc036950cd6a69992706b6eeff83df2f8c3"
+    },
+    "b17-rogue#280": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t124.1 at event 7: 200 → 238 characters. Exact formerly omitted suffix: \"over wicker, then silence, then again.\". All other fields equal .220.",
+      "previous": "sha256:470a81e925a09389bdf0b0afe552887d957e30aba0e785e29d8446f5a2806ad1",
+      "fingerprint": "sha256:19c8d4765d82534c6e61010be912356e0437d050e43f574be6a4f8d1aac8fb2f"
+    },
+    "b17-warrior#162": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.wharf_wasp_cull_at_the_timber_yards at event 18: 200 → 306 characters. Exact formerly omitted suffix: \"l badly (a sawyer took three to the face). Don't burn the nests — the timberwrights want the yard unburnt.\". All other fields equal .220.",
+      "previous": "sha256:1792178bc3e9aaa4e660798f96c837d110213bb967607ea7c2b98d7143de3702",
+      "fingerprint": "sha256:e968af48944ae87a37b60eebbfe3508c0c51c141c6f6431b12cffe7b770a16d6"
+    },
+    "b17-warrior#172": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t72.1 at event 2: 200 → 223 characters. Exact formerly omitted suffix: \"s more than sunbathers.\". All other fields equal .220.",
+      "fingerprint": "sha256:575d5249a4468c9f95e2fe37e338c3d4efc4354c21cd2aa945bdc74a076e391e"
+    },
+    "b17-warrior#194": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.wharf_wasp_cull_at_the_timber_yards at event 1: 200 → 318 characters. Exact formerly omitted suffix: \"e low on the far face near the water. Warm holes mark active tunnels; the wasps will come boiling out sooner or later.\". All other fields equal .220.",
+      "fingerprint": "sha256:68f714db91bf242e5ae15ffa0c7975ff5417fcc268751666a0078777c90f879b"
+    },
+    "b17-warrior#206": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t79.1 at event 3: 200 → 240 characters. Exact formerly omitted suffix: \"ut; burning the log is the owner's call.\". All other fields equal .220.",
+      "fingerprint": "sha256:553ec382b08adbdf6e3480d5db5cf1d968671b041538b7a61274eb960c066d3e"
+    },
+    "b17-warrior#208": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.wharf_wasp_cull_at_the_timber_yards at event 10: 200 → 314 characters. Exact formerly omitted suffix: \"the owner pull it out with the saw work. The clerk warns against scorching the oak — the owner would want payment.\". All other fields equal .220.",
+      "fingerprint": "sha256:99465406760a31d612f83e42db3327d2e69c64603fef4b4a38a4f1a24c6329c9"
+    },
+    "b17-warrior#220": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.boar_hunt_at_thornhollow at event 1: 200 → 239 characters. Exact formerly omitted suffix: \"re the boars have been breaking ground.\". All other fields equal .220.",
+      "fingerprint": "sha256:5774c27a77c6b1a195c0cc0f8e6393311fbefb198e8f2f5070bc97f5fb2bc164"
+    },
+    "b17-warrior#224": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.boar_hunt_at_thornhollow at event 15: 200 → 276 characters. Exact formerly omitted suffix: \"bramble gap on the east side near dusk, and bed down in the thickets by day.\". All other fields equal .220.",
+      "previous": "sha256:3acdb462127621d9a3e6c0a15f09aca4e22151bb9a2eacbff59d2b33791f2935",
+      "fingerprint": "sha256:44e219b80354b2f3fd40057bcd05e8a7148dc477d0b62ef5a2668f07f4de9da0"
+    },
+    "b17-warrior#226": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.boar_hunt_at_thornhollow at event 9: 200 → 291 characters. Exact formerly omitted suffix: \"wood beyond the gap now, their own ground, thick and dark, and expected back with the dusk.\". All other fields equal .220.",
+      "previous": "sha256:2b68c79a98661cfafd62563aaa335773d2522da9a5b7d8afe0693a9d08f039ce",
+      "fingerprint": "sha256:ad30679cb704c860e33a7e2506a2607d409cfbe5ddf0b1f29a6541186f4ed440"
+    },
+    "b17-warrior#248": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t103.1 at event 3: 200 → 201 characters. Exact formerly omitted suffix: \"g\". All other fields equal .220.",
+      "fingerprint": "sha256:a739280c5f636fa88d701042595cb0c16421802d7aa27d5b75c204be6533c5d9"
+    },
+    "b17-warrior#264": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.thin_the_barrowfield_bramble_wolves at event 1: 200 → 280 characters. Exact formerly omitted suffix: \"dusk and toward morning. Ground is rough walking, half a day west of Alderwatch.\". All other fields equal .220.",
+      "fingerprint": "sha256:f407d9c8c99f5c4399970b681727ee34c36cc382aac4c43298991454df02599b"
+    },
+    "b17-warrior#312": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_marsh_adder_at_the_eel_weirs_3 at event 2: 200 → 232 characters. Exact formerly omitted suffix: \"pen and the eels left inside it.\". All other fields equal .220.",
+      "previous": "sha256:6946d26c6fa68e92deb811c8b25f54f41e85a1835c7f10f9ae8fb60ff57d739b",
+      "fingerprint": "sha256:56f36ffb206555f945693a6b2760f02a3479efdbd5b733017650cb7ab726777f"
+    },
+    "b18-mage#10": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_quarry_track_adder at event 1: 200 → 252 characters. Exact formerly omitted suffix: \"the quarry; half a morning's walk. no trophy needed.\". All other fields equal .220.",
+      "fingerprint": "sha256:880ae7700187fcb92e51acc9d9ecf9d53721cf0335bb9158bca1336f5273e20f"
+    },
+    "b18-mage#30": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t13.1 at event 6: 200 → 227 characters. Exact formerly omitted suffix: \" end, ten paces off or less\". All other fields equal .220.",
+      "previous": "sha256:7f6baa545212cf1267885a49c9f59a8329817e6a5220b56490590ecc2a89fde0",
+      "fingerprint": "sha256:beb317fed06956e90942db529839035fc379c8bf99a6e5fae06a52cbb01d7ff2"
+    },
+    "b18-rogue#14": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_orchard_prowler at event 15: 200 → 266 characters. Exact formerly omitted suffix: \"ght; he warns to mind the far fence, the wood is thick back there.\". All other fields equal .220.",
+      "previous": "sha256:64495f0e8872232b26f9a55f1b8ca9e56d47df4fef64cb0af60c73ca427943b2",
+      "fingerprint": "sha256:e265e8a6af747a6980752d676ebc249837c7233bd760af273db2ff050ecfb623"
+    },
+    "b18-rogue#32": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_millpond_snapping_turtles at event 2: 200 → 210 characters. Exact formerly omitted suffix: \"n a month.\". All other fields equal .220.",
+      "fingerprint": "sha256:8c04f34ed101268fe071c0ca8899e7f4248376b4eead290377933e3b1e8a7931"
+    },
+    "b18-rogue#130": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_millpond_snapping_turtles at event 16: 200 → 243 characters. Exact formerly omitted suffix: \" a week for a district clerk near Gristbeck\". All other fields equal .220.",
+      "previous": "sha256:381afde08a4ed83df3abd119cee70fc45778ba06b200526f53a3eb0c5107ba54",
+      "fingerprint": "sha256:d7fd7a4537c70a3438fe8f48b4c31294af4f32cd92917d0a19c3b89e7f37999f"
+    },
+    "b18-rogue#136": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_millpond_snapping_turtles at event 1: 200 → 275 characters. Exact formerly omitted suffix: \"he mill along a rutted cart track. That is where the four turtles must die.\". All other fields equal .220.",
+      "previous": "sha256:222058d438ce904e8a3f2e5815eb6f13c06cd7e56d5b7ce937afc63a8465c19e",
+      "fingerprint": "sha256:2be0588938191d21811b4e14f34274e6f795058caed444059d88d71f591e450f"
+    },
+    "b18-rogue#256": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_millpond_snapping_turtles at event 6: 200 → 254 characters. Exact formerly omitted suffix: \"wait, costing nothing only if the mark is truly stuck.\". All other fields equal .220.",
+      "previous": "sha256:5d99f840ec7d867aff816c391aa02b81e47021d26e0c423e39f742769dbe417b",
+      "fingerprint": "sha256:2c6a652a5ababaaf5b458e6f8deee663f81c62a73e0db6d66ef5170e3e0f37f7"
+    },
+    "b18-rogue#258": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_millpond_snapping_turtles at event 2: 200 → 292 characters. Exact formerly omitted suffix: \" if fewer or no sign, they will talk. Alaric should return mid-morning or after, not before.\". All other fields equal .220.",
+      "fingerprint": "sha256:ea8ed7595bae02a99e9b64a84c17e688eb1f84c6f57334d79754aaeeaa7be395"
+    },
+    "b18-rogue#312": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_millpond_snapping_turtles at event 5: 200 → 247 characters. Exact formerly omitted suffix: \"it, and bring it in — then it pays, same visit.\". All other fields equal .220.",
+      "previous": "sha256:eaddbc56c9bd4c7bb4973ff460e05a0fa206f5f7b38160d91d2df6789070b704",
+      "fingerprint": "sha256:0e128179d28cdd377c58b3bc6a42b2c0d600fef2c4745435b1766e0465a3c3d1"
+    },
+    "b18-rogue#324": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_millpond_snapping_turtles at event 3: 200 → 204 characters. Exact formerly omitted suffix: \"und.\". All other fields equal .220.",
+      "fingerprint": "sha256:72fd0997b3ef4d55c0f7df19507256282acc160d4de1d8772d9c49dbd40b083b"
+    },
+    "b18-rogue#332": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t153.1 at event 1: 200 → 273 characters. Exact formerly omitted suffix: \"s or hear a new price on the other turtle pieces Alaric actually carries.\". All other fields equal .220.",
+      "fingerprint": "sha256:24ac8bef777d518cf6be939221711470dff34b47086494b7a2e6c84e3129a952"
+    },
+    "b18-rogue#354": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t160.1 at event 4: 200 → 269 characters. Exact formerly omitted suffix: \"bag and refuses to put coin near it until he knows what it's tied to.\". All other fields equal .220.",
+      "fingerprint": "sha256:aeaa02b56c9af6f330bf4d023e202292cf9202e675c942658c647d5e0e23d210"
+    },
+    "b18-rogue#362": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t160.1 at event 3: 200 → 250 characters. Exact formerly omitted suffix: \"ing ever came out of it that Alaric did not put in\". All other fields equal .220.",
+      "fingerprint": "sha256:3b1325fc7ddebcf654780b6a9a191027863a8eeb75a5d588d34e6258f77c8d71"
+    },
+    "b18-rogue#370": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t167.1 at event 6: 200 → 282 characters. Exact formerly omitted suffix: \"-healers in the city use it, but it narrows the field to those who do binding work\". All other fields equal .220.",
+      "fingerprint": "sha256:e658642d4410f6c23f773569f916e8cdd786f454b114790587291b97ae356b8a"
+    },
+    "b18-rogue#376": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t171.1 at event 9: 200 → 216 characters. Exact formerly omitted suffix: \"the mark a name.\". All other fields equal .220.",
+      "fingerprint": "sha256:4669e9d397e8fe288824aabb8e331306d537768de77bc9c52d5999d3b7d47b9b"
+    },
+    "b18-rogue#378": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t171.1 at event 5: 200 → 306 characters. Exact formerly omitted suffix: \"eing just numbing — the thread cannot tell whose hand grew it; her mark only proves she would not be named\". All other fields equal .220.",
+      "previous": "sha256:c033d9523117115e3189141091197dfac2da777276750c4f181a682a8eb75fe6",
+      "fingerprint": "sha256:4eb53f98f63af4f72ea67e1256bfdfafc354471677fa9c2caf85914da028803e"
+    },
+    "b18-warrior#10": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.a_serpent_at_the_millrace at event 2: 200 → 225 characters. Exact formerly omitted suffix: \"er and eyes on the reeds.\". All other fields equal .220.",
+      "fingerprint": "sha256:b26fb82f9323c71dad1ccae95a590fd5ef48a15a7c2fe2c0111d6a1168a13ce7"
+    },
+    "b18-warrior#194": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.boars_on_the_quarry_road at event 1: 200 → 210 characters. Exact formerly omitted suffix: \"he quarry.\". All other fields equal .220.",
+      "fingerprint": "sha256:29a0559dca235ef1879e7a4124f75b04ff41fdfa7960d37165f513e29f7f307c"
+    },
+    "b18-warrior#282": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t127.1 at event 5: 200 → 225 characters. Exact formerly omitted suffix: \" would be loud and blind.\". All other fields equal .220.",
+      "previous": "sha256:2ccb1f6c240bf250c9b453fcaf2e1c8e7c79758f7dcb2d6e4bcdc455644eb709",
+      "fingerprint": "sha256:7a132f9f401e96bc4635d548dfca24f785af81341ab6281569f8a0151d639d46"
+    },
+    "b19-mage#16": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.kill_the_quarry_track_wolf at event 1: 200 → 244 characters. Exact formerly omitted suffix: \"ould walk away and report back to the Guild.\". All other fields equal .220.",
+      "fingerprint": "sha256:f5bcac3497fd218cfeaba4ebd04cc9730de17e400b564fadb0cf5460f8d21f17"
+    },
+    "b19-mage#26": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.kill_the_quarry_track_wolf at event 6: 200 → 213 characters. Exact formerly omitted suffix: \"sk the floor.\". All other fields equal .220.",
+      "previous": "sha256:5bb46810030b11b1a686263bdc887324a9cde864c60714cef045ded91ddae1f6",
+      "fingerprint": "sha256:ed9f81f3a583720e78bc92d901d089c712972874d95a6b87ef922468e70c70df"
+    },
+    "b19-mage#50": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_reed_flat_otterhounds at event 1: 200 → 367 characters. Exact formerly omitted suffix: \"aps open for eels. Posted by the fishers' cooperative, but payment is settled at the Guild. Warning: ground is soft off the causeways and the hounds fight wet and low.\". All other fields equal .220.",
+      "fingerprint": "sha256:54d2939e5c5b1d081235296756e635445eca7f4bb592c4a438dbcc2524c504e2"
+    },
+    "b19-mage#62": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t28.1 at event 8: 200 → 207 characters. Exact formerly omitted suffix: \"nearby.\". All other fields equal .220.",
+      "previous": "sha256:5c5c48415f8ed51121953ba7f167dfa77c5491dcebb09a13002be5686c4ba1a8",
+      "fingerprint": "sha256:9bc99822e778a16740798ab0d2631ff24019cf43a79857f0c2ec3401503e508f"
+    },
+    "b19-mage#78": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t34.1 at event 4: 200 → 221 characters. Exact formerly omitted suffix: \"uietly, that's not it\". All other fields equal .220.",
+      "previous": "sha256:96d18239627ccd6d42dd603ba4fc981a7d76dfc7573903dc03618492afae648f",
+      "fingerprint": "sha256:92a77f1a680f6d961dcf93f48173de8706a9804e341d347717aa352690a61573"
+    },
+    "b19-mage#114": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_reed_flat_otterhounds at event 9: 200 → 255 characters. Exact formerly omitted suffix: \"er, avoiding the bank while the fisherman stands there.\". All other fields equal .220.",
+      "previous": "sha256:3729fdb2948b75b4d5f168fad17d132977ca704ea342fd7ecf176019cdb5cbc4",
+      "fingerprint": "sha256:861800a97f7fa6878cb5e4c1d4a6cd188154bebf9ef01235dab2cc2b71975053"
+    },
+    "b19-mage#170": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.thin_the_otterhounds_at_the_eel_weirs at event 1: 200 → 247 characters. Exact formerly omitted suffix: \" notice twice this week, losing nets and sleep.\". All other fields equal .220.",
+      "fingerprint": "sha256:09a19db28a2fbb39db808d9d10c037b411c5bb94a64841752a19a9b2ea16228f"
+    },
+    "b19-mage#182": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.thin_the_otterhounds_at_the_eel_weirs at event 6: 200 → 268 characters. Exact formerly omitted suffix: \"s cold enough to cramp, and the mud past it takes a man to the knee.\". All other fields equal .220.",
+      "previous": "sha256:21cc8875fef9eb5b005d626203613a34c1abb885bcda04859d33e10703f081f6",
+      "fingerprint": "sha256:292fb541cdd4c0956ec960908b6fc4b28e6f128171439ca0472e36bb23af8016"
+    },
+    "b19-rogue#16": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.kill_the_quarry_track_ambusher at event 1: 200 → 291 characters. Exact formerly omitted suffix: \" mornings; at midday the track is empty and the cat likely curled up digesting — or hungry.\". All other fields equal .220.",
+      "fingerprint": "sha256:35062f743401c355a581b49c85ea7cd146d7eaf4d3452829c39292186e28134f"
+    },
+    "b19-rogue#18": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t9.1 at event 8: 200 → 225 characters. Exact formerly omitted suffix: \" no cat has shown itself.\". All other fields equal .220.",
+      "previous": "sha256:06ce98fd966d6db58a06ec93f4bac1a0bee779c97d685f2015eabd5b8aded526",
+      "fingerprint": "sha256:414aeea3f97658706a9dad26dd52d94c8c643a8de14e258ac8b8b39f9ad7c0e1"
+    },
+    "b19-rogue#54": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.thin_the_reedmire_herons at event 1: 200 → 397 characters. Exact formerly omitted suffix: \"he birds strike low and fast at the legs like a pike, and the mud can pull a boot off anyone fighting carelessly from the walkways. The weir cooperative men talk to Guild members who show the slip.\". All other fields equal .220.",
+      "fingerprint": "sha256:196e1790a441aa3f8426074774c7bb88b5d1433f1c126c3f0a92567d72f36124"
+    },
+    "b19-rogue#58": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.thin_the_reedmire_herons at event 2: 200 → 389 characters. Exact formerly omitted suffix: \"heron called the Boardman works the far end, coming in low over the barge platform in the morning to take a fish. Fight them on the planks, not the mud, and watch the cracked third walkway.\". All other fields equal .220.",
+      "previous": "sha256:738698127a3f04f6f2c664299d7690613a203c05e3f4f9b4bdb33d51d6b32c48",
+      "fingerprint": "sha256:af2a1a90cf2c7cff82558e6c2d1eaf8bc88973ab3effc8b8496ab4e090586957"
+    },
+    "b19-warrior#44": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.thin_the_thornhollow_boar_sounder at event 1: 200 → 337 characters. Exact formerly omitted suffix: \" out young stock on the brush slopes. Advice: go in daylight, don't stand downwind of a sounder, finish a downed boar before celebrating.\". All other fields equal .220.",
+      "fingerprint": "sha256:4b87abb5911dcfe3c76740df724076d5a95bdede4db05f5047e212eb1cdbec86"
+    },
+    "b19-warrior#50": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.thin_the_thornhollow_boar_sounder at event 2: 200 → 282 characters. Exact formerly omitted suffix: \"keeper's track off the terrace way at the second wall climbs easier than the ruts.\". All other fields equal .220.",
+      "previous": "sha256:4dfd5545aef631679a94c4e41971d14f49a420340680326f7f76ae8a4e034703",
+      "fingerprint": "sha256:3df37f012b9350205a78fe68c48a99d9b62199eeeacc6dbd5f782ec04858cad3"
+    },
+    "b19-warrior#96": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t43.1 at event 9: 200 → 203 characters. Exact formerly omitted suffix: \"des\". All other fields equal .220.",
+      "previous": "sha256:6f9c320f16e8d73fd86f614674fd548e47a18a4063a65edcf35f4e05c34716ea",
+      "fingerprint": "sha256:9163eb37528770908804999ab5f4df7d4ef0dfe651845a7fec0b4ebd9cfb3436"
+    },
+    "b19-warrior#118": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t53.1 at event 9: 200 → 204 characters. Exact formerly omitted suffix: \"push\". All other fields equal .220.",
+      "previous": "sha256:43d9c81546b92d936b588608b1e3fa157da566f6493dbe7a046beba1b9cd5fbf",
+      "fingerprint": "sha256:004329b561aa06c282a2eecb955becf655eaf3d4283b89fdfc4cd661fe2b1fea"
+    },
+    "b19-warrior#134": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t60.1 at event 5: 200 → 202 characters. Exact formerly omitted suffix: \"c.\". All other fields equal .220.",
+      "previous": "sha256:2dab7fcaf0e289b48769ab84c361026a7e49a61797b2c0322f3577211defc349",
+      "fingerprint": "sha256:947b0d03e4112f068d18a1deac90aeee65c609b967c65fd4e73f7dedd0f64e4a"
+    },
+    "b19-warrior#174": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_thornhollow_boar_sounder at event 1: 200 → 263 characters. Exact formerly omitted suffix: \" where the fence came down and learn where the sounder crosses.\". All other fields equal .220.",
+      "previous": "sha256:321b40a8155153557031c920b795d85ad15bb9eab55cd8cb40d2a10a940143b7",
+      "fingerprint": "sha256:ac872549055bffddf832c7b8f64bce9afc2a2af5fc3b87b9b8207e34714f477e"
+    },
+    "b19-warrior#176": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_thornhollow_boar_sounder at event 18: 200 → 301 characters. Exact formerly omitted suffix: \"d saw rooting up past the second terrace yesterday morning — the sounder beds somewhere on the slope.\". All other fields equal .220.",
+      "previous": "sha256:d44e634b19161fa4199065d8d8f88cc28ae6b0a36a54701db180f2a30acb7462",
+      "fingerprint": "sha256:e4c64bd77650a69d5b0857bda0d885fd98c71a9d1105b9ffaf62c559c6867620"
+    },
+    "b19-warrior#178": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t79.1 at event 6: 200 → 216 characters. Exact formerly omitted suffix: \"t away from them\". All other fields equal .220.",
+      "previous": "sha256:3bb65c05b9bea22f216a7ed244c18728cb518f375699b346e3df7bdd7ce36b9c",
+      "fingerprint": "sha256:4fd5cb221dc0b1798c072a4c382a63b765a0f183523e8bb09b0400744509745e"
+    },
+    "b19-warrior#196": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t84.1 at event 5: 200 → 243 characters. Exact formerly omitted suffix: \"ub above it; no sound of pigs anywhere now.\". All other fields equal .220.",
+      "previous": "sha256:b6b8501ff1710fc8bbfe3a8953ac0521be8408145f1d71abdd958b57fae1627a",
+      "fingerprint": "sha256:09f0c267ad46330797ffb0251a8a95bee6a00c5e41d693398fea497655b5f523"
+    },
+    "b19-warrior#212": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_thornhollow_boar_sounder at event 6: 200 → 399 characters. Exact formerly omitted suffix: \"e broken corner stone each evening for the windfalls at last light — the young one first, the bigger near dark; loud feeders, heard before seen. Hedwin's method: a cup of cider, patience, no smoking.\". All other fields equal .220.",
+      "fingerprint": "sha256:8c62e58da0bf36c4c221d63641bb0fa46ec351a4285f1efb92b04985abe1dedd"
+    },
+    "b19-warrior#228": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t53.1 at event 2: 200 → 233 characters. Exact formerly omitted suffix: \"ld still answer before full dark.\". All other fields equal .220.",
+      "fingerprint": "sha256:b8a6e91bcf3f2a1ba0c198bb63d948bef22a27b8c70295d16b26aeea1d1d0099"
+    },
+    "b19-warrior#230": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t53.1 at event 6: 200 → 204 characters. Exact formerly omitted suffix: \"nnel\". All other fields equal .220.",
+      "previous": "sha256:c227a41604dc02c50d51eeab8805b13fa985bfe9dbece3d916a3e69a06040d17",
+      "fingerprint": "sha256:f93f7a28dd85b775ec250924f49e44888562d06610890e568a5d494bc998b9cf"
+    },
+    "b19-warrior#254": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_thornhollow_boar_sounder at event 1: 200 → 345 characters. Exact formerly omitted suffix: \") along the terrace edge is easy to find; fruit-farmers see the sounder most mornings near the upper walls. Sows are dangerous this time of year.\". All other fields equal .220.",
+      "fingerprint": "sha256:8b6c3723eae043b2996269737a7c03e747f62585d07cee04bf31fa8897ec8284"
+    },
+    "b19-warrior#268": {
+      "category": "221 complete source text",
+      "reason": "quest.detailed quest.cull_the_thornhollow_boar_sounder at event 6: 200 → 201 characters. Exact formerly omitted suffix: \"w\". All other fields equal .220.",
+      "fingerprint": "sha256:391494289bb04b99c98427a8efe4ef57d4aefd8a4b5bbf67fa26d5167713a161"
+    },
+    "b19-warrior#370": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t124.1 at event 4: 200 → 211 characters. Exact formerly omitted suffix: \"s strongest\". All other fields equal .220.",
+      "previous": "sha256:102eeaffe5b9d1e7c737862cf60cbe753c4eb5bc97ce6bbcb0bd629f89474cff",
+      "fingerprint": "sha256:436fa769fcd0d3f4fdc5e10e64c5cc783c61fa51d5131938b0c8c7abc5abe654"
+    },
+    "b19-warrior#372": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t159.1 at event 5: 200 → 206 characters. Exact formerly omitted suffix: \"illed.\". All other fields equal .220.",
+      "previous": "sha256:1656e22c93316b2a84964e931b851e4fa35e2234b3c03009b6aed3fc2c7f27d7",
+      "fingerprint": "sha256:cf487d9687c72cd97d9dd9bacb5fc2a2ebc1efc23e3b37dcb446959d9049fc30"
+    },
+    "b19-warrior#374": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t160.1 at event 5: 200 → 201 characters. Exact formerly omitted suffix: \"t\". All other fields equal .220.",
+      "previous": "sha256:839908623c5a7dcb7ecababdef3350b30ae71837f8f3d2238b54496d2da3c193",
+      "fingerprint": "sha256:c04f939d4757ba3d402823ee2f0772bdb77e1db11264cb9a28b947f05ee41c27"
+    },
+    "b19-warrior#388": {
+      "category": "221 complete source text",
+      "reason": "thread.set thread.t159.1 at event 2: 200 → 303 characters. Exact formerly omitted suffix: \" edge toward open brush; the hazel is silent, the sounder has put distance between itself and the flat.\". All other fields equal .220.",
+      "fingerprint": "sha256:9e6477bc40bb4d4ee9f82314c47530076ad14e96ff3049b7526b524573ce113a"
+    }
+  }
+}

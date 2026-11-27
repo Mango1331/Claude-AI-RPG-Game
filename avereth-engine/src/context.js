@@ -592,19 +592,20 @@ function privateRecall(state, outcome, budget) {
     const siteWords = tokenize(state.places[state.scene.at]?.name || '');
     const pairs = siteWords.slice(1).map((w,i) => siteWords[i]+' '+w);
     const rows = [];
+    const threads = Object.values(state.threads);
     for (const q of Object.values(state.quests)) {
         if (q.status !== 'active' || !questVisible(state,q)) continue;
         const target = q.dungeon || q.hunt?.at;
+        if (!target || !(threads.some(t => t.recall_at === target) || outcome?.auth?.gos?.some(g => g.to === target))) continue;
         const notes = (q.notes || []).slice().reverse();
         const matches = notes.filter(note => {
             const words = ' '+tokenize(note).join(' ')+' ';
             return pairs.some(pair => words.includes(' '+pair+' '));
         });
-        if (!sites.has(target) && !matches.length) continue;
+        if (!sites.has(target) && !(matches.length && threads.some(t => t.recall_at === target))) continue;
         if (target && matches.length) sites.add(target);
         for (const note of [...matches,...notes]) rows.push({score:3, text:'Reported for '+q.title+': '+note});
     }
-    const threads = Object.values(state.threads);
     for (const t of threads) {
         if (!t.recall_at && !t.player_words) continue;
         const partyHere = (t.who || []).some(id => present.has(id));

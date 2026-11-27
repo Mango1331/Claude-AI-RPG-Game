@@ -86,7 +86,7 @@
     },
     {
       "type": "go",
-      "summary": "For local movement toward a perceptible person, sign or vantage in this scene use to:{\"scene\":\"focus in his words\"}. Looking alone needs no GO. For actual travel, entry or crossing use the established place id, or {\"new\":\"place name\"} for a genuinely new site. within is only the established habitat for exploring an unnamed part of it.",
+      "summary": "For local movement toward a perceptible person, sign or vantage in this scene use to:{\"scene\":\"focus in his words\"}. Looking alone takes no GO. For actual travel, entry or crossing use the established place id, or {\"new\":\"place name\"} for a genuinely new site. within is only the established habitat for exploring an unnamed part of it.",
       "args": {
         "to": {
           "ref": "place"

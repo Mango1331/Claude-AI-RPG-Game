@@ -166,6 +166,8 @@ T2-Modell: feste Kontexte, echte P- und X-Antworten auf `.251` und auf dem Kandi
 - P9b
 - ein `mode`-Feld
 
+**Präzisierung zu P1/P4 (User01, Hesk).** Beim zielgebundenen Schleichen erfordert ein erst nach der Ankunft gemeldeter Beobachter vom Aufbruchsort einen tatsächlichen Eintritt oder eine bestätigte Mitreise. Der Nutzer hat die enge Zustandsprüfung am Ziel ausdrücklich freigegeben.
+
 ## 6. Abschlussbericht auf `main`
 
 `recherche/AVERETH_252_VALIDIERUNGSVEREINFACHUNG_ABNAHME.md` mit folgendem Inhalt:

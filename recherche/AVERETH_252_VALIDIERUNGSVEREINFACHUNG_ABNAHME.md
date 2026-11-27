@@ -1,6 +1,8 @@
 # Validierungsvereinfachung V1 · Umsetzung und Abnahmestand
 
-**Aktueller Stand:** Technischer Zwischenstand .252 auf dem Entwicklungsbranch. Die Anwesenheitsproben bestehen. Etappe B ist vor dem Entfernen von `expected.go` angehalten. Die unten dokumentierte Gegenprobe zur offenen Ortssuche erfordert eine Fachentscheidung. Es liegt keine Gesamtabnahme vor.
+**Zwischenstand .258.** Der Nutzer hat die enge Zustandsprüfung für Beobachter vom Aufbruchsort beim zielgebundenen Schleichen freigegeben. User01 und die Gegenfälle mit tatsächlichem Eintritt oder Mitreise bestehen. Die folgende .257-Auswertung dokumentiert den Zustand vor der Korrektur. Die Gesamtabnahme läuft.
+
+Beim GO mit Schleichen am Ziel reicht ein nach der Ankunft gemeldetes `aware` oder `position` für einen am Aufbruchsort anwesenden NPC nur aus, wenn er bereits am Ziel anwesend ist. Ein angenommenes `enter` oder die bestätigte Mitreise stellt diese Anwesenheit her. Die Originalgegenprobe und die gezielten Prüfungen bestanden (55/55). [Produktcommit .258](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/788c6d2fc5b037a132ba97bf4f2c2c2cc76a9540)
 
 ## Erster Stopp vor der Implementierung
 
@@ -67,3 +69,142 @@ Etappe B und die anschließenden Produktetappen sind angehalten. Vollständiges 
 ## Freigabe zur Fortsetzung nach dem zweiten Stopp
 
 Die Zielerfüllungsantwort bleibt für jeden GO-Schritt erhalten. Ankunft, Mitreisende und Begegnungen brauchen eine eigene bestätigte Grundlage. Die Harrowby-Gegenproben gehören zur Gesamtabnahme. Von den sechs offenen Korpusprüfungen gehört der ungültige Fakt neben gültigen Deltas zu B, die vier lokalen Planner-Ziele zu C und die Preisellipse zu D/P9a. P7 bleibt zurückgestellt.
+
+## Technische Gesamtabnahme auf .257
+
+Die Entscheidung zum zweiten Stopp ist umgesetzt. Der Produktbranch enthält folgende regulär gepushte Sicherungen. Die Nummern ab .252 bezeichnen Zwischenstände desselben Pakets. [Vollständiger Produktdiff .251–.257](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/4933a5f005a86a381a922981d3d7377e8ba84b5c...51a7cf2e662b30589ba8b8b7b68e23da0f0508a3)
+
+| Etappe | Produktcommit | Änderung |
+|---|---|---|
+| 0 | `28a22f0a0bb92676ebe326613b1c6209e3500131` | Messgrundlage, archivierte Eingaben, vier Replaykategorien |
+| A · .252 | `6a7fc03cda9f88e6007f91b1c9bc68b222447c67` | Eine zustandsgebundene Aufnahme für bekannte NPCs, einschließlich alter Begegnungslisten |
+| B · .253 | `6b0b96208533f0567865f0b7a4ed76092aa7a5de` | Physische Ankunft und GO-Zielerfüllung an demselben angenommenen Abschnitt |
+| B · .254 | `f5286cc78acfc9a1143fe78f5ded60c5d16bc88f` | Teilübernahme, Schema-Audit, Buchung in Ereignisreihenfolge, begrenzte Reparatur |
+| C · .255 | `7a8efa2e2894d21f2d6966014e76c5bf0554b7db` | Lokaler Ortsabgleich für das Planner-Ziel, nachvollziehbarer Endort bei leerem Plan |
+| D · .256 | `caccf00a3ec79cd9816e0b3664ca7c8f60b796a0` | Desk-Zuordnung am gebuchten Schalterbesuch, Preisellipse, Entfernung des alten Präsenz-Satzparsers |
+| E · .257 | `51a7cf2e662b30589ba8b8b7b68e23da0f0508a3` | Verworfenes `arrive` verhindert die Zuordnung eines mehrdeutigen freien Ziels. Der Zielabgleich erreicht auch ältere besuchte Orte außerhalb der acht HUD-Einträge. Recovery-Prüfungen verwenden eine tatsächlich gebuchte Aktion. |
+
+Die Produktänderungen in `src` und `content` ergeben gegenüber .251 **241 hinzugefügte und 846 entfernte Zeilen**, netto −605. Davon entfallen 410 entfernte Zeilen auf `narration_evidence.js`. Entfernt wurden unter anderem der E2-A-Satzparser, die Desk-Grammatik, `sceneIssues` als allgemeiner Reparaturgrund und die Reiseverberkennung in `chosenKnownRoute`. Zu den neuen Helfern gehören `admitPresence`, `knownRouteTarget`, `reportedEndpoints` und das zeitlich eingeordnete Protokollieren verworfener Deltas in `rejectThrough`. Die umfangreichen Altprüfungen zur erzwungenen Bewegung, die Spieler-Agency und die Partyentscheidungen wurden fachlich beibehalten. Die Trigger für X-Reparaturen unterliegen P3. [Produktdiff](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/4933a5f005a86a381a922981d3d7377e8ba84b5c...51a7cf2e662b30589ba8b8b7b68e23da0f0508a3)
+
+### GO-Verbraucher und erhaltene Informationen
+
+| Situation | Verhalten des Kandidaten |
+|---|---|
+| Bekanntes Ziel, Dungeonabschnitt | Die Engine prüft den erreichten Ort, das Wegstück und dessen Zulässigkeit. `arrived` erzeugt keine Ankunft. |
+| Freies Ziel, Zwischenhalt und Ortssuche | Nur der zugeordnete angenommene Halt darf die Suche abschließen. Harrowby mit `false` lässt sie offen, mit `true` und eindeutigem Halt schließt sie dort. `true` ohne Ankunft reicht nicht. |
+| Mehrere Halte und Rückkehr | Bei mehreren sonst ununterscheidbaren Halten darf das bisherige optionale `at` den gemeinten Halt bezeichnen. Harrowby → Ausgangsort mit `at:Harrowby` beendet die Suche in Harrowby. Ohne Zuordnung bleibt sie offen. Auch ein schematisch verworfener zweiter Halt macht den überlebenden ersten Halt nicht automatisch zum Ziel. |
+| PULSE-Halt ohne gemeldete Ankunft | Der deterministische Halt bleibt möglich. Hier kann das bisherige optionale `with` tatsächlich mitreisende Personen benennen. Bei gewöhnlichen Ankünften gilt `arrive.with`. |
+| Lokale Bewegung, Zeit, Folgeaktionen | Reisezeit, Mindestdauer, Reise-MP und bedingte Folgeaktionen haben weiterhin eigene Autorität. Die Zuordnung von freier Zielerfüllung und von Privataufträgen verwendet den bestätigten Abschnitt. Die historische Mühlenabweichung unten betrifft tatsächlich gebuchte Zeit. |
+| Alte Ereignisse, neue Extraktion | Vorhandene Events bleiben faltbar. `met` wird beim Einlesen alter oder erneut gelieferter Antworten über die gemeinsame Aufnahme verarbeitet. Der aktuelle GO-Vertrag zeigt allein `arrived` als reguläres Antwortfeld. |
+
+Die Harrowby-Reihe läuft im Produktpfad mit eingespeistem P und X. Die dort dauerhafte Suchabsicht und ihre Ziel-ID sind die geprüften Ergebnisse. Die Felder `at` und `with` bleiben für die beiden beschriebenen mehrdeutigen Situationen im Leser und im erklärenden Vertragstext verfügbar. [Bewegungszuordnung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/51a7cf2e662b30589ba8b8b7b68e23da0f0508a3/avereth-engine/src/v4/movement.js#L60) · [Harrowby-Abnahme](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/51a7cf2e662b30589ba8b8b7b68e23da0f0508a3/avereth-engine/tests/v4/patch5.test.js#L749)
+
+### Originalfälle und Messungen
+
+- **Anwesenheit und Folgehandlung.** Martin M17 wurde mit der archivierten X-Antwort auf dem Originalpräfix verarbeitet. Für den Folgekauf wurde die erste Angebotszeile für 80 cp gewählt und eine passende P-Antwort eingespeist. Auf .251 scheiterten beide Guthabenvarianten an der abwesenden Verkäuferin. Auf .257 blieb Alaric mit 50 cp bei 50 cp. Mit synthetisch bereitgestellten 500 cp kam genau eine Transaktion zustande, Endbetrag 420 cp. Bei Elm M83/M84 wurde Madge auf .257 genau einmal aufgenommen. Die archivierte HUD-Wahl für das Essen erzeugte genau eine Transaktion, 110 → 107 cp. Auch .251 hatte die Mahlzeit in dieser Folge einmal abgerechnet. Reed M21 behielt den Fischer. Beim bekannten Fehlpositiv x-233 M71 erschien auch Garrick. Die beiden Auszahlungen von 90 und 45 cp waren im Vergleich identisch.
+- **Sechs offene Fälle.** Die Teilübernahme eines gültigen Deltas neben dem ungültigen Fakt besteht in B. Die vier bekannten Ortsziele bestehen in C jeweils als `scene` und als `new`. Die Preisellipse in Martin M11 besteht in D mit eingespeistem `currency_quote: "eight silver"`, zweiter Preis 120 cp. Zwei Münzarten im geprüften Auszug lassen den Preis offen. Der ursprüngliche Extractor hatte das Währungszitat nicht geliefert. Alle **42/42** Prüfungen in `claim_state252.test.js` bestanden auf .257.
+- **Grenzen der Eingabe.** Lantern M80/M82 gelangen bereits auf .251 mit dem archivierten P. Rook M8 und Hearth M84 liefern im leeren Plan kein Reiseziel. Der Text im Engine-Block weist auf den aktuellen Endort hin. Die Entfernungs-, Gefahren- und Dungeonprüfungen bleiben eigene Buchungsvoraussetzungen.
+- **Gilde und Party.** Die Schaltertests mit einem Mitarbeiter sowie mit zwei Mitarbeitern, eindeutiger ID, unbeteiligter ID und fehlender Auswahl bestanden. Historische Spielzüge ohne `outcome.desk` sind gesondert betroffen, siehe unten. Alle 26 Schutzprüfungen des User14-Party-Replays bestanden. Die getrennte Wache-Gegenprobe ergab mit NPC-Entscheidung 80 HP nach einer Stunde, ohne Wache 90 HP. Alle Party-Akte bleiben verfügbar.
+- **Promptmessung.** Martin Zug 5, gleiche Originalvorgeschichte und produktive Request-Builder. P hatte auf beiden Ständen 51.458 Zeichen. X sank von 62.089 auf **58.918 Zeichen** (−3.171). Maß ist die Summe der JS-Stringlängen der Nachrichteninhalte. Es handelt sich um offline gebaute Requests.
+
+### Stoppbefund · Hesk löst am falschen Ort eine vergleichende Probe aus
+
+Der bestehende User01-Test `156 original journey + stealth` ist auf .251 grün und auf .257 rot. Alaric verlässt Hesk und dessen drei Hunde am Unterstand. Das Ziel ist das alte Gräberfeld. Der erste Absatz beschreibt, wie Hesk die Spur schon beim Aufbruch verliert. Am Gräberfeld hört Alaric ein Schnarchen aus einer Öffnung. Der Planner bucht das zielgebundene Schleichen. Die Testvorgeschichte und die ursprüngliche X-Reihenfolge sind im Repository enthalten. [Originalfixture und Host-Test](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/51a7cf2e662b30589ba8b8b7b68e23da0f0508a3/avereth-engine/tests/v4/fix156_stealth_manner.test.js#L41)
+
+Im X steht das `arrive` am Gräberfeld an Position 2. Darauf folgt `aware(npc.hesk, unaware)` an Position 3 mit `scene:null`. Der wörtliche Auszug stammt aus dem Aufbruch am Unterstand. Das gesonderte Wiederabspielen ließ den Produktpfad P → N-Text aus Archiv → X → Fold auf beiden Builds laufen. Je Variante gab es zwei eingespeiste Plannerantworten und eine Extractorantwort. Die Tests verwenden den tatsächlichen Check-Code und den gespeicherten Zufallszustand.
+
+| Prosa und Meldungen | .251 | .257 |
+|---|---|---|
+| Archivierter Aufbruch und ursprüngliches X | Nur PC am Ziel. Automatischer Erfolg, RNG-Zähler 15. | PC und Hesk am Ziel. AGI 11 gegen PER 5, Chance 68,75 %, Wurf 2, Erfolg, RNG-Zähler 16. |
+| Kontrollprosa mit Hesk bei der Ankunft tatsächlich am Gräberfeld, dieselben strukturierten Meldungen | Nur PC am Ziel, automatischer Erfolg. | Hesk am Ziel, regulärer Wurf gegen Hesk. |
+| Originalprosa, X nennt beim `aware` ausdrücklich den Unterstand | Nur PC am Ziel, automatischer Erfolg. | Nur PC am Ziel, automatischer Erfolg. |
+| Originalprosa, X meldet dasselbe `aware` vor der Ankunft | Nur PC am Ziel, automatischer Erfolg. | Nur PC am Ziel, automatischer Erfolg. |
+
+Die Kontrollprosa ist synthetisch. Im Original blieb Alaric auf beiden Builds verborgen. Nachgewiesen sind der falsche Aufenthaltsort eines konkreten NPCs und der zusätzliche Zufallsverbrauch. Eine tatsächlich verlorene Probe oder ein daraus entstandener Kampf wurde in diesem Originalzug nicht beobachtet.
+
+**Entscheidungsgrenze.** Der alte `notBroughtIn`-Pfad hielt einen abwesenden NPC bei einem alleinigen Wahrnehmungsdelta vom Ziel fern. D1/D2 erlauben seine Aufnahme gerade aus diesem Delta. Hesk ist lebendig, kampffrei und kein anderswo wartendes Mitglied. Beide Prosavarianten haben denselben mechanischen Eingang einschließlich Heimatort, Mitreisenden, Reihenfolge, Wörtlichkeitsbeleg und GO-Antwort. Nur die erzählte Szene des Belegs unterscheidet sich. Die Rücknahme des ganzen alten Guards würde auch die richtige Ankunft im zweiten Fall unterbinden. Die mit P4 erlaubten optionalen Ortsangaben lösen den Fall, **wenn X sie richtig liefert**. Ihre Abwesenheit in den archivierten Daten ist real. [Frühere Anwesenheitsgrenze](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/4933a5f005a86a381a922981d3d7377e8ba84b5c/avereth-engine/src/v4/world.js#L600) · [Aufnahme in .257](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/51a7cf2e662b30589ba8b8b7b68e23da0f0508a3/avereth-engine/src/v4/world.js#L1549) · [Autoritative Gegner der Probe](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/51a7cf2e662b30589ba8b8b7b68e23da0f0508a3/avereth-engine/src/checks.js#L36)
+
+**Empfehlung zur Entscheidung:** Bei einem Ortswechsel soll ein am Ausgangspunkt anwesender NPC erst durch einen tatsächlichen Mitreise- oder Eintrittsbeleg am Ziel zum Beobachter einer mechanischen Probe werden. Dafür reichen die vorhandenen Meldeformen `arrive.with` und `enter`. Diese Ausnahme würde die bestätigte Gleichwertigkeit von `enter`, `aware` und `position` für diesen Fall einschränken und eine zusätzliche Zustandsprüfung erfordern. Alternativ kann der Nutzer die Zustandsmeldung als maßgeblich akzeptieren, auch wenn ein falsch eingeordnetes X über die Anwesenheit hinaus den Wurf beeinflusst. Das bisher ausdrücklich beschriebene Garrick-Risiko umfasste einen erzählerisch korrigierbaren Szenenfehler. Der Hesk-Fall geht darüber hinaus. Keine der beiden Varianten wurde als neue Fachregel festgeschrieben.
+
+### Erstantworten und historische Regression
+
+Für die archivierten Reparaturanfragen wurden Originalchat und physische `requests.jsonl.gz` nach Antworttext und Nachrichtenidentität zugeordnet, beim gesonderten Surrender-Vertrag über das JSON-Feld `reply`. Die X-Ausgaben kamen aus den zugehörigen `raw-<id>.gz`, einschließlich der zusammengesetzten Streaming-Fragmente. Jeder Vergleich begann auf dem gefalteten Originalpräfix. Dies ist eine Offline-Auswertung mit fest vorgegebenen Modellantworten.
+
+| Stichprobe der 67 Reparaturanlässe | .251 | .257 |
+|---|---:|---:|
+| Verarbeitungsversuche insgesamt einschließlich eingespeister Wiederholungen | 132 | 85 |
+| Bereits nach der ersten Antwort angewandt | 2 | 48 |
+| Erst mit der zweiten Antwort angewandt | 63 | 17 |
+| Abschluss `failed` | 2 | 2 |
+
+Bei **46** früher reparierten Fällen wurde auf .257 bereits die Erstantwort angewandt. Bei **29/67** unterschieden sich die aufgezeichneten Ereignisfolgen nach Ausklammern von `extract.applied` und `delta.rejected`. Das sind Unterschiede gegenüber der lokalen .251-Verarbeitung derselben Antworten. Bei AL M21 schlug der Surrender-Abschluss auf beiden Ständen fehl. Pine M23 wurde nur auf dem Kandidaten angewandt, Reed M23 nur auf der Basis. Die 47 weniger verwendeten eingespeisten Requests sind eine Korpusmessung ohne tatsächliche Kostenersparnismessung.
+
+Das vollständige historische Replay umfasst **2.235 Nachrichten**. Gegen die .126-Referenz wichen auf .257 insgesamt 1.392 ab. 1.196 entsprachen exakt den bereits akzeptierten Fingerprints. Offen blieben 196. Ein getrennter Vergleich von zwei vollständigen neuen Läufen auf .251 und .257 isolierte dieselben 196 Änderungen. Die übrigen 2.039 Nachrichten stimmten bei diesem direkten Vergleich überein.
+
+| T3-Einstufung | Vorläufiges Ergebnis |
+|---|---|
+| Beabsichtigte semantische Verbesserung | Über die gezielten Originaltests belegt, unter anderem die Verkäuferin bei Martin. Für die historische Abnahme wurde kein Fall allein aufgrund zusätzlicher Präsenz oder neuer Fakten freigezeichnet. |
+| Darstellung oder Protokoll | Bei 164 Fällen blieb die geordnete Folge der übrigen Weltereignisse gleich, wenn Audit und `extract.applied`, der geänderte NOTHING-TO-BOOK-Hinweis sowie fehlendes gegenüber explizit leerem Reichweitenfeld ausgeklammert werden. Diese Gruppierung dient der Prüfung, kein neuer Fingerprint wurde angenommen. |
+| Mechanische Wirkung | Bei 32 Fällen änderten sich weitere Ereignisse. Die nachfolgende Liste zeigt die konkreten Unterschiede. |
+| Ungeklärt | Die fachliche Zulässigkeit der mechanischen Änderungen ist nicht durchgehend geklärt. Die einmalige verbindliche Neubewertung der Fingerprints bleibt ausgesetzt. |
+
+**Zwei spielrelevante historische Abweichungen:**
+
+- **b18-warrior#180, Marens Mühle.** Der archivierte Planner hatte ein freies Ziel ohne Orts-ID gebucht. Die erste X-Antwort meldet in `scene`, `expected.at` und `arrive.at` konsistent einen neuen Ort „Maren's millhouse“. Auf .251 löste allein die erneute Meldung des bekannten Müllers per `person.new` am abweichenden Ort den Repair aus. Die zweite Antwort benannte dann die bestehende `loc.the_millrace_millhouse`. Auf .257 wurde die erste Antwort angewandt und `loc.alderwatch.marens_millhouse` angelegt. Alaric erhielt 20 statt insgesamt 60 Reiseminuten, End-MP 89 statt 93. Im Save gab es neben der Mühle auch den Mühlenhof und den Mühlgraben. Die bekannte Orts-ID war im autorisierten GO und in den Ortsmeldungen der Erstantwort nicht enthalten. Ein weiterer Pflichtbeleg oder ein neuer Parser für Besitzformen wurde nicht eingeführt.
+- **b16-rogue-sale#68, Gildenabgabe.** Im alten Spielerrecord sind der bedingte Turn-in und `booked.turnIns` vorhanden. `outcome.desk` fehlt. Der neu eingetretene Clerk erhielt auf .251 das Wissen über die abgeschlossene Otterhundquest und auf .257 nicht. Der erfolgreiche formale Turn-in ist von diesem fehlenden persönlichen Wissenseintrag zu unterscheiden. Für Altsaves ist die bestehende Turn-in-Buchung ein geeigneter Ausgangspunkt für die weitere Korrektur.
+
+Die Einzelzeilen nennen nur die zwischen beiden Replayausgaben abweichenden Weltereignisse. Bei identischen Kurzbezeichnungen können sich gespeicherter Inhalt oder Provenienz unterscheiden. Die vollständigen Fingerprints wurden nicht überschrieben.
+
+| Archivrecord | Nur .251 bzw. frühere Fassung | Nur .257 bzw. neue Fassung |
+|---|---|---|
+| b16-rogue-sale#12 | quest.detailed quest.thin_the_stranglewillow_sprouts, memory.recorded Adventurers' Guild hall, Glassmere: | extract.failed |
+| b16-rogue-sale#68 | knowledge.gained npc.npcglassmere_guild_clerk / f.pc.completed.quest.cull_the_gravel_bar_otterhounds | – |
+| b17-mage#178 | scene.entered npc.npcgatewatchman, memory.recorded Ashbridge: {pc}: "I show the healer | memory.recorded Ashbridge: {pc}: "I show the healer |
+| b17-mage#200 | entity.created npc.npcguildclerk, scene.entered npc.npcguildclerk, scene.tactical, fact.asserted occupation, knowledge.gained npc.npcguildclerk / f.pc.appearance, memory.recorded first saw {pc} at Ashbridge, memory.recorded Ashbridge: {pc}: "I collect the kni | memory.recorded Ashbridge: {pc}: "I collect the kni |
+| b17-rogue#122 | scene.entered npc.npcfisher | scene.entered npc.npcfisher, scene.position npc.npcfisher |
+| b17-rogue#170 | offer.created npc.npceel_pitcher_innkeeper 8 cp | offer.created npc.npceel_pitcher_innkeeper 8,3 cp |
+| b17-rogue#192 | object.created crusted leather pouch | – |
+| b17-warrior#30 | fact.asserted wolf_sign | fact.asserted aware, fact.asserted said, fact.asserted wolf_sign |
+| b17-warrior#64 | fact.asserted offer | fact.asserted aware, fact.asserted toll, fact.asserted offer |
+| b17-warrior#182 | – | scene.entered npc.pimm, entity.updated npc.pimm |
+| b17-warrior#184 | place.created loc.crownheart.crossed_oar_and_tankard_lodging_house | place.created loc.crownheart.crossed_oar_and_tankard_lodging_house |
+| b17-warrior#192 | scene.entered npc.pimm, entity.updated npc.pimm, scene.awareness npc.pimm, fact.asserted wasp_activity, thread.set, memory.recorded the timber wharves of Crownheart: { | fact.asserted wasp_activity, memory.recorded the timber wharves of Crownheart: { |
+| b17-warrior#274 | place.created loc.hollow_with_the_wolf_den_under_the_fallen_slab.den_under_the_fallen_slab, link.set | – |
+| b17-warrior#284 | object.created frozen wild doe carcass, entity.created mon.monfourth_bramble_wolf, scene.entered mon.monfourth_bramble_wolf, entity.updated mon.monfourth_bramble_wolf, scene.awareness mon.monfourth_bramble_wolf, scene.position mon.monfourth_bramble_wolf, memory.recorded the Barrowfield bramble › clearing | memory.recorded the Barrowfield bramble › clearing |
+| b18-mage#12 | extract.failed | time.advanced 45 min, entity.updated npc.npcguild_clerk, scene.moved realm.duskreach.culvert_on_the_old_quarry_track_east_of_ashbridge, place.updated, intent.set, entity.created mon.adderquarry_track, scene.entered mon.adderquarry_track, entity.updated mon.adderquarry_track, scene.awareness mon.adderquarry_track, time.advanced 15 min, memory.recorded culvert on the old quarry track eas |
+| b18-rogue#84 | – | fact.asserted position |
+| b18-rogue#130 | – | offer.created npc.master_hult 6 cp |
+| b18-rogue#142 | scene.awareness mon.creaturemillpond_turtles_1 | – |
+| b18-rogue#368 | extract.failed | time.advanced 5 min, fact.asserted examined, fact.asserted assessment, thread.set, memory.recorded Adventurers' Guild hall, Alderwatch |
+| b18-warrior#54 | fact.asserted remark | object.moved, fact.asserted remark |
+| b18-warrior#64 | entity.created mon.creaturequarry_boar_1, scene.entered mon.creaturequarry_boar_1, entity.updated mon.creaturequarry_boar_1, memory.recorded the woods along the Greyvein quarry | memory.recorded the woods along the Greyvein quarry |
+| b18-warrior#106 | scene.entered npc.maren, entity.updated npc.maren, memory.recorded {pc} came down off the boar shelf a, memory.recorded the Millrace millhouse: {pc}: "I co | memory.recorded the Millrace millhouse: {pc}: "I co |
+| b18-warrior#164 | entity.created npc.npcpart_buyer, scene.entered npc.npcpart_buyer, scene.tactical, fact.asserted occupation, scene.awareness npc.npcpart_buyer, offer.created npc.npcpart_buyer None,None,None,None cp, knowledge.gained npc.npcpart_buyer / f.pc.appearance, memory.recorded first saw {pc} at part-buyer's awni, memory.recorded part-buyer's awning: {pc}: "I walk | memory.recorded part-buyer's awning: {pc}: "I walk |
+| b18-warrior#180 | scene.moved loc.the_millrace_millhouse, scene.entered npc.maren, fact.asserted aware_of_alaric, memory.recorded Maren saw {pc} return to the millho, time.advanced 40 min, resource.changed mp 93, memory.recorded the Millrace millhouse: {pc}: "I le | place.created loc.alderwatch.marens_millhouse, scene.moved loc.alderwatch.marens_millhouse, memory.recorded Maren's millhouse: {pc}: "I leave t |
+| b18-warrior#222 | scene.entered npc.npcguild_clerk, memory.recorded Adventurers' Guild hall, Alderwatch | memory.recorded Adventurers' Guild hall, Alderwatch |
+| b19-mage#18 | – | fact.asserted postern_rule, fact.asserted directions |
+| b19-mage#98 | – | scene.entered npc.fisherman, entity.updated npc.fisherman, scene.awareness npc.fisherman, quest.detailed quest.cull_the_reed_flat_otterhounds, knowledge.gained npc.fisherman / f.pc.appearance, memory.recorded first saw {pc} at otterhound den en |
+| b19-mage#104 | fact.asserted wares | – |
+| b19-rogue#38 | fact.asserted stock_note | fact.asserted stock_note |
+| b19-warrior#230 | fact.asserted trail, fact.asserted tracks | fact.asserted trail |
+| b19-warrior#326 | fact.asserted armor_set_ready | fact.asserted armor_set_ready |
+| b19-warrior#328 | offer.created npc.npclandlady 8 cp | offer.created npc.npclandlady 8,6 cp |
+
+### T1, Installation und nächster Entscheid
+
+Auf .251 bestanden **3.609/3.609** Node-Tests. Auf .257 bestanden **3.530/3.633**, 103 schlugen fehl, kein Test wurde übersprungen. Ein Teil erwartet das alte Verhalten, etwa eine Reparatur nach einem isolierten ungültigen Delta, die Ungültigkeit der ganzen Antwort oder grammatische Ablehnung einer ausdrücklich gemeldeten Anwesenheit. Der Hesk-Fall prüft dagegen den gespeicherten Aufenthaltsort und die tatsächliche Probe. Die 103 Fehler wurden deshalb nicht pauschal in neue Erwartungen umgewandelt. Die gezielte Gruppe aus Reise-, Kampagnen- und Recoverytests bestand mit 69/69, einschließlich verweigerter Ortszuordnung und der Revisionssperren bei noch offener gebuchter Aktion.
+
+Reproduktion nach Checkout des jeweiligen angegebenen Commits im Verzeichnis `avereth-engine`:
+
+```sh
+node --test --test-name-pattern='156 original journey' tests/v4/fix156_stealth_manner.test.js
+node --test tests/v4/patch5.test.js
+npm test
+npm run replay:check -- --categories
+```
+
+Das Kategorienflag und die zusätzlichen Harrowby-Prüfungen sind auf dem Kandidaten vorhanden. Das historische Replay kann auf der Basis mit `npm run replay:check` ausgeführt werden. Die zugrunde liegenden alten Referenzen und akzeptierten Fingerprints sind erhalten.
+
+**Installationsstand.** Für diesen Zwischenstand lautet die Empfehlung NO-GO für eine persönliche Installation. Bei einer späteren Freigabe betrifft der Austausch die SillyTavern-Extension `avereth-engine` einschließlich `manifest.json`, `package.json`, `src/` und `content/deltas.json`. Das Paket benötigt keine zusätzliche Character Card, keinen Preset-, Lorebook-, Regex- oder Narrator-Contract-Import. Quellstand und Version müssen innerhalb der Extension zusammenpassen.
+
+Der Kanon ist auf seinem bisherigen Stand. Etappe F und natürliche Modellabnahme wurden nicht ausgeführt, Providerkosten 0 USD. Die abschließende fachliche Einzelprüfung aller mechanischen Replayabweichungen, eine grüne Node-Abnahme und der unabhängige GPT-Diffreview stehen aus.

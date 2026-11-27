@@ -39,6 +39,8 @@ Die Mutterläufe liefern die Vorgeschichte. Jeder neue Arm übernimmt seine voll
 | Unterkunft und Ortssteuerung | Linden zeigt den noch fehlenden Zimmerzugang nach Bezahlung. Birch enthält den bezahlten Zugang, Rast, Rückkehr zu Madge, gebuchte Mahlzeit und Marktbesuch. Willow wählt den bekannten Ort im echten Browser und kauft die Mahlzeit aus dem Angebot. |
 | Noch getrennt bewerten | Eine größere Gruppe, erneute Kapitulation und eine andere Modellroute benötigen jeweils eigene Spielbelege. Eine erfolgreiche technische Regression ersetzt diese Spielerfahrung nicht. |
 
+**Reise- und Zeitgrenzen.** Vor PULSE, einem Wegblocker oder einem laufenden Kampf eröffnet eine frühere Orts-ID keinen Seitenweg. Ein Zwischenhalt bucht nur das tatsächlich zurückgelegte Stück und die damit verbundenen persönlichen Reise-MP. Die regulären Reise-/PULSE- und Partyfälle laufen in der Node-Suite mit. Das native Ziel überspringt ausschließlich die Zielübersetzung durch P. Ein berechtigtes N- oder X-Ergebnis kann den tatsächlichen Halt weiterhin von der gewählten Absicht unterscheiden.
+
 **Kleine RPG-Bedienhilfen.** Das bestehende Handels-HUD zeigt konkrete Angebote mit Gegenpartei, Zeile und Preis und hat in Willow eine angebotene Mahlzeit tatsächlich gebucht. Bei mehreren gleich nahen Schildkröten hat die Engine die drei konkreten Optionen angezeigt und keine Ressourcen verbraucht. Der Spieler kann ein bestimmtes Ziel nennen oder im Kampf auswählen. Eine erneute Frage nach demselben „nächsten“ Ziel bringt keine zusätzliche Information. Eine direkte Auswahl schon bei der ersten Klärung vor Kampfbeginn wäre eine sinnvolle spätere Bedienverbesserung. Beim Lernen lassen sich Quelle, aktuelle LP und Zielwert am bestehenden Lernziel ablesen. Ein weiterer Vertrag oder ein eigener Modellaufruf pro Lernfortschritt ist dafür nicht erforderlich.
 
 ## Installation seit persönlichem Build .220
@@ -78,4 +80,44 @@ Martin verwendete beim Abmarsch auf .251 dieselben Worte. Diesmal erreichte er d
 **Offener Befund zur Wiedererkennung.** Bei Martins Rückkehr stimmte der Markt. X meldete die bekannte Lederarbeiterin als angetroffen und zitierte ihren Verkaufsstand sowie den anschließenden Satzteil „she looked up“. Die aktuelle Belegprüfung verwarf diese indirekte Identifikation mit `met_evidence`. Reed übernahm diesen exakten Endstand. Auch nach der nächsten Frage sprach die Erzählung mit ihr, während die Szene nur Alaric enthielt. Ein weiterer Kauf bei ihr wurde nicht versucht. Eine verlässliche mechanische Interaktion mit dieser Verkäuferin ist an dieser Stelle deshalb nicht belegt. Der Hinweis selbst blieb spielbar: Alaric suchte den Fischer an der tatsächlich gespeicherten alten Brücke auf. Bei diesem zweiten Kontakt misslang ein zusammengesetzter Wiedererkennungsbeleg ebenfalls, ein anderer gültiger Beobachtungspfad stellte Tam aber wirklich in die Szene. Das weitere Gespräch hinterließ neue Threads. Die Begründung, dass ein bekanntes Geschäft allein keine Anwesenheit seines Inhabers garantieren darf, bleibt richtig. Eine allgemeine Ersetzung dieser Prüfung durch die Orts-ID oder eine Satzschablone für Besitzanzeige und Pronomen würde auch unbesetzte Verkaufsstände und unterschiedliche Personen treffen. Der relevante nächste Vergleich ist eine identische Rückkehr zu besetztem und unbesetztem Stand, einschließlich anschließender tatsächlich buchbarer Dienstleistung. [Martin](../testrun_10b/openrouter-20261127-martin-251/) · [Reed](../testrun_10b/openrouter-20261127-reed-251/)
 
 **Empfehlung für Usertest 17.** GO nach unauffälligem unabhängigem GPT-Diffreview. Die wiederkehrende Blockade des bekannten Gasthauswegs und die Standardorganisation sind im zusammenhängenden Spiel überwunden. Zwei vollständig abgerechnete Gruppenaufträge, die Verwendung des selbst erlernten Skills und der Ausrüstungskauf tragen diese Empfehlung. Sie gilt mit offenem Befund zur Wiedererkennung gewöhnlicher NPCs und mit dem beobachteten Zeitaufwand eines manuellen X-Retry. Ein persönlicher Test kann jetzt bewerten, wie verständlich Ortswahl, Partyführung und Vergütung sind und wie oft der verbleibende Präsenzfehler tatsächlich stört. Die Entscheidung über den Spieltest liegt beim Nutzer. Es gab keinen Produktmerge.
+
+## Modellarchive und Kosten
+
+Jeder Arm nutzt die aufgeführte vollständige Elternrevision. Für die neuen Läufe galt dieselbe Modellroute `z-ai/glm-5.3-flash` bei `wafer/us`. Die Engine entschied lokale Aktionen ohne P/N/X. Ein früherer Arm und seine Fortsetzung teilen im Chat die Vorgeschichte, während die folgende Rechnung jeden physischen Request genau einmal erfasst. Die zwei ausschließlich lokalen Klassenwahlversuche haben je einen eigenen Archivstand.
+
+| Lauf | Build | Spielereingaben / geprüfte Abschlüsse | Physische Requests | USD |
+|---|---|---:|---:|---:|
+| [Linden](../testrun_10b/openrouter-20261127-linden-246/) | .246 | 1 / 1 | 4 | 0.002775540 |
+| [Birch](../testrun_10b/openrouter-20261127-birch-247/) | .247 | 6 / 6 | 15 | 0.009398192 |
+| [Willow](../testrun_10b/openrouter-20261127-willow-247/) | .247 | 3 / 3 | 8 | 0.005533762 |
+| [Hazel](../testrun_10b/openrouter-20261127-hazel-248/) | .248 | 5 / 5 | 21 | 0.013541398 |
+| [Sage](../testrun_10b/openrouter-20261127-sage-248/) | .248 | 9 / 9 | 22 | 0.012982874 |
+| [Juniper](../testrun_10b/openrouter-20261127-juniper-249/) | .249 | 6 / 6 | 16 | 0.010475734 |
+| [Cypress](../testrun_10b/openrouter-20261127-cypress-250/) | .250 | 8 / 8 | 20 | 0.012807622 |
+| [Elm](../testrun_10b/openrouter-20261127-elm-250/) | .250 | 3 / 3 | 7 | 0.004565570 |
+| [Fern](../testrun_10b/openrouter-20261127-fern-250/) | .250 | 2 / 2 | 5 | 0.003464742 |
+| [Heron](../testrun_10b/openrouter-20261127-heron-250/) | .250 | 8 / 8 | 23 | 0.014121220 |
+| [Kestrel](../testrun_10b/openrouter-20261127-kestrel-250/) | .250 | 2 / 2 | 0 | 0 |
+| [Pine](../testrun_10b/openrouter-20261127-pine-250/) | .250 | 1 / 0 | 4 | 0.002722332 |
+| [Rook](../testrun_10b/openrouter-20261127-rook-250/) | .250 | 6 / 6 | 16 | 0.009556458 |
+| [Swift](../testrun_10b/openrouter-20261127-swift-250/) | .250 | 2 / 2 | 0 | 0 |
+| [Martin](../testrun_10b/openrouter-20261127-martin-251/) | .251 | 5 / 5 | 15 | 0.009068474 |
+| [Oriole](../testrun_10b/openrouter-20261127-oriole-251/) | .251 | 7 / 7 | 15 | 0.010601772 |
+| [Reed](../testrun_10b/openrouter-20261127-reed-251/) | .251 | 3 / 3 | 10 | 0.005924232 |
+
+**Dieser Folgeauftrag:** 201 physische Anfragen und 0.127539922 USD. Mit den vorherigen 195 Requests für 0.125032072 USD ergeben sich **396 Anfragen, 0.252571994 USD Gesamtverbrauch und 0.747428006 USD Rest** des freigegebenen Dollars. Alle Anfragen sind abgerechnet. Die frühere Serie .222–.235 gehört zu einem anderen Auftrag.
+
+| Physische Rolle im Folgeauftrag | Anfragen | Inputtokens | Outputtokens | Median in Sekunden |
+|---|---:|---:|---:|---:|
+| board | 2 | 6415 | 2076 | 6.92 |
+| extractor | 81 | 1257933 | 42078 | 3.71 |
+| narrator | 63 | 744675 | 28470 | 4.88 |
+| party_decision | 1 | 257 | 48 | 0.88 |
+| planner | 54 | 730821 | 5088 | 1.33 |
+
+Der Folgeauftrag umfasst 2740101 Input- und 77760 Ausgabetokens. Die Summen enthalten die bezahlten Reparaturen. Fehlende Weltberichte werden nicht als abgeschlossene Interaktionen gezählt. [Messwerte je Lauf](ortssteuerung_245/messwerte.json) · [Auswertung](ortssteuerung_245/messung.py)
+
+SillyTavern 1.19 auf dem finalen Produktcommit bestand in der isolierten Browserabnahme Party (44/44), Szene (33/33), Handel (41/41), Speichern und Revisionen (60/60) sowie Streaming (59/59). Eine zusätzliche Browserprobe am Zimmerpräfix prüfte den tatsächlich angezeigten Rückweg, einen vorbereiteten Texteingabeentwurf und eine veraltete Ortsauswahl. Beide unzulässigen Klicks ließen den Chat unverändert. Nach dem Reload waren die 81 Nachrichten und der vollständige Weltzustand identisch. Das isolierte Kontrollprofil registrierte dabei null Modellversuche. [ST-Ergebnisse](ortssteuerung_245/st-pruefungen.json)
+
+Der kumulative Archivtest verifizierte 807 Dateien und alle 396 physischen Anfragen der Ein-Dollar-Serie.
 

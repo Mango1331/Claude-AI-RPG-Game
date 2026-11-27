@@ -1,0 +1,78 @@
+{
+  "product": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
+  "ST": "1.19.0",
+  "modes": {
+    "party217": {
+      "mode": "party217",
+      "ok": true,
+      "exit": 0,
+      "line": "LIVE SILLYTAVERN SMOKE C: OK",
+      "seconds": 126,
+      "checks": 44,
+      "passed": 44,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 41
+    },
+    "scene221": {
+      "mode": "scene221",
+      "ok": true,
+      "exit": 0,
+      "line": "LIVE SILLYTAVERN SMOKE C: OK",
+      "seconds": 53,
+      "checks": 33,
+      "passed": 33,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 24
+    },
+    "trade_hud": {
+      "mode": "trade_hud",
+      "ok": true,
+      "exit": 0,
+      "line": "LIVE SILLYTAVERN SMOKE C: OK",
+      "seconds": 66,
+      "checks": 41,
+      "passed": 41,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 25
+    },
+    "action_saves": {
+      "mode": "action_saves",
+      "ok": true,
+      "exit": 0,
+      "line": "LIVE SILLYTAVERN SMOKE C: OK",
+      "seconds": 98,
+      "checks": 60,
+      "passed": 60,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 40
+    },
+    "narrator_streaming": {
+      "mode": "narrator_streaming",
+      "ok": true,
+      "exit": 0,
+      "line": "LIVE SILLYTAVERN SMOKE C: OK",
+      "seconds": 292,
+      "checks": 59,
+      "passed": 59,
+      "failed": [],
+      "page_errors": 0,
+      "calls": 71
+    }
+  },
+  "route": {
+    "head": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
+    "expectedRoom": true,
+    "draftPreserved": true,
+    "staleRejected": true,
+    "afterReload": {
+      "world": "44206cff01e39cb3e9dd94b9a55bbc19ad8361c51151bab2c50fe9ae586f678a",
+      "events": "88f1d1a6891ef6966b63787272e2a1eec778d6fd2c8363a0831a151d0c44bba0",
+      "messages": 81
+    },
+    "modelAttempts": 0
+  }
+}

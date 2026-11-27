@@ -1,0 +1,38 @@
+{
+  "build": "4.3.0-c.6.6.235",
+  "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Vollständiger AI2 einschließlich der Klärung. Eigene Startwelt stimmt mit AI2 überein.",
+  "savedMessages": 23,
+  "requests": 7,
+  "costUSD": "0.03024390",
+  "usage": {
+    "prompt_tokens": 99394,
+    "completion_tokens": 1656,
+    "total_tokens": 101050
+  },
+  "sha256": {
+    "actions.jsonl.gz": "e9964ec32bb13b39f62842cf30948f9104472ec10ca8d793b3f3010c88670c63",
+    "chat.jsonl.gz": "52b3add993fe89be71edca88d9d57895f54e0dc12ee1f2acb551a4149c424d2d",
+    "decisions.log.gz": "abcaf0784ceab5d7b8938d6ab4e0433fc1951d736d5efd951102af8b72b29b45",
+    "events.json.gz": "e43006611d34bd0a488b28de530f1b46e3aaa198f1241b3afe40850e32027e5c",
+    "last-verified-world.json.gz": "131f11acc809ee24d2ec752ecbdc3a938671b84ea7633ed9e5837cd6c3c64891",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "3fae8396d70b38d33a43ce05713c15570d4a8d2b6f4f5cb7e96003e4fce8010a",
+    "raw-336.gz": "ba614c365df23057406c29256e8d5bd8f145882ab93e9ffe98b5f04ee570c4c3",
+    "raw-337.gz": "5026db809f18ae748203d2f8dba09037b7d82db8d941622d32c474dcabca228c",
+    "raw-338.gz": "1424e5fe44b10248d1119d6a5751f60dcb004c2211257850d356f14e9f256404",
+    "raw-339.gz": "3e0a71e54efc0ac2cc26beab9192a71570829decfde5bfc04b3da814950c1d7a",
+    "raw-340.gz": "ae304b23b9ef6b2ec6883350d8f3cd7c3786f8d071ba3efbae35be59881daf5b",
+    "raw-341.gz": "c37a4e2881c604e91ea2330e57aba63a2210aae90315bc6dd87fbd79fff522d2",
+    "raw-342.gz": "e1a4f558c6a4bac25653a29343bd11c2d01ef1a69b09b1c98e491824b5e4d0aa",
+    "requests.jsonl.gz": "95ef46848bde26ac81f073453a1dd1a54eeca8f320ea66b74bec099cb8a17633",
+    "st.log.gz": "76893a9a12e5491b7a36129abfc5b2b3735ed1c26b25a196d1dcc1fa274afec0",
+    "turns.jsonl.gz": "c1551665f947092987b0b52a01a5990274854366b472e15b37f876d59f20cf44",
+    "visible.json.gz": "2e26df527de7dde78b5fa15130d01943b301db838875ac268c60c498ebdd2ab9"
+  }
+}

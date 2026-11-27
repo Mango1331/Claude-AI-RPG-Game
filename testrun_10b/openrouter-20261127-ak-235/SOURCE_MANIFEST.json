@@ -1,0 +1,42 @@
+{
+  "build": "4.3.0-c.6.6.235",
+  "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Vollständiger N5-Chat mit gebuchtem Abschluss und anwesendem Ossen. Bitte zu warten, Marktgang, Rückkehr und versuchte Wiederaufnahme.",
+  "savedMessages": 78,
+  "requests": 11,
+  "costUSD": "0.05555310",
+  "usage": {
+    "prompt_tokens": 155222,
+    "completion_tokens": 3102,
+    "total_tokens": 158324
+  },
+  "sha256": {
+    "actions.jsonl.gz": "e9dd05b6ee8c0b21ee20134efbfafc0878aaa81a6cb273dcdd32c8b26ac309be",
+    "chat.jsonl.gz": "b0988e2011fccc0820ba7f9198214b71186237317c44a8c0708805517cc71f5c",
+    "decisions.log.gz": "caa8912a2b6dbcaad44649140c95b460232dbbbd222b22bb6aa829849eec2672",
+    "events.json.gz": "3dde4dda4d00f25d200500675aadd24c460c537e2bf2901f7dc1a412cc8bfd42",
+    "last-verified-world.json.gz": "c61f2756009d3cdfda240455f2c99d0a146ae2e800f76863ee0398edc23f4cb3",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "43661d42e048f6c12da7d2104621bed99e1e1a5adf0d77b50751bb354986bbde",
+    "raw-343.gz": "33dd4b3cb60e97d109071ca506fd2cd3afc97a0473d8165889b40526b339d082",
+    "raw-344.gz": "e98920dfab542303d922e2715f8e84d80c48aa089fc89fb407287245c64d4006",
+    "raw-345.gz": "ce01718165fa8c1a34864e350077e48219f7314e4ff36b841dc3ba851a3b0c59",
+    "raw-346.gz": "8b6c6797975281469ec59bc1976741efa360ee7bf5112224d0040fa55a717b66",
+    "raw-347.gz": "9757dad3db6f6f076ca09718ed9dff3996160c73ec33103e0f87cd4eba13a09a",
+    "raw-348.gz": "ff3be73b931a2d0045d2d205f09da5d3b1930d9629d770a0a9ae4bc404363771",
+    "raw-349.gz": "59cc1b76fbe366a6667170ff8e43e0227f5a4cad002759c84d46f30a06aa7323",
+    "raw-350.gz": "6e4ad37565ac8d7561ac96269ea9c605c61b41592c5347f90f0c875c73806206",
+    "raw-351.gz": "553ac67766d3eb1a8d3e2e2aa7bff3147ba688f97dbdb36b98b63ecce3bdac7b",
+    "raw-352.gz": "233224c0b4b7b47e9501adacc3a8c907b19f93fd75ac002d36e4ddd911087912",
+    "raw-353.gz": "f0bd9919e9a75198a80888ae3948a4ca50d8c8951cfbc53e31ca5f579edffb8b",
+    "requests.jsonl.gz": "714d584d832910caa9739c3a9b7d1d343a1a0dda07110879499e40c1afbbea6a",
+    "st.log.gz": "ef9390346b6970e4216a9dc426c6a76019026b25677ef394b91f86368b426efe",
+    "turns.jsonl.gz": "e3d25ce908816ac7c6ca1f80c651eaa06f844adccb422cdbffb7f7798253d1b3",
+    "visible.json.gz": "0c7aa5c785a62e08b67aefdc7b27b57a462d402ac6563e1db9c4fd8eceec283e"
+  }
+}

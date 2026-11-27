@@ -1,0 +1,36 @@
+{
+  "build": "4.3.0-c.6.6.235",
+  "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Unveränderter User14-Originalchat M0–14, frische freiwillige Anwerbung mit GPT-5.4-mini auf .235.",
+  "savedMessages": 19,
+  "requests": 5,
+  "costUSD": "0.02775885",
+  "usage": {
+    "prompt_tokens": 72563,
+    "completion_tokens": 1294,
+    "total_tokens": 73857
+  },
+  "sha256": {
+    "actions.jsonl.gz": "8daeaf9d05df4f823206a5d505d342b5657617ec82894048caffae21a890c559",
+    "chat.jsonl.gz": "a2e586c9be911c0484821739e53853090a83c156fe2aad79101122e6c54eee15",
+    "decisions.log.gz": "01b00590145cce0a0d0fd0c1d5d804ba66122c7fcc341ece1ecc0b6fd80b66d2",
+    "events.json.gz": "d3e757c95361ed29492139edaef598d500f432f9a5ab07f2eac18d8c85ec0711",
+    "last-verified-world.json.gz": "58b9af1ab54d5eb430b515c462c753037cff397b7da145bf4910684900ff74ce",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "b59481f636d9de5bb17461e6bf60742a456d9b3cdcf1e7b1ff0fb4de72259dad",
+    "raw-331.gz": "00d85c073e9a1e2e076e9bdbbff345bf32546a221ab57409a1649d5aa6cc12a2",
+    "raw-332.gz": "c67d58be6ac14d7016c4cf05e43519f23c70b4279e5c1f0d4e5208fe8c8d3cdf",
+    "raw-333.gz": "de72a0248c951c62e70f7f343b0910b97d13e32c1dcbd9ccc649fe856e475ce9",
+    "raw-334.gz": "e266c748ab8604b4030d8912f1d7b62989a56657b643e3c8d54efb9e24552753",
+    "raw-335.gz": "18a81f419af9345f0fbc6a51d45c878d7bd40e824ef47c32cb797d643245ec8e",
+    "requests.jsonl.gz": "0aeb09f2e0ea2e6b8bfbeee258e55b0670c9972b4194ca9f5de7c477a6f13015",
+    "st.log.gz": "71ea12e702615c36e87d8e57b6372cca477409d34eb19b61d42cb2d146c672c0",
+    "turns.jsonl.gz": "1a64349abbe63e55516bfed559a2b3abf31590c2f9c2889625e487a0184fdc24",
+    "visible.json.gz": "5be4f6a60604258c3bb21f65f0d6365c3c297f6b25b8397a4e8589dbf6f1a1d6"
+  }
+}

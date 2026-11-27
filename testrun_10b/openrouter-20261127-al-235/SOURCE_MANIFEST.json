@@ -1,0 +1,35 @@
+{
+  "build": "4.3.0-c.6.6.235",
+  "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+  "seed": 1466412210,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Unveränderter persönlicher User13 M0–18. Eigenständige, tatsächlich gespielte Kapitulationsansage an drei Banditen.",
+  "savedMessages": 21,
+  "requests": 4,
+  "costUSD": "0.02090475",
+  "usage": {
+    "prompt_tokens": 20475,
+    "completion_tokens": 1233,
+    "total_tokens": 21708
+  },
+  "sha256": {
+    "actions.jsonl.gz": "ea95180f4f23bad8b49bc6b5ba256f090163326d69f76ffd32ff180ad7dc83f9",
+    "chat.jsonl.gz": "ee4b03c99e24306e4a3fd9d87287e95614438dbdfecc662fab9f3eb9c7d07c8d",
+    "decisions.log.gz": "1a80c2122565255fe2f968ce0cc1bf6355501612aea242937b0ecf202b077bc9",
+    "events.json.gz": "e9869ee447e6d2f53f8213f907e6f149bca847b0c93bd1fb6c498efd677cf170",
+    "interrupted-browser-chat.json.gz": "7ad1c9135764e923e4edaf1e291dc2b069361795ff3a2c24b7743361b9089dc3",
+    "last-verified-world.json.gz": "327aea502fb08db9fbade229e9a6f2800c9b20d630fe0ddc887fa1d7de393003",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "83a8ff0a87083d072be916a2810976f973b2164a87b246e66f578a104fb9cdf2",
+    "raw-354.gz": "b49192b0b0bed84231af01784ff1f43215243d99fdbcfc71bd47f5ff58f49795",
+    "raw-355.gz": "a50bd5c4cdb60d29c92c1ba6e555528ae6847d3cbccf03560b9790fc568efb53",
+    "raw-356.gz": "ca2539b1ff65416c7577932f9a40b549351afb13937d212ca105e15223f1af8e",
+    "raw-357.gz": "c331a6488b0ef476895e8abf4fba1a7c5a640abbe8f63aa75abb3fe24d2e1dd9",
+    "requests.jsonl.gz": "d193c7e20719df85db217004a59d77fd3afcd490218137dc065164d7dd2df54d",
+    "st.log.gz": "8b561fb1b35523d6728fb20be2e0fa71c87207b0eb1aa318b3ba077e12fffc42",
+    "visible.json.gz": "15a532901d16092e1a1da8b98d0127e1fb1f8f1ee39b177a7348bb86321f6a7e"
+  }
+}

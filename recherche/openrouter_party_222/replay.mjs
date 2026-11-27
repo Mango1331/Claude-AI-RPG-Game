@@ -78,3 +78,17 @@ for (const [run,mode] of [['ac-234','left'],['z-234','left'],['x-233','follow']]
     assert.equal(host.foldChat(prefix).state.party.members['npc.ossen'].mode,mode,run);
 }
 console.log('Q/R original visual reports and AC/Z/X original departure decisions verified.');
+
+// Baseline of the open attribution finding for the independent review.
+for (const [run,length] of [['ai-235',17],['aj-235',21]]) {
+    const chat = messages(run);
+    const answerAt = chat.findIndex((m,i) => i>=length-1 && host.rec(m)?.rejected?.some(x =>
+        x.rule==='party_decision' && x.why==='The decision needs words from the identified speaker.'));
+    assert.ok(answerAt>=0,run);
+    const prefix = chat.slice(0,answerAt+1);
+    const report = host.rec(prefix.at(-1)).extraction.raw;
+    const state = await extract(prefix,JSON.stringify(report));
+    assert.ok(!state.party.members['npc.ossen'],run);
+    assert.ok(Object.values(state.party.agreements).some(a=>a.phase==='open' && a.who==='npc.ossen'),run);
+}
+console.log('AI/AJ: spoken consent remains an open proposal on .235.');

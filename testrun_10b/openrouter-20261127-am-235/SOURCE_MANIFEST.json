@@ -1,0 +1,34 @@
+{
+  "build": "4.3.0-c.6.6.235",
+  "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+  "seed": 3509323178,
+  "model": "openai/gpt-5.4-mini",
+  "provider": "openai",
+  "reasoning": "low",
+  "st": "1.19.0",
+  "prefix": "Vollständiger echter I17-Kampf, Startwelt verglichen. Gemeinsame Rückzugsansage gegen den überlebenden Untoten.",
+  "savedMessages": 53,
+  "requests": 3,
+  "costUSD": "0.02692860",
+  "usage": {
+    "prompt_tokens": 33194,
+    "completion_tokens": 1047,
+    "total_tokens": 34241
+  },
+  "sha256": {
+    "actions.jsonl.gz": "dfbf8b4a7e9f2125d99b4ccb6d5bf5848fab419b11ccd08a8b65531b3bb7e1ef",
+    "chat.jsonl.gz": "5ff5ab7ef75f5069b466377ad7c7c9915782d827ba20a4eb5fcdac41bf9cc189",
+    "decisions.log.gz": "42eebf87a9f991ff8cea2bf58cb18f3c6a1e5ff187d5f070e76fcccf72b4e3d2",
+    "events.json.gz": "f1a7a6dd1c463ff452e27a994031c5fb5c65d568988978a3b49e213a1975f70f",
+    "last-verified-world.json.gz": "9bdae73f0f1cf0c7cc0983b43562aba0339e9fcc1f9825e76fcbf6da73932870",
+    "player.log.gz": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+    "profile.json.gz": "805f42f1db06a96e68e47038709f075ce911f3cebc86f09a142e3d6b227769cd",
+    "raw-358.gz": "44fd31dd21565b8bb75b133f64e86ee4c679099a898578fdbbef94b89a7130ff",
+    "raw-359.gz": "196e578ce1e04c6e931a62f6397314a7c38d4f3ec2eb10f0d71141f7ad72bf06",
+    "raw-360.gz": "15b36610572f9806a57a98f0d17477cebf73d1543dfc4e59df3c874272013894",
+    "requests.jsonl.gz": "b110002437960100a7202f753846bf7ae79c62dbcbe190c69be10a1798e92b6e",
+    "st.log.gz": "d71070426c5ac82226874cb9184ebede920840b6b4c724bc06b30d753744322a",
+    "turns.jsonl.gz": "55e1ff8d1f69f203ecf7356982b4214ee85bcd8e753f2e50911ee0482cf669c1",
+    "visible.json.gz": "62e45784407f9ff13cf0f67fb9c6a18e3706ba8904354d38237d62054e6104ab"
+  }
+}

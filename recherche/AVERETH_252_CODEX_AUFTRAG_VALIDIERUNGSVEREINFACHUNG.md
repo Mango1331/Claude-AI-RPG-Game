@@ -123,11 +123,7 @@ Diese Entscheidungen entsprechen den Empfehlungen aus Stand 2 § 12. Der Nutzer 
 
 ### Etappe D · Gewachsene Altpfade (P7, P8, P9a)
 
-**Party (P7):**
-- Die X-Akte `accept`, `follow`, `wait` und `coordinate` entfallen im Vokabular. Ältere Antworten, die sie enthalten, werden ohne Reparatur ignoriert und protokolliert.
-- Ein X-`party offer` eines NPC wird ohne `evidenceOf`/`unchangedAnswer` als offenes Angebot gespeichert. Zustandsprüfung: bekannt, lebt, anwesend, kein Mitglied. Die Bedingungen stehen sichtbar auf dem Angebot.
-- Die Annahme erfolgt nur über Spieleraktion (Planner, HUD, `#party`). Ein `leave` eines Mitglieds läuft über die vorhandene Party-Logik.
-- Strukturierte `party_decision`, Eigentums- und Anspruchsregeln bleiben unverändert.
+**P7 vollständig zurückgestellt (Nutzerentscheidung nach GPT- und Claude-Gegenreview).** Alle Party-Akte des X-Vertrags, eigenständige NPC-Entscheidungen, Sprecherzuordnung, Annahme, Ablehnung und NPC-Angebote behalten ihren Umfang von .251. Dies präzisiert D8. Für die Abnahme gelten die dokumentierten Schutzfälle zu Schutzbitte, kombinierter Kampfaktion und Wache. [Gegenproben](AVERETH_252_VALIDIERUNGSVEREINFACHUNG_ABNAHME.md)
 
 **Desk (P8):** Die `deskHandlers`-Bindungen bleiben, nur die Sprachprüfung entfällt.
 - Genau ein Gildenmitarbeiter der Halle anwesend: Er erhält das Wissen.
@@ -141,7 +137,7 @@ Diese Entscheidungen entsprechen den Empfehlungen aus Stand 2 § 12. Der Nutzer 
 
 **Abnahme:**
 - Die Partyabnahmen .236–.250 grün.
-- Vale M25 (Angebote von Ossen und Garrick) ergibt zwei offene Angebote, Cypress M69 und Vale M35 keine Party-Buchung.
+- Vale, Cypress und die Schutzfälle zur taktischen Koordination werden gegen das bestehende Partyverhalten aus .251 geprüft.
 - Desk mit einem bzw. zwei Mitarbeitern.
 - Martin M11 mit `currency_quote: "eight silver"` ergibt 120 cp für die zweite Zeile. Zwei Währungen ergeben keinen Preis.
 

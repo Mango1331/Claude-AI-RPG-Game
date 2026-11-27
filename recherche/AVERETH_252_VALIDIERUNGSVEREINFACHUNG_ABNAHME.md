@@ -22,3 +22,7 @@ Alaric bittet Ossen um Schutz. Ohne delegierte taktische Befugnis speichert der 
 Empfohlen ist eine eng begrenzte Ausnahme in P7 für die NPC-Antwort auf eine offene taktische Bitte. Dazu lässt sich der vorhandene Pfad für übereinstimmende Person, Priorität und Ziel erhalten, einschließlich der Möglichkeit zur Ablehnung. Diese Entscheidung betrifft auch die Wachübernahme. Eine direkte Ausführung allein auf die Spielerbitte würde die bisherige Befugnis des Spielers ändern. Über die Ausnahme entscheidet der Nutzer.
 
 Produktdiff und Zeilenbilanz gegenüber `4933a5f0` sind leer. Es gab keinen Produktcommit, neuen Build oder Installationsbedarf. Die übrigen Messungen aus Etappe 0, die Implementierung A–D, T1-Gesamtsuite, kategorisiertes T3-Replay, isolierte ST-Abnahme und der Vorher-/Nachher-Vergleich der Requestgrößen sind **nicht ausgeführt**. Es gab keine Provideranfragen.
+
+## Entscheidung nach dem Gegenreview
+
+Der Nutzer hat P7 nach Prüfung durch GPT und Claude für dieses Paket vollständig zurückgestellt. Eigenständige taktische Entscheidungen bleiben auch ohne offene Bitte möglich. Sämtliche Party-Akte im X-Vertrag, Sprecherbindung, Zustimmung, Ablehnung und Angebote behalten ihren bisherigen Funktionsumfang. Die Gegenproben zu Schutz und Wache gehören zur Abnahme. Der Implementierungsauftrag gilt für 0, A, B, C, P8, P9a und E.

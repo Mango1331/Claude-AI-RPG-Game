@@ -856,7 +856,7 @@ export function buildContext(state, content, opts = {}) {
         const area = lineage(state, state.scene.at).map(id => state.places[id]).find(p => p.encounter_levels);
         if (area) add('world_area', `AREA LEVELS — ${area.name}: ${area.encounter_levels.join('–')}. Fixed world default for suitable new outdoor foes, never PC scaling. Specific local populations and existing individual profiles take priority.`, 0);
         else if (lineage(state, state.scene.at).some(id => ['region', 'wilderness'].includes(state.places[id].kind)))
-            add('world_area', 'OUTDOOR DANGER — Establish typical danger from geography and ecology, never Alaric’s level: managed land usually L1, nearby wilderness L1–3, remote L4–7, deep L8–11, perilous F areas L12–14. Keep established populations and individuals unchanged; no mandatory encounter. An unknown area need not become dangerous.', 0);
+            add('world_area', Object.values(content.monsters.outdoor).map(profile => profile.danger).join(' '), 0);
         const relevant = new Set([...lineage(state, state.scene.at), ...(opts.outcome?.auth?.gos || []).map(g => g.to),
             ...Object.values(state.quests).filter(q => q.status === 'active' && q.hunt).map(q => q.hunt.at)]);
         const populations = Object.values(state.places).filter(p => p.population && relevant.has(p.id)).slice(0, 6);

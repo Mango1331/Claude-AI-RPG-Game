@@ -48,6 +48,21 @@ export function indexContent(pack) {
         commandVocab: pack.commands || null,
         deltaVocab: pack.deltas || null,
     };
+    const outdoor = Object.entries(c.monsters.outdoor);
+    c.outdoorRanks = outdoor.map(([rank]) => rank).join('/');
+    const windows = outdoor.flatMap(([, profile]) => profile.windows);
+    c.outdoorMax = Math.max(...windows.map(([, hi]) => hi));
+    if (c.deltaVocab) {
+        const deltas = c.deltaVocab.deltas.map(d => {
+            if (d.type !== 'area') return d;
+            const fields = { ...d.fields };
+            for (const key of ['min_level', 'max_level']) fields[key] = { ...fields[key], max: c.outdoorMax };
+            const summary = d.summary.replace('{ranks}', c.outdoorRanks)
+                .replace('{windows}', windows.map(pair => pair.join('-')).join(','));
+            return { ...d, fields, summary };
+        });
+        c.deltaVocab = { ...c.deltaVocab, outdoorRanks: c.outdoorRanks, deltas };
+    }
     for (const cls of pack.classes.classes) c.classes.set(cls.id, cls);
     for (const s of pack.classes.skills) {
         c.skills.set(s.id, s);

@@ -381,10 +381,15 @@ export function populationAt(state, at, entity, content, { matchAnchor = true } 
         && species && head(p.population.species) === species) || null;
 }
 
-/** Fixed F-world windows; one content definition for new habitats and area classifications. */
-export const validEncounterLevels = (content, levels) => Array.isArray(levels) && levels.length === 2
-    && (content.monsters.encounter_windows || [[1,1],[1,3],[4,7],[8,11],[12,14]])
-        .some(([lo, hi]) => levels[0] === lo && levels[1] === hi);
+/** An area takes an authored window; a population may occupy a subrange of one supported rank. */
+export const validEncounterLevels = (content, levels, rank) => Array.isArray(levels) && levels.length === 2
+    && Object.entries(content.monsters.outdoor).some(([key, profile]) => (!rank || key === rank)
+        && profile.windows.some(([lo, hi]) => levels[0] === lo && levels[1] === hi));
+
+export const validPopulationLevels = (content, levels) => Array.isArray(levels) && levels.length === 2
+    && levels.every(Number.isInteger) && levels[0] <= levels[1]
+    && Object.values(content.monsters.outdoor).some(({ windows }) =>
+        levels[0] >= Math.min(...windows.map(w => w[0])) && levels[1] <= Math.max(...windows.map(w => w[1])));
 
 /** The nearest explicit area profile; a population is more specific and is read separately. */
 export const encounterArea = (state, at) => lineage(state, at).map(id => state.places[id])

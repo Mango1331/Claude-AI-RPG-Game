@@ -227,7 +227,7 @@ const passiveTraining = (s, content, stat) => passiveGain(s.entities.pc.sheet, c
 /** The technique a source's fixed profile legitimizes, or why none: {target} | {refuse}. */
 function sourceTarget(content, p) {
     if (!p?.fn) return { refuse: 'what technique it holds was never established, so it teaches none' };
-    if (p.rank !== 'F') return { refuse: `${p.rank}-Rank techniques cannot be learned yet (only F-Rank)` };
+    if (p.rank !== content.rules.composer.entry_rank) return { refuse: `${p.rank}-Rank techniques cannot be learned yet (only ${content.rules.composer.entry_rank}-Rank)` };
     const t = composeTags(content, p.fn, p.tags?.length ? p.tags : null);
     if (t.error) return { refuse: t.error };
     return { target: { fn: p.fn, tags: t.tags, aspects: [...(p.aspects || [])] } };

@@ -1,4 +1,4 @@
-import { validEncounterLevels } from './v4/domain.js';
+import { validEncounterLevels, validPopulationLevels } from './v4/domain.js';
 import { classDefErrors, classOffer } from './v4/class_growth.js';
 // Validation layer.
 //  * validateState: invariants the engine guarantees after every fold (used by tests, #audit tooling and the ST
@@ -169,12 +169,11 @@ export function validateState(state, content) {
             if (o.bid && (o.terms ?? 'firm') === 'firm' && !Number.isInteger(o.price_cp)) p.push(`binding bid ${o.id} without a price`);
         }
         for (const d of state.decisions || []) if (d.kind === 'payment' && d.state === 'needs_confirmation' && !(Number.isInteger(d.amount_cp) && d.amount_cp > 0 && d.seller)) p.push(`payment proposal ${d.id} without payee or amount`);
-        for (const place of Object.values(state.places)) if (place.encounter_levels && !validEncounterLevels(content, place.encounter_levels)) p.push(`invalid F area levels at ${place.id}`);
+        for (const place of Object.values(state.places)) if (place.encounter_levels && !validEncounterLevels(content, place.encounter_levels)) p.push(`invalid ${content.outdoorRanks} area levels at ${place.id}`);
         for (const place of Object.values(state.places)) if (place.population) {
             const pop = place.population;
             if (!content.anchors.has(pop.anchor) || typeof pop.species !== 'string' || !pop.species.trim()
-                || !Array.isArray(pop.levels) || pop.levels.length !== 2 || !pop.levels.every(Number.isInteger)
-                || pop.levels[0] < 1 || pop.levels[1] > 14 || pop.levels[0] > pop.levels[1]) p.push(`invalid F population at ${place.id}`);
+                || !validPopulationLevels(content, pop.levels)) p.push(`invalid ${content.outdoorRanks} population at ${place.id}`);
         }
         for (const q of Object.values(state.quests)) if (q.hunt && !state.places[q.hunt.at]?.population) p.push(`quest ${q.id} has no hunting population`);
         for (const q of Object.values(state.quests)) if (q.count_rule != null && (q.kind !== 'guild_contract'

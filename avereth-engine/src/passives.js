@@ -70,7 +70,7 @@ export function passiveDefErrors(def, content, state = null) {
     // Patch 9C-2c: the Forge's look of it, words only (no numbers: it is never an effect)
     if (def.flavor !== undefined && (!plain(def.flavor, 160) || /\d/.test(def.flavor))) e.push('flavor: up to 160 characters, no digits');
     if (!def.origin || typeof def.origin !== 'object' || !plain(def.origin.kind, 40) || Object.keys(def.origin).some((k) => !['kind', 'note'].includes(k)) || (def.origin.note !== undefined && !plain(def.origin.note, 200))) e.push('origin: {kind, note?}');
-    if (def.rank !== 'F') e.push(`rank ${def.rank}: only F-rank Passives have calibrated bounds yet`);
+    if (def.rank !== content.rules.passive_design.rank) e.push(`rank ${def.rank}: only ${content.rules.passive_design.rank}-rank Passives have calibrated bounds yet`);
     const budget = qualityBudget(content, def.quality);
     if (def.quality !== undefined && !budget) e.push(`quality: one of ${passiveRules(content).qualities.join(', ')}`);
     e.push(...effectErrors(def, content, budget));

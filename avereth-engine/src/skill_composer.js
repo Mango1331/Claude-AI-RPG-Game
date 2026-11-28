@@ -108,7 +108,7 @@ export function composeSkill(state, content, { fn, tags, aspects = [], origin, s
     const from = source ? `, ${clean(source, 120)}` : '';
     const def = {
         id, name, description: clean(`${what}${from}.`, 300), origin: { kind: origin.kind, ...(origin.note ? { note: clean(origin.note, 200) } : {}) },
-        rank: 'F', complexity: 1, tags: t.tags, ...(a.aspects.length ? { aspects: a.aspects } : {}), category: spec.category, activation: 'action',
+        rank: R.entry_rank, complexity: R.entry_complexity, tags: t.tags, ...(a.aspects.length ? { aspects: a.aspects } : {}), category: spec.category, activation: 'action',
         target: spec.attack ? 'enemy' : 'self', cost: { resource, amount: spec.cost }, effects: [],
     };
     if (spec.attack) {

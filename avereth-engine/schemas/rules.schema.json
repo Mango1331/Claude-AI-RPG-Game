@@ -134,6 +134,18 @@
         "registration_fee_cp": { "type": "integer", "minimum": 0 },
         "registration_fee_src": { "type": "string" },
         "ranks": { "type": "array", "items": { "type": "string" } },
+        "outdoor_boards": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["open", "legacy", "introduction", "payout", "legacy_required_levels"],
+            "properties": {
+              "open": { "type": "string" }, "legacy": { "type": "string" },
+              "introduction": { "type": "string" }, "payout": { "type": "string" },
+              "legacy_required_levels": { "type": "array", "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 1 } } }
+            }
+          }
+        },
         "rank_levels": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 } },
         "rank_power": { "type": "object", "additionalProperties": { "type": "string" } },
         "promotion_contracts": { "type": "integer", "minimum": 1 },

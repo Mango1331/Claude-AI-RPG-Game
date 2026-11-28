@@ -611,13 +611,13 @@ export function listingSchema(content) {
         listings: A(O({
             title: S(), client: S(), rank: E(ranksOf(content)), level: I(1, 104), qtype: E(QTYPES), payout_cp: I(0),
             task: N(S()), desired_end_state: S(), objectives: A(OBJECTIVE, 1), proof: A(PROOF),
-            habitat: N(O({ species: S(), anchor: E([...content.anchors.keys()]), min_level: I(1, 14), max_level: I(1, 14), life_stage: N(E(['adult', 'young'])) })),
+            habitat: N(O({ species: S(), anchor: E([...content.anchors.keys()]), min_level: I(1, content.outdoorMax), max_level: I(1, content.outdoorMax), life_stage: N(E(['adult', 'young'])) })),
         })),
     });
 }
 
-const progressive = (s, need) => need.c && need.progression && need.rank === 'Novice';
-const openDifficulty = (s, need) => progressive(s, need) && need.profile === COUNT_BOARD_PROFILE;
+const progressive = (content, need) => need.c && need.progression && !!content.rules.guild.outdoor_boards[need.rank];
+const openDifficulty = (content, need) => progressive(content, need) && need.profile === COUNT_BOARD_PROFILE;
 
 /** Identity is local to the branch's land; an ambiguous or already incompatible place is never overwritten. */
 /**
@@ -671,8 +671,9 @@ function habitatWhy(s, content, need, l) {
     const young = [o.what, o.unit].some((t) => namesYoung(content, String(t || '').trim().split(/\s+/).at(-1) || ''));
     if (h.life_stage === 'young' && !young) return 'habitat.life_stage young needs a DEFEAT objective that names the young of the kind (pups, cubs, yearlings ...)';
     if (h.life_stage !== 'young' && young) return 'habitat.life_stage: a hunt of the young states life_stage "young"';
-    if (!validEncounterLevels(content, [h.min_level, h.max_level]) || l.level < h.min_level || l.level > h.max_level)
-        return 'habitat level window must be 1-1, 1-3, 4-7, 8-11 or 12-14 and contain the quest recommendation';
+    const rank = content.rules.guild.rank_power[need.rank];
+    if (!rank || !validEncounterLevels(content, [h.min_level, h.max_level], rank) || l.level < h.min_level || l.level > h.max_level)
+        return `habitat level window must be ${new Intl.ListFormat('en', {type:'disjunction', style:'short'}).format((content.monsters.outdoor[rank]?.windows || []).map(x => x.join('-'))).replace(', or ', ' or ')} and contain the quest recommendation`;
     const anchor = content.anchors.get(h.anchor);
     const named = speciesAnchor(content, h.species, h.anchor);
     if (named && named.id !== h.anchor) return ANCHOR_CONFLICT;
@@ -775,8 +776,9 @@ function retainedListings(s, need) {
 }
 
 export function boardRequest(s, content, need, repair = null) {
+    const outdoorBoard = content.rules.guild.outdoor_boards[need.rank];
     const [lo, hi] = content.rules.guild.rank_levels[need.rank];
-    const guide = need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
+    const guide = content.rules.guild.board?.payout_guide_cp?.[need.rank];
     const town = s.places[need.branch];
     const realm = town?.realm && s.places[town.realm] ? s.places[town.realm].name : null;
     const profile = boardProfile(s, content, need);
@@ -811,14 +813,14 @@ export function boardRequest(s, content, need, repair = null) {
         '- Structural example only: a survey team failed to return from abandoned workings; locate them, rescue survivors if possible, and recover an official seal. What happened is not predetermined by the contract and emerges in play.',
         '- These examples demonstrate structure only. Do not reuse their people, locations, creatures, objects, circumstances or exact objective sequence.',
         ...noviceProfile,
-        ...(progressive(s, need) ? [
-            openDifficulty(s, need) ? '- Choose locally plausible hunts across F (levels 1–14), independent of the reader. Where the region supports it, include an accessible low-risk single-foe job and some more demanding choices. Vary objective, route and nearby terrain. Warn about actual danger, including groups. The existing quest families still apply.' :
-            '- F WORLD PROGRESSION: The full board offers voluntary choices across F, never scaled to the player: one weak introductory level-1 hunt, at least one hunt at levels 4-7, and one at 8-14. Prefer separate 8-11 and 12-14 hunts when four outdoor notices fit. Keep the 4-hunt/1-clearance or 5-hunt distribution. Do not inflate group sizes for high levels.',
-            '- For every non-Dungeon hunt copy the creature kind from DEFEAT.what into habitat.species and select its closest supported mechanical body-plan id for habitat.anchor. Keep level within its habitat min_level and max_level. Allowed fixed population windows: 1-1 (intro), 1-3, 4-7, 8-11, 12-14. The quest level lies inside that window. This describes a world population, NOT a change to existing creatures or a spawn instruction. Other listings use habitat:null.',
+        ...(progressive(content, need) ? [
+            openDifficulty(content, need) ? outdoorBoard.open :
+            outdoorBoard.legacy,
+            `- For every non-Dungeon hunt copy the creature kind from DEFEAT.what into habitat.species and select its closest supported mechanical body-plan id for habitat.anchor. Keep level within its habitat min_level and max_level. Allowed fixed population windows: ${content.monsters.outdoor[content.rules.guild.rank_power[need.rank]].windows.map(([lo, hi]) => `${lo}-${hi}${lo === 1 && hi === 1 ? ' (intro)' : ''}`).join(', ')}. The quest level lies inside that window. This describes a world population, NOT a change to existing creatures or a spawn instruction. Other listings use habitat:null.`,
             `- Intro eligible body-plan ids (ordinary level 1, calculated from Content): ${introAnchors(content).join(', ')}. Species names must still fit their body plan.`,
             `- Supported body-plan ids: ${[...content.anchors.keys()].join(', ')}. The DEFEAT objective where is the one canonical hunting-site label (no duplicate place field in habitat); use the same species/kind. A weak introduction has one ordinary level-1 animal/Monster, anchor HP <=35 and ATK <=10, no hidden group/elite/boss. Never relabel an incompatible species or weaken its fixed stats to meet these requirements.`,
             '- A world hunt is for the grown animals of its population (habitat.life_stage "adult" or null). Only a notice whose DEFEAT objective names the young of the kind (pups, cubs, yearlings ...) is a hunt of the young: habitat.life_stage "young". The engine counts only members of the hunted population of that age within its level window.',
-            '- Established populations below are binding. New sites and species names are welcome, but never rename, move or upscale a known population. Do not locate several incompatible populations at the same small site. Clearly warn of stronger groups and high-F work; availability never means safe for the reader.',
+            `- Established populations below are binding. New sites and species names are welcome, but never rename, move or upscale a known population. Do not locate several incompatible populations at the same small site. Clearly warn of stronger groups and high-${content.rules.guild.rank_power[need.rank]} work; availability never means safe for the reader.`,
         ] : []),
         ...(profile ? [
             `- FIXED BOARD: ${profile.hunt} monster hunts, ${profile.delivery} deliveries, ${profile.dungeon} Dungeon clearance. Escort is not generated on this board. When no suitable known Dungeon exists, its slot is another hunt; never invent a Dungeon to fill the quota. Existing notices count towards these totals on a partial refill.`,
@@ -827,11 +829,11 @@ export function boardRequest(s, content, need, repair = null) {
                 '- Each delivery has exactly one DELIVER objective, concrete physical cargo, integer qty and a specific receiver and exact destination: where "Healer at Quarry Camp Infirmary" or "Gretha at Thornhollow", or "deposit at Receiving Shed". Name a person or a recognizable job role (healer, quartermaster, clerk), never "Recipient", "someone", "staff" or other placeholder. Place must name the ACTUAL destination, not only its parent settlement. A previously unknown interior must be visited before delivery can be confirmed. No GET/GIVE/ESCORT or other objective, signature, return trip, returned container, deadline or additional duty. proof is []. The engine renders task and desired_end_state from this objective; keep its title and client consistent. Travel and obtaining the cargo happen naturally in play; no mandatory ambush.',
             ]),
             '- Hunts have one DEFEAT objective with an exact quantity and a clear location, plus only optional FIND/GO guidance. proof is []. The target must be an animal or Monster, not people; distinguish living hostile plants from ordinary gardening.',
-            ...(need.rank === 'Novice' && !openDifficulty(s, need) ? ['- At least one hunt is an introductory single-foe job: qty 1, level 1, qtype minor, one weak ordinary F-rank animal or Monster, no elite/boss or concealed required group. This is an available choice, not a compulsory fight.'] : []),
+            ...(outdoorBoard && !openDifficulty(content, need) ? [outdoorBoard.introduction] : []),
             '- Dungeon clearance has one DEFEAT objective with qty null, where naming the exact known Dungeon and level number. proof is []. Include a short explicit danger/risk warning in task; a rank-compatible floor is not automatically safe for a fresh solo adventurer.',
         ] : []),
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,
-        ...(need.rank === 'Novice' ? ['- F hunt payout guidance by actual challenge: levels 1–3: 30–80 cp; 4–7: 90–180 cp; 8–11: 200–350 cp; 12–14: 350–600 cp. Consider actual quantity, elite/boss risk, supplies and travel; a level label alone does not justify a high price. These are guidelines, not validation limits.'] : []),
+        ...(outdoorBoard ? [outdoorBoard.payout] : []),
         `- payout_cp is the Guild's one fixed payout in copper (1 silver = 10 copper)${guide ? `; for ${need.rank} work ${guide[0]}–${guide[1]} cp is usual (a guide, not a limit)` : ''}.`,
         '- A cull names how many its notice asks for: the DEFEAT objective\'s qty (4 wolves; 1 for a single beast). A clearance of a Dungeon level names the level ("level 1") and no number: the level is cleared when its threats are. One listing is one of the two, never both: a cull\'s desired_end_state is that number of them dealt with, not a cleared level or place; a clearance\'s is the level cleared, with no number. Its title says the same: a clearance is titled by what is cleared ("Clear …", "Purge …", "Secure …"), never "Cull" or "Thin", which promise a number.',
         '- 1 to 4 objectives: {verb, what, qty, unit, where, delivery}; verb is one of GO, FIND, TALK, GET, GATHER, GIVE, DELIVER, USE, REPAIR, DEFEND, ESCORT, ATTACK, DEFEAT. These are continuity memories for play, not a rigid checklist the narrator must force in order.',
@@ -857,7 +859,7 @@ export function boardRequest(s, content, need, repair = null) {
     const user = [
         `BRANCH: ${town?.name || need.branch}${realm ? `, ${realm}` : ''} (${town?.sub || 'settlement'})`,
         ...(need.c && deliveryRuleset(s) >= 2 ? [`ACTIVE HUNTS (already assigned counted targets): ${Object.values(s.quests).filter(q => q.status === 'active' && (q.taker || 'pc') === 'pc' && huntTargets(s, content, q).size).map(q => `${q.id}: ${(q.objectives || []).filter(o => KILL_WORK.has(o.verb)).map(o => `${o.what} at ${q.hunt?.at ? placeName(s, q.hunt.at) : o.where}`).join('; ')}`).join(' · ') || 'none'}`] : []),
-        ...(progressive(s, need) ? [`ESTABLISHED HUNTING SITES: ${Object.values(s.places).filter(p => p.population && realmOf(s, p.id) === realmOf(s, need.branch)).slice(-20).map(p => `${p.name}: ${p.population.species}, anchor ${p.population.anchor}, levels ${p.population.levels.join('-')}`).join(' | ') || 'none yet; new sites may be established by these contracts'}`] : []),
+        ...(progressive(content, need) ? [`ESTABLISHED HUNTING SITES: ${Object.values(s.places).filter(p => p.population && realmOf(s, p.id) === realmOf(s, need.branch)).slice(-20).map(p => `${p.name}: ${p.population.species}, anchor ${p.population.anchor}, levels ${p.population.levels.join('-')}`).join(' | ') || 'none yet; new sites may be established by these contracts'}`] : []),
         ...(dungeons.length ? [`KNOWN DUNGEONS NEAR THIS BRANCH (the Guild's records): ${dungeons.join(' · ')}. ${up ? (profile ? 'A Dungeon clearance is already listed: add no second clearance; numbered hunts in suitable parts remain allowed.' : 'A Dungeon job is on the board already: write no other work in them.') : `At most one listing may be clearance work in one of them, and only in a part whose danger Rank is ${fits.join(' or ')} (this board's work; ${order.filter((r) => !fits.includes(r)).length ? 'deeper or stronger parts are not this board\'s' : 'any part'}): name the Dungeon exactly as written, the part (a level, a gallery) and its concrete outcome; ${profile ? 'this is the separate Dungeon slot, and numbered hunts there do not consume it' : 'it counts as one of the culling jobs'}.${levelRule}`}`] : []),
         `RANK: ${need.rank} · DAY ${need.day}`,
         `ON THE BOARD ALREADY: ${need.have.length ? need.have.join(' | ') : 'nothing'}`,
@@ -965,8 +967,8 @@ export function parseBoard(answer, content, need, s = null) {
         // Patch 8.1 (§3, §10): the Dungeon its work lies in, fixed with the listing (the gate and the count read this)
         if (at) l.dungeon = at;
         if (!why && profile) why = simpleListingWhy(s, content, l, profile, boardFamily(s, content, l));
-        if (!why && progressive(s, need) && boardFamily(s, content, l) === 'hunt' && !at) why = habitatWhy(s, content, need, l);
-        if (!why && l.habitat && (!progressive(s, need) || at || boardFamily(s, content, l) !== 'hunt')) why = 'habitat is only for a new world-bound outdoor F hunt';
+        if (!why && progressive(content, need) && boardFamily(s, content, l) === 'hunt' && !at) why = habitatWhy(s, content, need, l);
+        if (!why && l.habitat && (!progressive(content, need) || at || boardFamily(s, content, l) !== 'hunt')) why = `habitat is only for a new world-bound outdoor ${content.outdoorRanks} hunt`;
         if (!why && l.habitat && ok.some(x => x.habitat && normText(x.objectives.find(o => o.verb === 'DEFEAT')?.where) === normText(l.objectives.find(o => o.verb === 'DEFEAT')?.where)
             && (normText(x.habitat.species) !== normText(l.habitat.species) || x.habitat.anchor !== l.habitat.anchor
                 || x.habitat.min_level !== l.habitat.min_level || x.habitat.max_level !== l.habitat.max_level))) why = 'habitat conflicts with another notice in this board';
@@ -1016,10 +1018,10 @@ export function parseBoard(answer, content, need, s = null) {
 function boardQuotaError(s, content, need, profile, all) {
     const count = kind => all.filter(l => boardFamily(s, content, l) === kind).length;
     if (['hunt', 'delivery', 'dungeon'].some(kind => count(kind) !== profile[kind])) return `board requires ${profile.hunt} hunts, ${profile.delivery} deliveries and ${profile.dungeon} suitable Dungeon clearance; include existing notices`;
-    if (openDifficulty(s, need)) return null;
+    if (openDifficulty(content, need)) return null;
     if (need.rank === 'Novice' && !all.some(l => introHunt(s, content, l))) return 'Novice board needs an introductory single-foe hunt (qty 1, level 1, qtype minor)';
-    if (progressive(s, need) && (!all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 4 && l.level <= 7)
-        || !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= 8 && l.level <= 14))) return 'F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family';
+    if (progressive(content, need) && content.rules.guild.outdoor_boards[need.rank].legacy_required_levels.some(([lo, hi]) =>
+        !all.some(l => boardFamily(s, content, l) === 'hunt' && l.level >= lo && l.level <= hi))) return 'F board needs voluntary mid-F (4-7) and upper-F (8-14) hunts as well as its introductory hunt; preserve the 4+1/5 family';
     return null;
 }
 
@@ -1056,7 +1058,7 @@ export function parseInitialBoard(answer, content, need, s) {
 // Restrict the smaller second request to an independently invalid introductory habitat.
 // Read the untouched wire objects; parseBoard normalizes its own parsed copy.
 export function boardSlotRepair(answer, parsed, s, content, need) {
-    if (!progressive(s, need) || need.profile !== COUNT_BOARD_PROFILE || need.missing !== 5 || need.have?.length ||
+    if (!progressive(content, need) || need.profile !== COUNT_BOARD_PROFILE || need.missing !== 5 || need.have?.length ||
         parsed.listings?.length !== 4 || parsed.refused?.length !== 1 || parsed.errors.length) return null;
     const original = strictBoardObject(answer)?.listings;
     if (!Array.isArray(original) || original.length !== 5) return null;
@@ -1239,7 +1241,7 @@ function cullTask(s, content, q) {
 /** Book validated listings: quest.created (listed) for each, and the board. The payout is fixed from here on. */
 export function bookBoard(s, content, need, listings, emit) {
     const ids = [];
-    const guide = need.rank === 'Novice' ? [30, 600] : content.rules.guild.board?.payout_guide_cp?.[need.rank];
+    const guide = content.rules.guild.board?.payout_guide_cp?.[need.rank];
     for (const l of listings) {
         // the generator never names ids (its schema has none); a fixture's own id (tests) is kept when it is free
         let id = typeof l.id === 'string' && /^quest\.[a-z0-9_]+$/.test(l.id) && !s.quests[l.id] ? l.id : `quest.${slug(l.title) || 'contract'}`;
@@ -1253,7 +1255,7 @@ export function bookBoard(s, content, need, listings, emit) {
             schedule: { starts_at: null, deadline: null }, status: 'listed', taker: null, history: [{ turn: s.turn, minute: s.clock.minute, status: 'listed' }],
             details: [], notes: [], ...(guide && (l.payout_cp < guide[0] || l.payout_cp > guide[1]) ? { audit: [`payout ${l.payout_cp} cp outside the guide ${guide[0]}–${guide[1]} cp`] } : {}),
         };
-        if (progressive(s, need) && l.habitat) {
+        if (progressive(content, need) && l.habitat) {
             const h = l.habitat;
             const where = l.objectives.find(o => o.verb === 'DEFEAT').where.trim();
             let p = habitatPlace(s, need, where)[0];

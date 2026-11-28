@@ -60,7 +60,7 @@ export function engineEvidence(state, content, { key, quality, why, scope = 'alw
     if (typeof key !== 'string' || !/^[a-z0-9_.:-]{3,80}$/.test(key)) return { events: [], errors: ['key: a stable id of the source'] };
     if (evidenceOf(state)[`engine:${key}`]) return { events: [], errors: [`the source ${key} gave its evidence already`] };
     if (!['rare', 'legendary'].includes(quality)) return { events: [], errors: ['an engine source gives a rare or legendary Passive'] };
-    const probe = { id: 'dyn.passive_probe', name: 'Probe', description: 'probe', origin: { kind: 'engine' }, rank: 'F', quality, scope, ...(condition ? { condition } : {}), effects };
+    const probe = { id: 'dyn.passive_probe', name: 'Probe', description: 'probe', origin: { kind: 'engine' }, rank: content.rules.passive_design.rank, quality, scope, ...(condition ? { condition } : {}), effects };
     const errors = passiveDefErrors(probe, content, null);
     if (errors.length) return { events: [], errors };
     return { events: [evidenceEvent(state, { key: `engine:${key}`, kind: object ? 'stone' : 'engine', quality, why: String(why || 'an extraordinary source').slice(0, 160), scope, condition, effects: clone(effects), ...(object ? { object } : {}) })], errors: [] };
@@ -210,7 +210,7 @@ export function composeCandidate(state, content, ev) {
         if (effects.length < (budget?.effects?.[0] || 1)) continue;
         const free = freeName(state, content, o.base);
         if (!free) return { refuse: `no free name for ${o.base}` };
-        const draft = { id: free.id, name: free.name, description: '', origin: { kind: ev.kind, note: originNote(ev) }, rank: 'F', quality: ev.quality, scope: o.scope, ...(o.condition ? { condition: o.condition } : {}), effects };
+        const draft = { id: free.id, name: free.name, description: '', origin: { kind: ev.kind, note: originNote(ev) }, rank: content.rules.passive_design.rank, quality: ev.quality, scope: o.scope, ...(o.condition ? { condition: o.condition } : {}), effects };
         draft.description = `${QUALITY_TEXT[ev.quality]} Passive, ${passiveWhen(draft)}: ${passiveEffects(draft)}. ${originNote(ev)[0].toUpperCase()}${originNote(ev).slice(1)}.`.replace(/[<>{}`$\\]/g, '').slice(0, 300);
         const errors = passiveDefErrors(draft, content, state);
         if (errors.length) return { refuse: errors.join('; ') };

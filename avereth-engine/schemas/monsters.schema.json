@@ -4,6 +4,7 @@
   "title": "F1 body-plan anchors and scaling (content/monsters.json)",
   "type": "object",
   "required": [
+    "outdoor",
     "anchors",
     "scaling",
     "level_selection",
@@ -11,7 +12,7 @@
     "boss"
   ],
   "properties": {
-    "encounter_windows": { "type": "array", "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 1, "maximum": 14 } } },
+    "outdoor": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "object", "required": ["windows", "danger"], "properties": { "windows": { "type": "array", "minItems": 1, "items": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 1 } } }, "danger": { "type": "string" } } } },
     "anchors": {
       "type": "array",
       "minItems": 1,

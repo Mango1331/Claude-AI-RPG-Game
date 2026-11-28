@@ -3047,7 +3047,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const levels = [d.min_level, d.max_level];
         if (rulesetOf(s) < 2 || !validEncounterLevels(content, levels)
             || !['seen', 'guild'].includes(d.how) || !d.evidence?.trim() || !prose.includes(d.evidence)) {
-            reject(d, 'area', 'a fixed F area needs a supported level window and the reply’s actual seen/Guild evidence'); return;
+            reject(d, 'area', `a fixed ${content.outdoorRanks} area needs a supported level window and the reply’s actual seen/Guild evidence`); return;
         }
         const at = d.place == null ? { id: s.scene.at } : place(d.place);
         const p = s.places[at.id];
@@ -3596,7 +3596,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             return q.state === 'verified' ? q.cp : null; };
         const priced = d.lines.map(l => {
             const named = l.kind === 'goods' ? itemProfile(content, {name:l.what, balance:true, effect:l.effect, teaches:l.teaches}) : null;
-            const regular = l.kind === 'goods' && l.equipment !== false && (l.base != null || l.equipment === true || (named?.kind === 'gear' && named.rank === 'F')) && (!named?.rank || named.rank === 'F');
+            const regular = l.kind === 'goods' && l.equipment !== false && (l.base != null || l.equipment === true || (named?.kind === 'gear' && named.rank === content.gear.instances.market_rank)) && (!named?.rank || named.rank === content.gear.instances.market_rank);
             if (regular) {
                 const said = terms ? quoted(l) : evidenced(l.price_cp, l.said, d);
                 const existing = openOffers(s).filter(o=>!o.bid && o.seller===seller).flatMap(o=>o.lines).find(x=>normText(l.what) === normText(x.what) && (x.qty??1)===(l.qty??1) && x.price_cp===said);

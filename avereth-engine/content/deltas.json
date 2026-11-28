@@ -1167,13 +1167,11 @@
         },
         "min_level": {
           "type": "integer",
-          "min": 1,
-          "max": 14
+          "min": 1
         },
         "max_level": {
           "type": "integer",
-          "min": 1,
-          "max": 14
+          "min": 1
         },
         "how": {
           "enum": [
@@ -1186,7 +1184,7 @@
           "type": "string"
         }
       },
-      "summary": "An outdoor region/wilderness/site whose typical danger this reply actually establishes: fixed F level window 1-1,1-3,4-7,8-11,12-14, chosen by geography/ecology, never PC level. Existing explicit windows never change; specific populations override them. seen requires actual presence in the area or a child; guild is established Guild knowledge of a known place. Rumours remain place.reported/facts, never a fixed profile. evidence quotes the actual defining clause. No spawn, travel, or rescaling of existing creatures; never towns, interiors or true Dungeons."
+      "summary": "An outdoor region/wilderness/site whose typical danger this reply actually establishes: fixed {ranks} level window {windows}, chosen by geography/ecology, never PC level. Existing explicit windows never change; specific populations override them. seen requires actual presence in the area or a child; guild is established Guild knowledge of a known place. Rumours remain place.reported/facts, never a fixed profile. evidence quotes the actual defining clause. No spawn, travel, or rescaling of existing creatures; never towns, interiors or true Dungeons."
     }
   ]
 }

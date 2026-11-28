@@ -10,13 +10,14 @@ import { firewall } from '../../src/v4/firewall.js';
 import { strictProblems } from '../../src/v4/schema.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const vocab = JSON.parse(fs.readFileSync(path.join(ROOT, 'content', 'deltas.json'), 'utf8'));
+const { loadProductContent } = await import('../helpers.js');
+const vocab = (await loadProductContent()).deltaVocab;
 const ids = { places: ['loc.redmarch', 'loc.redmarch.guild_hall'], quests: ['quest.herb_run_marshmint'], objects: ['obj.guild_plate'] };
 
 test('the extractor prompt states every rule and every constraint the validator checks, and no <avereth> block', () => {
     const sys = extractorSystem(vocab);
-    for (const r of vocab.rules) assert.ok(sys.includes(r), r.slice(0, 40));
-    for (const r of FORMAT_RULES) assert.ok(sys.includes(r), r.slice(0, 40));
+    for (const r of vocab.rules) assert.ok(sys.includes(r.replace('{ranks}', vocab.outdoorRanks)), r.slice(0, 40));
+    for (const r of FORMAT_RULES) assert.ok(sys.includes(r.replace('{ranks}', vocab.outdoorRanks)), r.slice(0, 40));
     for (const d of vocab.deltas) assert.ok(sys.includes(`- ${d.type} {`), d.type);
     assert.ok(!/<avereth>/.test(sys));
     const { messages } = extractorRequest(vocab, { catalog: 'CATALOG\nHERE: x', actions: '1. GOES — to the Guild hall.', expectedKeys: { 1: 'go' }, reply: 'He walks in.' });

@@ -87,6 +87,28 @@ export async function tradeHudSmoke({page,calls,worldTimings,idle,onReload,out})
         && /P[1-5]/.test(await skillRow.innerText()) && calls.length === readCount
         && JSON.stringify(await world()) === JSON.stringify(bought.s);
     await skillRow.locator('summary').click();
+    // Exercise the host click on the rendered candidates of a prepared clarification.
+    const clarification = await page.evaluate(async () => {
+        const c = SillyTavern.getContext(), path = '/scripts/extensions/third-party/avereth-engine/';
+        const {foldChat} = await import(path+'src/host.js');
+        const {targetChoices} = await import(path+'src/hud.js');
+        const {loadContentPack} = await import(path+'src/content.js');
+        const content = await loadContentPack(async name => (await fetch(path+'content/'+name)).json());
+        const state = foldChat(c.chat).state, idx = c.chat.length-2;
+        const candidates = state.scene.present.filter(id=>id!=='pc');
+        const box = document.createElement('div');
+        box.id='rank263-clarification';
+        box.innerHTML=targetChoices(state,content,candidates,idx);
+        document.querySelector('#chat').append(box);
+        return {text:c.chat[idx].mes, id:candidates[0]};
+    });
+    const choice = page.locator('#rank263-clarification button').first();
+    await choice.click();
+    const selected = await page.inputValue('#send_textarea');
+    checks.targetChoicePreparesOnly = selected.startsWith(clarification.text) && selected.includes(clarification.id)
+        && calls.length===readCount && JSON.stringify(await world())===JSON.stringify(bought.s);
+    await page.fill('#send_textarea','');
+    await page.locator('#rank263-clarification').evaluate(el=>el.remove());
     checks.onePurchase=bought.roles.join(',')==='narrator,extract' && bought.s.coin===99
         && bought.s.events.filter(e=>e.t==='transaction.completed').length===1 && bought.s.offers[fixed].status==='accepted'
         && ['Rations','Bandages'].every((name,i)=>Object.values(bought.s.objects).some(o=>o.name===name && o.holder?.entity==='pc' && o.qty===i+2));

@@ -226,7 +226,7 @@
         ]
       }
     },
-    "e_rank_note": "9C completion (docs/PATCH9C_COMPLETION.md): the first Rank above F, provisional (balanced in 10B): its attack calibration by Complexity (most of the growth in Base Power, the coefficients close to F) and effect_scale on the Barrier and heal bounds of its Complexity; a Skill of Rank E is learned only from Rank E (Level 15) on, and no path of the game composes one by itself yet. D-S have no bounds: refused",
+    "e_rank_note": "9C completion (docs/PATCH9C_COMPLETION.md): the first Rank above F, provisional (balanced in 10B): its attack calibration by Complexity (most of the growth in Base Power, the coefficients close to F) and effect_scale on the Barrier and heal bounds of its Complexity; a Skill of Rank E is learned only from Rank E (Level 15) on, from a qualified source or an accepted mastery evolution. D-S have no bounds: refused",
     "e_rank": {
       "1": { "base": 18, "coef": 2.0, "cost": [8, 14] },
       "2": { "base": 24, "coef": 2.5, "cost": [12, 22] },

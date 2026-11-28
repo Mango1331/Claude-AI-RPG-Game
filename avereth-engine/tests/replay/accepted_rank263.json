@@ -6,67 +6,67 @@
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:69c02c013ff912cc6b60bb38a47730ff8c29802b25f0b929f6045a799ed15d39",
-      "fingerprint": "sha256:f7f8522039e66242e1b9848166b1ddf90fb511020f473c03ac91a9815ca04569"
+      "fingerprint": "sha256:870aaa57df0b4e5b3709471706a00033090c3e5fd4cfcfa6a8f829ec2c3da460"
     },
     "b18-rogue#37": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:4b5bbb109554918d59c0f5708393206f330d846c34d8d213b19c6c369da16771",
-      "fingerprint": "sha256:4861e9db3e09ce9321f70c734d7e78cfae276eea4685e2ac9e53bae35bb9c75e"
+      "fingerprint": "sha256:f21e67ec025fbe28beae2b1d69f7d4132264b2926bdc731f291418ce4eeb9434"
     },
     "b18-warrior#39": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:e9cae7d2e237b0858ada242141431381c8d9eb4f657890763ba7526d1f0cd5c7",
-      "fingerprint": "sha256:7ba45215a77ab73ce050a01fd828ab32c7268af46cf4f8ae27498ce31086c5c6"
+      "fingerprint": "sha256:1477ad32e750b80aebe39cbe7c85dac49b53cabdcc6881030d47c12492f3ce0f"
     },
     "b18-warrior#175": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:4c4223f5fdaf3415f55d00f52420041d44d8331be2d33e5d39b17bfc708ac211",
-      "fingerprint": "sha256:d84c621875c06c4158b33fa8b9c912364fd933f0969ed668e4c0851e970fd1e6"
+      "fingerprint": "sha256:bd8189ebc4e5bfc509f2a029afc1baa9f0300ab24c769695b71bc5ef9f688efb"
     },
     "b18-warrior#233": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:979ab022c4179f9d703f7a8c27746b489199228171826987d719e7d2840045fb",
-      "fingerprint": "sha256:734fd47b9afd5c79eda27b931d31763dde8322e40635d3453572a96b9f0c1778"
+      "fingerprint": "sha256:993ef43771d4baee98bb0392bdd1462f5ae40a3307cd900ca470ddab616e618b"
     },
     "b18-warrior#319": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:0380e856b8c22941c97833285bca88189fca0c61f731a937c0ca7543fb184397",
-      "fingerprint": "sha256:1841f152e27b1d2231232da2c93013d1ecbce70e852cc6964106af931f0fc398"
+      "fingerprint": "sha256:f5da881bdc345c85ba89dea09e11239076c5c0763b5ada8818f3312115437077"
     },
     "b19-mage#45": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:b72faa915aba4f280ade8c241d7e8609b9b844df9b34bbadf1b0281ab1309135",
-      "fingerprint": "sha256:668d7c788eb3cb6b1f0227d9d166c319e1e8ec38601442022e7f71eada737936"
+      "fingerprint": "sha256:8af4a7cd3cd07f9f31d898e678d5f6b85df0261ff078a191f7a0b3114d3bebf0"
     },
     "b19-mage#109": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:340a2dcbe3bf88ebe7574708a81f5afd6b880c84cf84c81933e559a323ac2269",
-      "fingerprint": "sha256:999b7b9acd57d446594ca882711a8305b56cdec642b422a30c1fa908f68f5cb0"
+      "fingerprint": "sha256:dd422d1c80cfe6543de0344d1d1ebac9995b111a00185591618cfc1af7af10fe"
     },
     "b19-rogue#41": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:99b175bd35472badb6f1e6fe8e4ee84aed4e83664976fe9de80fc572a5d1edd5",
-      "fingerprint": "sha256:e06aa72a960093be510c3f4f5ab76aee624f6d253915a36b4d67161662099092"
+      "fingerprint": "sha256:bcf8fa639a1e762a7dc3e642b82dc0b996d059318077534d37eb7d7b8ba38357"
     },
     "b19-warrior#113": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:4501e1c50152e636dbc1463477d3fc3fc4b2f7edf24187f4e7ba2948d28a6eea",
-      "fingerprint": "sha256:9c6bf86ef4ac54ed0715cbfd76057b1b3c28ad8014ac9921c0598ab0943b0a20"
+      "fingerprint": "sha256:c02bd63e12c2fad0fe76a106cdbc717aaed939922c9dff48c092169a63c0499b"
     },
     "b19-warrior#325": {
       "category": "semantic",
       "reason": "Equip receipt appends the comparison to the actual worn slot. All other output fields and events match .262.",
       "previous": "sha256:90b502a5450ac3f195f377d878cd3b9748f60f0abc68bfecd9570ce44d2eef6c",
-      "fingerprint": "sha256:67bc28b3533636d8741c1e26607755b823985b50f1292d32f5be4851d7229b5d"
+      "fingerprint": "sha256:84576b7682bc4404c6e4d6ca89d553fdeac91b15e382be451b905d73e1973cca"
     }
   }
 }

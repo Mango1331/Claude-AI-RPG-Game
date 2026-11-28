@@ -1766,7 +1766,7 @@ const HANDLERS = {
         const item = own?.kind === 'gear' ? { id: o.id, object: o.id, name: o.name, rank: own.rank, slot: own.slot, family: own.family, atk: own.atk, matk: own.matk, def: own.def, mdef: own.mdef, ...(own.requires_rank ? { requires_rank: own.requires_rank } : {}) } : tpl && content.items.get(tpl);
         if (!item?.slot || ['ammo', 'container'].includes(item.slot)) return { status: 'refused', reason: 'no gear values', line: `CANNOT EQUIP — the engine knows no gear values for ${o.name}.` };
         // Patch 7.1: ranked gear only up to his own Power-Rank (or the Rank the piece itself names)
-        const compare = equipmentComparison(s, content, item);
+        const compare = equipmentComparison(s, content, own || item);
         const ranked = rankRefusal(content, s.entities.pc.sheet.level, { kind: 'gear', title: o.name, rank: item.rank, requires_rank: item.requires_rank });
         if (ranked) return { status: 'refused', reason: 'rank', line: `CANNOT EQUIP — ${ranked}. It stays in his pack.` };
         const slot = c.slot || item.slot;

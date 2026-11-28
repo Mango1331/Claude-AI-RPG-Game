@@ -355,7 +355,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         if (target) {
             e.preventDefault();
             const chat = context().chat, index = Number(target.dataset.source), id = target.dataset.averethTargetChoice;
-            if (chat.length !== index + 2 || !chat[index]?.is_user || !state().scene.present.includes(id) || unavailable()) return;
+            if (chat.length !== index + 2 || !chat[index]?.is_user || !state().scene.present.includes(id) || blocked() || generating || draft() || textarea().value.trim()) return;
             textarea().value = chat[index].mes + ' (Target: ' + target.textContent + ', ' + id + '.)';
             textarea().dispatchEvent(new Event('input', {bubbles:true}));
             textarea().focus();

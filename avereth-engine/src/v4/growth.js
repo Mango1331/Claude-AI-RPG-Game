@@ -27,7 +27,7 @@ import { composeSkill, composeTags, composeAspects, composerFunctions, technique
 import { applyEvent } from '../state.js';
 import { truth, entityLabel } from '../knowledge.js';
 import { clone, normText, hash32 } from '../util.js';
-import { profileOf, rankRefusal } from './items.js';
+import { profileOf, rankRefusal, rankInName } from './items.js';
 import { CORE_STATS, passiveGain, passivesOf, passiveSlots, qualityBudget } from '../passives.js';
 
 const EMPTY = { n: 0, goals: {}, done: [], training: {} };
@@ -145,6 +145,15 @@ export function trainingOfferWhy(state, content, teacher, line) {
     for (const skill of [...content.skills.values(), ...Object.values(state.skill_defs || {})])
         if (skill.name && !functions.includes(normText(skill.name)) && named(skill.name))
             for (const tag of techniqueOf(skill)?.tags || []) required.add(tag);
+    if (rankInName(line.what) === 'E') {
+        const sheet = state.entities[teacher]?.sheet;
+        const requested = functions.filter(named);
+        const supported = sheet && !rankRefusal(content,sheet.level,{rank:'E'}) &&
+            Object.keys(sheet.skills).map(id => techniqueOf(skillOf(content,id,state))).some(t =>
+                t?.rank === 'E' && (!requested.length || requested.includes(t.fn)) &&
+                [...required].every(tag => t.tags.includes(tag)));
+        if (!supported) return 'the teacher lacks the E technique for this lesson';
+    }
     for (const fn of functions.filter(named))
         for (const tag of composeTags(content, fn, null, can).tags || []) required.add(tag);
     if ([...required].some(tag => !can.includes(tag))) return `the teacher cannot teach the offered disciplines (${[...required].join(', ')})`;

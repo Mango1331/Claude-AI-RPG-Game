@@ -7,7 +7,7 @@ import {skillOf} from '../../src/content.js';
 import {defineSkill, learnSkill, skillDefErrors} from '../../src/skills.js';
 import {composeSkill,developSkill} from '../../src/skill_composer.js';
 import {skillEvidence,skillDrafts,offerSkills,acceptSkill} from '../../src/v4/skill_growth.js';
-import {stoneActivation,learningActivity,knownTechnique} from '../../src/v4/growth.js';
+import {stoneActivation,learningActivity,knownTechnique,trainingOfferWhy,openGoals} from '../../src/v4/growth.js';
 import {itemTraits} from '../../src/v4/items.js';
 
 const content = await loadProductContent();
@@ -74,4 +74,27 @@ for(const complexity of [1,2,3]) test('rank evolution from C'+complexity+' requi
     assert.deepEqual(view.entities.pc.sheet.skills[offer.skill.id],{prof:5,pp:0});
     assert.ok(acceptSkill(view,content,offer.id).refuse);
     assert.deepEqual(skillEvidence(view,content),[]);
+});
+
+test('a Proven student keeps the actual source and rank across days; payments and substitutions require qualified teachers',()=>{
+    const s=mage(20), id='npc.instructor', sh=mage(18).entities.pc.sheet;
+    sh.training='trained';
+    const request={fn:'bolt',tags:null,aspects:['Ice'],rank:'E',origin:{kind:'stone'}};
+    const {def}=composeSkill(s,content,request);
+    const object=defineSkill(s,content,def);assert.deepEqual(object.errors,[]);book(s,object.events);
+    s.entities[id]={id,kind:'npc',name:'Instructor',status:'alive',at:s.scene.at,sheet:sh};
+    s.scene.present.push(id);
+    s.services=[{service:'training',by:id,turn:1,minute:0}];
+    const line={kind:'service',service:'training',what:'E-Rank bolt lesson'};
+    assert.ok(trainingOfferWhy(s,content,id,line));
+    const train={kind:'train',learn:'bolt',learn_rank:'E',teacher:id,tags:def.tags,aspects:def.aspects};
+    assert.equal(learningActivity(s,content,train,60,0).status,'refused');
+    sh.skills[def.id]={prof:1,pp:0};
+    assert.equal(trainingOfferWhy(s,content,id,line),null);
+    const first=learningActivity(s,content,train,60,0);assert.equal(first.status,'resolved',first.line);book(s,first.events);
+    const saved=JSON.parse(JSON.stringify(s)), goal=openGoals(saved)[0];
+    assert.equal(goal.target.rank,'E');assert.equal(goal.source.who,id);
+    delete saved.entities[id].sheet.skills[def.id];
+    assert.equal(learningActivity(saved,content,{kind:'train',learn:goal.id,teacher:id},60,1440).status,'refused');
+    assert.equal(openGoals(saved)[0].target.rank,'E');
 });

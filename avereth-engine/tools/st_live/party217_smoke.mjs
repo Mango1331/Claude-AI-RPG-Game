@@ -22,9 +22,24 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
     const command=(commands,narrator,deltas=[])=>{replies={plan:JSON.stringify({commands}),narrator,extract:JSON.stringify({scene:'here',expected:{},deltas})};};
     async function panel(kind) {
         const before=await snap(),count=calls.length;
-        if(kind==='hud') await page.locator('[data-avereth-party]').last().click();
+        if(kind==='hud') await page.locator('.avereth-action-composer [data-avereth-party]').click();
         else {await page.fill('#send_textarea','#party');if(kind==='enter') await page.press('#send_textarea','Enter');else await page.click('#send_but');}
         await page.waitForSelector('#avereth-party-panel[open]');
+        if (kind === 'hud') {
+            const layout = await page.evaluate(()=>{
+                const button=document.querySelector('.avereth-action-composer [data-avereth-party]');
+                const close=document.querySelector('#avereth-party-panel button');
+                const status=document.querySelector('#avereth-action-status');
+                const home=document.querySelector('#avereth-action-home');
+                const contrast=el=>getComputedStyle(el).color==='rgb(255, 255, 255)' &&
+                    getComputedStyle(el).backgroundColor==='rgb(0, 0, 0)';
+                return {contrast:contrast(button)&&contrast(close),statusFirst:!!(status.compareDocumentPosition(home)&Node.DOCUMENT_POSITION_FOLLOWING),
+                    single:[...document.querySelectorAll('[data-avereth-party]')].filter(el=>el.checkVisibility()).length===1,
+                    route:document.querySelector('#avereth-rest').classList.contains('avereth-shop') &&
+                        [...document.querySelectorAll('.avereth-shop > summary')].some(el=>el.textContent==='Bekannte Wege')};
+            });
+            Object.assign(checks,layout);
+        }
         const text=await page.locator('#avereth-party-panel').innerText();
         await page.getByRole('button',{name:'Schließen',exact:true}).click();
         const after=await snap();

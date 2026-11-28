@@ -36,7 +36,7 @@ import { shopSearch, findTrades } from './settlement.js';
 import { journeyReady, knownAt, personLabel } from './catalog.js';
 import { continueOptions, setIntentEvents, endIntentEvents, activeIntents, goSetsGoal } from './intents.js';
 import { knownByName } from './known.js';
-import { resolvePlaceRef } from './place_book.js';
+import { accessDestination, resolvePlaceRef } from './place_book.js';
 import { stepFields, GATE_WORDS } from './movement.js';
 import { sectionStep, positionOf, ENTER, sectionsOf, afterPreview } from './sections.js';
 import { freeObjectId, useOf, spoiled, unitsOf, profileOf, rankRefusal, itemProfile, restoreOf, restoreEffect, namedSource, equipmentSlotKnown, offerCard, equipmentComparison } from './items.js';
@@ -665,8 +665,11 @@ const HANDLERS = {
             if (entry.endsWith(normText(name)) && entersThisDungeon(entry,name)
                 && !/\b(?:if|unless|instead|but|before|without)\b|\?/i.test(c.quote)) c = {...c,to:approaching};
         }
+        const currentGate = livingOf(s,s.scene.at)?.gate;
+        const access = currentGate && accessDestination(c.quote,currentGate.names);
+        if (access && (typeof c.to === 'object' || c.to === s.scene.at)) c = {...c,to:{scene:access}};
         const focus = c.to?.scene ?? c.to?.new;
-        if (typeof focus === 'string' && envx?.c && rulesetOf(s)>=2 && !c.within) {
+        if (!access && typeof focus === 'string' && envx?.c && rulesetOf(s)>=2 && !c.within) {
             const matches = knownRouteTarget(s,focus);
             if (matches.length > 1) return {status:'clarify',reason:'which place',
                 line:`CLARIFY — which place does he mean: ${matches.map(id => placeName(s,id)).join(' or ')}?`};
@@ -876,7 +879,7 @@ const HANDLERS = {
         if (there.length && rulesetOf(s) >= 2) ctx.knownAt[String(c.seq)] = there.map((p) => p.id);
         if (there.length) ctx.extra.push(`KNOWN AT ${name} (met there before; when the story shows the people of that place, they are these, not new ones; whoever works there is at work unless the story establishes otherwise): ${there.map((p) => `${p.label} (${p.id})`).join(' · ')}`);
         // Patch 8 (pacing): a way he chose is carried to its end, never stopped for what changes nothing
-        if (section) return { status: 'authorized', line: `GOES — on into ${section.down ? `level ${section.level} of ${placeName(s, section.root)}, down the way at the end of level ${section.level - 1}` : `part ${section.k} of level ${section.level} of ${placeName(s, section.root)}`} (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level). Stop in this section. Leave the next movement and any answer to Alaric.` };
+        if (section) return { status: 'authorized', line: `GOES — on into ${section.down ? `level ${section.level} of ${placeName(s, section.root)}, down the way at the end of level ${section.level - 1}` : `part ${section.k} of level ${section.level} of ${placeName(s, section.root)}`} (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level). ${section.from === section.root ? 'Cross only if his decision actually carries him through the access. A halt before crossing stays at the gate. ' : ''}Stop in this section. Leave the next movement and any answer to Alaric.` };
         const knownDungeonWay = envx?.c && inside && trueDungeonOf(s, c.to);
         const pace = knownDungeonWay ? ' Follow the established way to the chosen place or its actual obstruction. Leave any further movement to Alaric.' :
             envx?.c ? ' Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.' : '';

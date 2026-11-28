@@ -82,6 +82,14 @@ export function dungeonByHeadWord(s, name, from) {
 }
 const LOCATIVE = /^(?:behind|beside|by|near|at|on|in|off|past|beyond|under|below|above|over|along|across|outside|opposite|between|(?:north|south|east|west)(?:east|west)? of)\b/;
 const GATE_WORDS = new Set(['mouth', 'entrance', 'gate', 'gates', 'door', 'doors', 'opening', 'cleft', 'portal']);
+/** A chosen endpoint at the current access, as distinct from a way through it. */
+export function accessDestination(quote, names) {
+    const goal = /\bto (?:the )?([^,.!?;]+)[.!]?$/i.exec(String(quote || '').trim())?.[1];
+    if (!goal) return null;
+    const destination = normText(goal);
+    return GATE_WORDS.has(destination) || names?.some(n => normText(n) === destination) ? goal : null;
+}
+
 
 /**
  * Resolve a reference to a place: a known id, or {new: name} / {new: {name, kind, parent}}.

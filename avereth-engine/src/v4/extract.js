@@ -690,12 +690,14 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     }
     if (!errors.length && sceneRequired) {
         const arrivals = value.deltas.filter(d => d.type === 'arrive' && !d.forced_by);
+        const used = new Set();
         const ends = state ? reportedEndpoints(value,state,content,[...invalid.values()]) : new Map();
         for (const [key,type] of Object.entries(expectedKeys || {})) {
             if (type !== 'go') continue;
             const g = state?.last?.outcome?.auth?.gos?.find(g => String(g.seq) === key) || {seq:key};
             const end = ends.get(key) || exp[key]?.at;
-            const match = arrivals.some(d => reportsEndpoint(state,g,end,d.at,content));
+            const match = arrivals.find(d => !used.has(d) && reportsEndpoint(state,g,end,d.at,content));
+            if (match && exp[g.seq]?.arrived === true) used.add(match);
             // A free goal involving a known contact can have competing place identities.
             // Preserve the old continuity repair only when it can change that booked endpoint.
             if (match && !g.to && end?.new && g.newName) {

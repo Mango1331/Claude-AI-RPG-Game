@@ -105,3 +105,41 @@ test('P2 and P4b: the reported access connection, not the yes/no receipt or PULS
     state.last.outcome.auth.gos.push({...state.last.outcome.auth.go,seq:2,to:'loc.alderwatch'});
     assert.deepEqual(normalize(gateReport).deltas[0].at,gateReport.deltas[0].at);
 });
+
+test('a local stop before crossing and a direct entry from the original roadside use different authorities',async()=>{
+    const {resolveCommands}=await import('../../src/v4/commands.js');
+    const {applyEvent}=await import('../../src/state.js');
+    const {applyWorld}=await import('../../src/v4/world.js');
+    function choose(s,text,to) {
+        const ctx=resolveCommands(s,content,[{type:'go',seq:1,to,quote:text}],e=>applyEvent(s,e),{c:true,text,msg:17});
+        s.last.outcome={kind:'v4',...ctx};
+        return ctx;
+    }
+    function world(s,arrived,at) {
+        return applyWorld(s,content,{expected:{1:{arrived}},deltas:[{type:'arrive',seq:1,at}]},{prose:'Alaric reaches the reported stop.'});
+    }
+    const room={new:{kind:'interior',parent:dungeon,name:'The first burial hall'}};
+    const road=host.foldChat(fixture.messages.slice(0,17)).state;
+    for (const restriction of ['fee','full','unregistered',null]) {
+        const s=structuredClone(road);
+        if(restriction==='fee') { s.quests={}; s.dungeons[dungeon].gate.fee_cp=20; }
+        if(restriction==='full') s.dungeons[dungeon].capacity=0;
+        if(restriction==='unregistered') { s.guild.membership=null; s.dungeons[dungeon].gate.requires='guild'; }
+        const c=choose(s,'I enter the dungeon',dungeon);
+        const r=world(s,true,room);
+        if(restriction) {
+            assert(c.auth.go.way_in);
+            assert(!Object.keys(r.state.places).some(p=>p.startsWith(dungeon+'.')));
+            assert(!r.events.some(e=>['dungeon.part','coin.changed'].includes(e.t)));
+        } else {
+            assert.equal(r.state.scene.at,dungeon+'.l1_s1');
+            assert(r.state.dungeons[dungeon].run.floors[1].slots[0].entities.length);
+        }
+    }
+    const s=structuredClone(road);
+    choose(s,'I go to the catacombs entrance',dungeon);
+    const atGate=world(s,true,dungeon).state;
+    const local=choose(atGate,'I head down the steps to the door',{new:'on'});
+    assert(local.auth.approach && !local.auth.gos.length);
+    assert.equal(atGate.scene.at,dungeon);
+});

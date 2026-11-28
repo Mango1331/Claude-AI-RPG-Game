@@ -350,12 +350,13 @@ export function planContext(state, content, catalog) {
     const habitat = lineage(state, state.scene.at).find(id => state.places[id].population);
     // Build .138: the unit count each open bid's rate applies to (stacks of the same goods together)
     const bidUnits = Object.fromEntries(Object.values(state.offers || {}).filter((o) => o.bid && o.status === 'open').map((o) => [o.id, rateUnits(o.lines, (id) => state.objects[id])]));
-    return { negotiationStage:state.encounter?.negotiation?.stage, negotiationText:fight ? negotiationPlanText(state,content) : '', presentIds:state.scene.present, habitat, bidUnits, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
+    return { atDungeonGate:!!state.dungeons?.[state.scene.at], negotiationStage:state.encounter?.negotiation?.stage, negotiationText:fight ? negotiationPlanText(state,content) : '', presentIds:state.scene.present, habitat, bidUnits, tradeChecks: rulesetOf(state) >= 2, privateQuests: privateQuestsOf(state), fight, skills, known, basic, weapon, opponents, facts, route: route.slice(-12), catalog, cls: sheet.class || null, learning, techniques, disciplines: disciplineTags(content), aspects: skillAspects(content), jobs };
 }
 
 /** The user message: the interpreter's CATALOG, then skills, opponents, engine facts, RECENT and the message. */
 export function plannerUser(ctx, text, { recent = '' } = {}) {
     const L = [catalogText(ctx.catalog)];
+    if (ctx.atDungeonGate) L.push('The current place is the dungeon access. Movement ending on this side is go to {scene: the local standpoint}. Choose the first section only for movement through the access.');
     if (ctx.negotiationText) L.push(ctx.negotiationText);
     if (ctx.habitat) L.push(`CURRENT HABITAT: ${ctx.habitat}. A GO following this population's signs to a local den or part uses within:${ctx.habitat}. Actual departure, another settlement, or an independent new place uses within:null. Never infer a local population merely from similar species.`);
     if (ctx.jobs?.length) L.push('PRIVATE JOBS (optional job on actual work actions only):', ...ctx.jobs.map(q => `- ${q.id}: ${q.title}; ${(q.objectives || []).map(o => o.what).join('; ')}`));

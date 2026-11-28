@@ -5,7 +5,7 @@ import { encounterHumanLevel } from '../npcgen.js';
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
-import { firstSection, allowedArrival, stepsOf, reportedEndpoints, newPlaceScope, gateAlias } from './movement.js';
+import { sectionReport, firstSection, allowedArrival, stepsOf, reportedEndpoints, newPlaceScope, gateAlias } from './movement.js';
 import { reportedContinuation } from './travel_continuation.js';
 import { sectionsOf, sectionId } from './sections.js';
 import { sceneSteps, localSceneDelta } from './extract.js';
@@ -2915,6 +2915,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const root = p?.root || (parent ? trueDungeonOf(s, parent) : null);
         if (!livingOf(s, root)) return null;
         const inside = n && ['interior', 'site'].includes(n.kind) && parent && trueDungeonOf(s, parent) === root;
+        if (inside && s.scene.at === root && p?.from === root &&
+            expected[(auth.gos || []).find(g=>g.section?.id === p.id)?.seq]?.arrived === false)
+            return {id:root};
         if (!p && inside && trueDungeonOf(s, s.scene.at) !== root) {
             // from outside: a step to the Dungeon by its name goes in through its gate (the gate check is the way's) into
             // its first part; a step that names the gate ends there, and no step for it is a room elsewhere (movement.js)
@@ -2924,7 +2927,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             if (s.places[first]) return { id: first };
             p = { id: first, root, level: 1, k: 1, from: root, down: false, name: 'part 1 of level 1' };
         }
-        if (p && (ref === p.id || inside)) {
+        if (p && sectionReport(s,root,p.id,ref)) {
             if (!s.places[p.id]) {
                 const told = n?.name ? String(n.name).trim().slice(0, 80) : '';
                 // named once by this report; a name that says another level is not the engine's part

@@ -92,7 +92,7 @@ export function reportedEndpoints(answer, state, content, rejected = []) {
         // A step explicitly entering previews a particular section. Reaching only
         // its gate is a valid stop but does not complete that objective.
         const interior = !g.section && !g.enter?.gate && g.to === root && root &&
-            arrivals.find(d => d.at?.new?.kind === 'interior' && d.at.new.parent === root);
+            arrivals.some(d => sectionReport(state,root,firstSection(state,root),d.at));
         const ref = g.section?.id || (interior ? firstSection(state,root) : g.to) || e?.at;
         if (ref) ends.set(String(g.seq), ref);
     }
@@ -183,12 +183,22 @@ export function firstSection(state, root) {
     return sectionsOf(state,root,1)[0] || sectionId(root,1,1);
 }
 
+/** A location claim for a specific engine section, before any node is made. */
+export function sectionReport(state, root, id, ref) {
+    if (!root || !id) return false;
+    if (ref === id) return true;
+    const n = ref?.new;
+    const parent = n?.parent ?? state?.scene?.at;
+    return !!state?.places?.[parent] && ['interior','site'].includes(n?.kind) &&
+        trueDungeonOf(state,parent) === root;
+}
+
 /** Resolve an X receipt against the same destination/preview used by World. */
 export function reportsEndpoint(state, go, endpoint, ref, content) {
     if (endpoint && samePlace(state, endpoint, ref, content)) return true;
     const root = go.section?.root || go.enter?.root;
-    return !!root && !go.enter?.gate && ref?.new?.kind === 'interior' &&
-        ref.new.parent === root && (!!go.section || endpoint === firstSection(state,root));
+    return !!root && !go.enter?.gate && (!!go.section || endpoint === firstSection(state,root)) &&
+        sectionReport(state,root,endpoint,ref);
 }
 
 /** Normalize the place declarations and the scoped arrival in both X and World. */

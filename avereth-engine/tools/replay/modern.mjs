@@ -78,9 +78,13 @@ const classes={'reed-251#22':'fachlich_bestätigt','vale-242#24':'bekannter_fehl
 if(record) fs.writeFileSync(reference,JSON.stringify({sha,default_class:'beobachtet',classes,cases:results},null,1)+'\n');
 else{
     const base=JSON.parse(fs.readFileSync(reference));
+    const knownChanges=[];
     for(const id of new Set([...Object.keys(results),...Object.keys(base.cases)])){
-        if(JSON.stringify(results[id])!==JSON.stringify(base.cases[id]))issues.push(id);
+        if(JSON.stringify(results[id])===JSON.stringify(base.cases[id])) continue;
+        if(results[id] && base.cases[id] && base.classes[id]==='bekannter_fehler_akzeptiert') knownChanges.push(id);
+        else issues.push(id);
     }
+    console.log('Known-error cases changed (review required):',JSON.stringify(knownChanges));
     console.log('Changed cases:',JSON.stringify(issues));
 }
 if(process.env.AVERETH_MEASURES) fs.writeFileSync(process.env.AVERETH_MEASURES,JSON.stringify(lengths));

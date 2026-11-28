@@ -25,6 +25,8 @@ test('corrupted receipts, ownership and revisions are detected',()=>{
         ['xp.changed',{id,amount:20,xp:sh.xp+20,quest:'test'}],
         ['transaction.completed',{from:'guild',cp:20,quest:'test'}],
         ['object.moved',{id:'test',qty:1,split:'test'}],
+        ['object.moved',{id:'test',to:{entity:'pc',loc:s.scene.at}}],
+        ['transaction.completed',{offer:'test',seller:who,cp:5}],
         ['object.moved',{id:'test',qty:2}],['quest.status',{id:'test',to:'completed'}],
         ['party.claim',{who,id:'test',paid:20}],['party.member',{who,mode:'wait',at:'absent'}],
         ['scene.moved',{at:'unknown'}],

@@ -4,6 +4,17 @@ export function checkEvents(E,prior,events,id){
     const s=structuredClone(prior);
     const closures = new Set(events.filter(e => e.t === 'quest.status' && e.d.to === 'completed').map(e => e.d.id));
     const guildPaid = new Set(), awarded = new Set();
+    // Match each priced purchase, sale and guild receipt to its own booked change.
+    // Other legitimate changes (e.g. an involuntary loss) have their own product paths.
+    const booked = events.filter(e => e.t === 'coin.changed' && e.d.id === 'pc').map(e => e.d.delta);
+    for (const {t,d} of events) {
+        if (t !== 'transaction.completed' || !(d.cp > 0)) continue;
+        const signed = d.to === 'pc' ? d.cp : d.offer && d.seller ? -d.cp : null;
+        if (signed === null) continue;
+        const index = booked.indexOf(signed);
+        assert.ok(index >= 0, id+' transaction debit/credit');
+        booked.splice(index,1);
+    }
     for(const e of events){
         const d=e.d||{}, sheet=s.entities[d.id]?.sheet;
         if(e.t==='coin.changed' && Number.isInteger(d.delta))assert.equal(d.value,sheet.coin_cp+d.delta,id+' money');
@@ -20,6 +31,9 @@ export function checkEvents(E,prior,events,id){
                 && s.entities[d.id]?.status !== 'dead', id+' eligible quest XP');
             awarded.add(key);
         }
+        const holder = e.t === 'object.moved' ? d.to : e.t === 'object.created' ? d.object.holder : null;
+        if (holder) assert.ok(!(holder.entity && holder.loc), id+' conflicting holders');
+        if (e.t === 'quest.status' && d.from) assert.equal(s.quests[d.id]?.status,d.from,id+' prior quest status');
         if(e.t === 'object.moved' && d.split) assert.ok(!s.objects[d.split], id+' existing split object');
         if(e.t==='level.up'){
             assert.equal(d.level,sheet.level+1,id+' level');

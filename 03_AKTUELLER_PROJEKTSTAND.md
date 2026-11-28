@@ -25,7 +25,7 @@
 ## Nächste Schritte
 
 1. GPT prüft den [vollständigen Diff von .261 zu .262](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/4b637c981459e1e5ff9f4bd480bc071723fe5bce...c665c59a313746e165a00a5f147c1aaeff7c0452). Die unabhängige GO-Empfehlung für die Validierungsvereinfachung bis .261 ist dokumentierter Ausgangspunkt.
-2. Nutzer, GPT und Claude entscheiden über die E-Rank-Entwicklung anhand der [Progressionsmessungen](recherche/abnahme_262/progression.json) und [Gestaltungsfragen](recherche/AVERETH_261_E_BIS_S_SPIELDESIGN_BALANCE_WELT_FACHGRUNDLAGE_GPT.md). Die [Claude-Analyse zu Balance und Weltmodell](recherche/AVERETH_261_E_BIS_S_BALANCE_WELTMODELL_CLAUDE.md) liefert Simulationen, eine Entscheidungsvorlage und einen Vorschlag für die erste E-Unternehmung.
+2. Nutzer, GPT und Claude entscheiden über die E-Rank-Entwicklung anhand der [Progressionsmessungen](recherche/abnahme_262/progression.json) und [Gestaltungsfragen](recherche/AVERETH_261_E_BIS_S_SPIELDESIGN_BALANCE_WELT_FACHGRUNDLAGE_GPT.md). Die [Claude-Analyse zu Balance und Weltmodell](recherche/AVERETH_261_E_BIS_S_BALANCE_WELTMODELL_CLAUDE.md) liefert Simulationen, eine Entscheidungsvorlage und einen Vorschlag für die erste E-Unternehmung. Die [Vertiefung nach GPT-Gegenreview R1–R9](recherche/AVERETH_262_CLAUDE_E_BALANCE_VERTIEFUNG_UND_ENTSCHEIDUNGSVORLAGE.md) korrigiert die Party-XP-Rechnung, prüft entwickelte Builds und schließt mit einer kompakten Entscheidungsvorlage und dem ersten E-Paket.
 3. Der Nutzer entscheidet über den nächsten persönlichen Spieltest. Für neue Originale gilt der [Usertest-Ablauf](01_ARBEITSWEISE_GPT_CODEX.md#persönliche-usertests--verbindlicher-ablauf).
 
 ## Arbeitsaufteilung

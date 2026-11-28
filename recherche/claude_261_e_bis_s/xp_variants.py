@@ -2,7 +2,7 @@
 """XP per activity for a PC at the start of E (L15) and mid E (L22) under three rank-gap variants (analytic, from the
 product formulas: defeat = 12 x foe level x gap x type x 5; quest = 15 x level x type x 5; next level = 100 x level).
 V0 current (rank-based gap, -1 rank = 0.5); V1 soft (-1 rank = 0.75); V2 level-distance (foe >= PC-4: 1, PC-5..-9: 0.5, below: 0.25).
-Party of two: combat XP pool split equally between two survivors, quest XP full for each (observed .222-.235)."""
+Party of two: combat XP pool split equally between two survivors, quest XP ALSO split equally (src/v4/guild.js L573-578; corrected 28.11.2026 after GPT review R2)."""
 def gap_rank(foe, pc, v):
     r = lambda l: 0 if l <= 14 else 1 if l <= 29 else 2
     g = r(foe) - r(pc)
@@ -20,6 +20,7 @@ for pc in (15, 22):
             ('solo: elite at 0.9 x level', lambda v: kill(round(pc * .9), pc, v, typ=1.5)),
             ('party of 2: 3 foes at L' + str(pc + 2), lambda v: kill(pc + 2, pc, v, n=3, party=2)),
             ('party of 2: E-floor boss L22 (each)', lambda v: kill(22, pc, v, typ=2.5, party=2)),
-            ('standard contract at own level (each)', lambda v: 15 * pc * 2 * 5)]
+            ('standard contract at own level, solo', lambda v: 15 * pc * 2 * 5),
+            ('standard contract, party of 2 (each, split)', lambda v: 15 * pc * 2 * 5 / 2)]
     for name, f in acts:
         print(f'  {name:44s} ' + ' | '.join(f'{v} {f(v):7.0f} ({f(v) / need:4.2f} lvl)' for v in ('V0', 'V1', 'V2')))

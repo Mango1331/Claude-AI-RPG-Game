@@ -492,3 +492,21 @@ rogue F-exc [w22 a5/6]: bear-L18 100/30 | eliteGhoul-L20 96/19 | goblin2-L17 100
   mage    L15 0% · L15+W 100% · L18 0% · L18+W 100% · L20 0% · L20+W 100% · L24 0% · L24+W 100% · L29 93% · L29+W 100%
   rogue   L15 0% · L15+W 100% · L18 0% · L18+W 100% · L20 0% · L20+W 100% · L24 0% · L24+W 100% · L29 100% · L29+W 100%
 harness illegal actions (encounter aborted): 0 []
+
+## xp_variants.py (korrigiert 28.11.2026 nach GPT-R2: Quest-XP werden in der Party ebenfalls geteilt)
+== PC L15 (next level needs 1500 XP)
+  solo: 3 goblins at comfortable L11           V0     990 (0.66 lvl) | V1    1485 (0.99 lvl) | V2    1980 (1.32 lvl)
+  solo: single bear at own level               V0     900 (0.60 lvl) | V1     900 (0.60 lvl) | V2     900 (0.60 lvl)
+  solo: elite at 0.9 x level                   V0     630 (0.42 lvl) | V1     945 (0.63 lvl) | V2    1260 (0.84 lvl)
+  party of 2: 3 foes at L17                    V0    1530 (1.02 lvl) | V1    1530 (1.02 lvl) | V2    1530 (1.02 lvl)
+  party of 2: E-floor boss L22 (each)          V0    1650 (1.10 lvl) | V1    1650 (1.10 lvl) | V2    1650 (1.10 lvl)
+  standard contract at own level, solo         V0    2250 (1.50 lvl) | V1    2250 (1.50 lvl) | V2    2250 (1.50 lvl)
+  standard contract, party of 2 (each, split)  V0    1125 (0.75 lvl) | V1    1125 (0.75 lvl) | V2    1125 (0.75 lvl)
+== PC L22 (next level needs 2200 XP)
+  solo: 3 goblins at comfortable L16           V0    2880 (1.31 lvl) | V1    2880 (1.31 lvl) | V2    1440 (0.65 lvl)
+  solo: single bear at own level               V0    1320 (0.60 lvl) | V1    1320 (0.60 lvl) | V2    1320 (0.60 lvl)
+  solo: elite at 0.9 x level                   V0    1800 (0.82 lvl) | V1    1800 (0.82 lvl) | V2    1800 (0.82 lvl)
+  party of 2: 3 foes at L24                    V0    2160 (0.98 lvl) | V1    2160 (0.98 lvl) | V2    2160 (0.98 lvl)
+  party of 2: E-floor boss L22 (each)          V0    1650 (0.75 lvl) | V1    1650 (0.75 lvl) | V2    1650 (0.75 lvl)
+  standard contract at own level, solo         V0    3300 (1.50 lvl) | V1    3300 (1.50 lvl) | V2    3300 (1.50 lvl)
+  standard contract, party of 2 (each, split)  V0    1650 (0.75 lvl) | V1    1650 (0.75 lvl) | V2    1650 (0.75 lvl)

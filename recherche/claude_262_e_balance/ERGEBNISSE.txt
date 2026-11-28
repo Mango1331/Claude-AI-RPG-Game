@@ -1,0 +1,270 @@
+# Offline-Ergebnisse zur Vertiefung R1–R9 (Claude, 28.11.2026). Produkt .262 c665c59a; Simulation über eine Analysekopie (nur Level- und Evolutionswächter in tools/sim/combat.mjs erweitert; Varianten nur in gear.json e_weapon_values). Keine Modellaufrufe.
+
+## sim_r1
+== L15: 3 Goblins L17 (win% / HP left% of wins; W | M | R)
+  B0 standard/P1 (Bericht 1)                             0/  0 |   0/  0 |   0/  0
+  B1 AoE/P1 taktisch                                     0/  0 |   0/  0 |   0/  0
+  B2 AoE/P3                                             15/  4 |   0/  0 |   0/  0
+  B3 AoE/P5                                            100/  8 |   0/  0 |   0/  0
+  B4 entwickelt (4 Skills P5/P3, E-Klasse, 3+3 Tränke) 100/ 38 |   0/  0 |   0/  0
+  B5 = B4 + Begleiter                                  100/ 65 | 100/ 50 | 100/ 63
+== L15: 3 Goblins L15 (win% / HP left% of wins; W | M | R)
+  B0 standard/P1 (Bericht 1)                             0/  0 |   0/  0 |   0/  0
+  B1 AoE/P1 taktisch                                   100/ 23 |   0/  0 |   0/  0
+  B2 AoE/P3                                            100/ 29 |   0/  0 |   0/  0
+  B3 AoE/P5                                            100/ 29 |   0/  0 |   0/  0
+  B4 entwickelt (4 Skills P5/P3, E-Klasse, 3+3 Tränke) 100/ 47 |   0/  0 |   0/  0
+  B5 = B4 + Begleiter                                  100/ 72 | 100/ 67 | 100/ 68
+== L15: 5 Wölfe L16 (win% / HP left% of wins; W | M | R)
+  B0 standard/P1 (Bericht 1)                             0/  0 |   0/  0 |   0/  0
+  B1 AoE/P1 taktisch                                   100/ 42 |   0/  0 |   2/  1
+  B2 AoE/P3                                            100/ 42 |   0/  0 |   2/  1
+  B3 AoE/P5                                            100/ 42 |   0/  0 |   2/  1
+  B4 entwickelt (4 Skills P5/P3, E-Klasse, 3+3 Tränke) 100/ 58 |   0/  0 |   0/  0
+  B5 = B4 + Begleiter                                  100/ 77 | 100/ 66 | 100/ 65
+== L15: Elite-Bär L16 (win% / HP left% of wins; W | M | R)
+  B0 standard/P1 (Bericht 1)                            38/  3 |   0/  0 |   0/  0
+  B1 AoE/P1 taktisch                                     0/  0 |   0/  0 |   0/  0
+  B2 AoE/P3                                              0/  0 |   0/  0 |   0/  0
+  B3 AoE/P5                                              0/  0 |   0/  0 |   0/  0
+  B4 entwickelt (4 Skills P5/P3, E-Klasse, 3+3 Tränke) 100/ 19 |  87/ 16 |   0/  0
+  B5 = B4 + Begleiter                                  100/ 56 | 100/ 81 | 100/ 82
+== L15: 2 Bären L15 (win% / HP left% of wins; W | M | R)
+  B0 standard/P1 (Bericht 1)                             0/  0 |   0/  0 |   0/  0
+  B1 AoE/P1 taktisch                                     0/  0 |   0/  0 |   0/  0
+  B2 AoE/P3                                              0/  0 |   0/  0 |   0/  0
+  B3 AoE/P5                                              8/  1 |   0/  0 |   0/  0
+  B4 entwickelt (4 Skills P5/P3, E-Klasse, 3+3 Tränke) 100/ 14 |   0/  0 |   0/  0
+  B5 = B4 + Begleiter                                  100/ 56 | 100/ 65 | 100/ 70
+== L20: Oger-Boss L20 (win% / HP left% of wins; W | M | R)
+  B0 standard/P1 (Bericht 1)                             0/  0 |   0/  0 |   0/  0
+  B1 AoE/P1 taktisch                                     0/  0 |   0/  0 |   0/  0
+  B2 AoE/P3                                              0/  0 |   0/  0 |   0/  0
+  B3 AoE/P5                                              0/  0 |   0/  0 |   0/  0
+  B4 entwickelt (4 Skills P5/P3, E-Klasse, 3+3 Tränke)   0/  0 |   0/  0 |   0/  0
+  B5 = B4 + Begleiter                                    2/  5 |  63/ 34 |  13/ 41
+== L20: Schamanen-Boss L22 (win% / HP left% of wins; W | M | R)
+  B0 standard/P1 (Bericht 1)                             0/  0 |   0/  0 |   0/  0
+  B1 AoE/P1 taktisch                                     0/  0 |   0/  0 |   0/  0
+  B2 AoE/P3                                              0/  0 |   0/  0 |   0/  0
+  B3 AoE/P5                                              0/  0 |   0/  0 |   0/  0
+  B4 entwickelt (4 Skills P5/P3, E-Klasse, 3+3 Tränke)   0/  0 |   2/  2 |   0/  0
+  B5 = B4 + Begleiter                                  100/ 45 | 100/ 89 | 100/100
+== L20: Ghul-Lord L22 (win% / HP left% of wins; W | M | R)
+  B0 standard/P1 (Bericht 1)                             8/  1 |  33/  3 |   0/  0
+  B1 AoE/P1 taktisch                                     0/  0 |   0/  0 |   0/  0
+  B2 AoE/P3                                              0/  0 |   0/  0 |   0/  0
+  B3 AoE/P5                                              0/  0 |   0/  0 |   0/  0
+  B4 entwickelt (4 Skills P5/P3, E-Klasse, 3+3 Tränke)  17/  9 |  55/  3 |   0/  0
+  B5 = B4 + Begleiter                                  100/ 57 | 100/ 81 | 100/ 85
+== L10: 3 Goblins L10 (win% / HP left% of wins; W | M | R)
+  B0 standard/P1 (Bericht 1)                             0/  0 |   0/  0 |   0/  0
+  B1 AoE/P1 taktisch                                   100/ 23 |   0/  0 |   0/  0
+  B2 AoE/P3                                            100/ 24 |   0/  0 |   0/  0
+  B3 AoE/P5                                            100/ 38 |  17/  9 |   0/  0
+  B4 entwickelt (4 Skills P5/P3, E-Klasse, 3+3 Tränke) 100/ 34 |   0/  0 |   0/  0
+  B5 = B4 + Begleiter                                  100/ 66 | 100/ 74 | 100/ 65
+
+== Startdistanz (B4 entwickelt, solo): win% je ENGAGED/SHORT/MEDIUM/LONG
+  L15: 3 Goblins L17 warrior 100 / 100 / 100 / 100
+  L15: 3 Goblins L17 mage    0 / 0 / 0 / 0
+  L15: 3 Goblins L17 rogue   0 / 0 / 0 / 0
+  L15: Elite-Bär L16 warrior 100 / 100 / 38 / 100
+  L15: Elite-Bär L16 mage    87 / 87 / 100 / 100
+  L15: Elite-Bär L16 rogue   0 / 0 / 0 / 0
+  L20: Ghul-Lord L22 warrior 17 / 17 / 0 / 17
+  L20: Ghul-Lord L22 mage    55 / 55 / 100 / 100
+  L20: Ghul-Lord L22 rogue   0 / 0 / 0 / 0
+
+## sim_dungeon
+== Mossback Warrens 1 (F) max: goblin×3 normal L3 → goblin×3 normal L3 → goblin elite L6
+  warrior L5: std max/0h 0 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  warrior L8: std max/0h 0 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  mage    L5: std max/0h 0 · dev max/0h 98 · dev mid/0h 98 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  mage    L8: std max/0h 0 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  rogue   L5: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 98 · dev mid/4h 100 · dev+ally max/0h 100
+  rogue   L8: std max/0h 0 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+== Mossback Warrens 2 (E) max: goblin×3 normal L17 → goblin_shaman boss L22
+  warrior L18: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  warrior L20: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  warrior L24: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  mage    L18: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  mage    L20: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  mage    L24: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 100 · dev+ally max/0h 100
+  rogue   L18: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  rogue   L20: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  rogue   L24: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 58 · dev+ally max/0h 100
+== Glimmerdeep Grotto 1 (F) max: arthropod×4 normal L3 → slime×2 normal L3 → arthropod boss L7
+  warrior L5: std max/0h 100 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  warrior L8: std max/0h 100 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  mage    L5: std max/0h 83 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  mage    L8: std max/0h 100 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  rogue   L5: std max/0h 95 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  rogue   L8: std max/0h 100 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+== Old Crown Catacombs 1 (F) max: skeleton×3 normal L3 → skeleton×2 normal L3 → skeleton elite L6
+  warrior L5: std max/0h 100 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  warrior L8: std max/0h 100 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  mage    L5: std max/0h 100 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  mage    L8: std max/0h 100 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  rogue   L5: std max/0h 18 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  rogue   L8: std max/0h 100 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+== Old Crown Catacombs 2 (E) max: ghoul×2 normal L17 → ghoul boss L22
+  warrior L18: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  warrior L20: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 3 · dev mid/4h 13 · dev+ally max/0h 100
+  warrior L24: std max/0h 63 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  mage    L18: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 60 · dev+ally max/0h 100
+  mage    L20: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 30 · dev mid/4h 100 · dev+ally max/0h 100
+  mage    L24: std max/0h 0 · dev max/0h 100 · dev mid/0h 100 · dev mid/1h 100 · dev mid/4h 100 · dev+ally max/0h 100
+  rogue   L18: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  rogue   L20: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 0 · dev+ally max/0h 100
+  rogue   L24: std max/0h 0 · dev max/0h 0 · dev mid/0h 0 · dev mid/1h 0 · dev mid/4h 100 · dev+ally max/0h 100
+
+## sim_r5
+== warrior (angebotene Richtungen bei ausgewogenem Build: offense, defense)
+  Gruppe 3 Goblins L15       ohne 100/31 | n:offense 100/31 | r:offense 100/31 | n:defense 100/47 | r:defense 100/61
+  Elite-Bär L16              ohne 0/0 | n:offense 27/6 | r:offense 73/6 | n:defense 100/19 | r:defense 100/42
+  Geist-Elite L17 (magisch)  ohne 7/2 | n:offense 7/2 | r:offense 7/2 | n:defense 7/2 | r:defense 95/18
+  Ghul-Lord L22              ohne 0/0 | n:offense 0/0 | r:offense 0/0 | n:defense 0/0 | r:defense 0/0
+== mage (angebotene Richtungen bei ausgewogenem Build: defense, arcane)
+  Gruppe 3 Goblins L15       ohne 0/0 | n:defense 100/32 | r:defense 100/48 | n:arcane 0/0 | r:arcane 0/0
+  Elite-Bär L16              ohne 100/29 | n:defense 100/45 | r:defense 100/55 | n:arcane 100/41 | r:arcane 100/43
+  Geist-Elite L17 (magisch)  ohne 25/6 | n:defense 25/6 | r:defense 100/14 | n:arcane 50/18 | r:arcane 68/22
+  Ghul-Lord L22              ohne 0/0 | n:defense 0/0 | r:defense 100/21 | n:arcane 0/0 | r:arcane 0/0
+== rogue (angebotene Richtungen bei ausgewogenem Build: defense, precision, mobility)
+  Gruppe 3 Goblins L15       ohne 0/0 | n:defense 100/22 | r:defense 100/48 | n:precision 0/0 | r:precision 0/0 | n:mobility 100/22 | r:mobility 100/42
+  Elite-Bär L16              ohne 0/0 | n:defense 73/14 | r:defense 100/42 | n:precision 0/0 | r:precision 7/7 | n:mobility 73/14 | r:mobility 100/34
+  Geist-Elite L17 (magisch)  ohne 97/6 | n:defense 97/6 | r:defense 100/32 | n:precision 97/6 | r:precision 97/12 | n:mobility 97/6 | r:mobility 97/6
+  Ghul-Lord L22              ohne 0/0 | n:defense 0/0 | r:defense 0/0 | n:precision 0/0 | r:precision 0/0 | n:mobility 0/0 | r:mobility 0/0
+
+## sim_r5b
+warrior Gruppe 3 Goblins L15     heute n:100/31 r:100/31 | O1 n:100/35 r:100/48 | defense n:100/47 r:100/61
+warrior Elite-Bär L16            heute n:27/6 r:73/6 | O1 n:88/6 r:93/6 | defense n:100/19 r:100/42
+warrior Geist-Elite L17          heute n:7/2 r:7/2 | O1 n:7/2 r:7/2 | defense n:7/2 r:95/18
+warrior Ghul-Lord L22 (L20 PC)   heute n:0/0 r:0/0 | O1 n:0/0 r:0/0 | defense n:17/9 r:100/26
+mage    Gruppe 3 Goblins L15     heute n:0/0 r:0/0 | O1 n:12/13 r:67/38 | defense n:100/32 r:100/48
+mage    Elite-Bär L16            heute n:100/41 r:100/43 | O1 n:100/43 r:100/43 | defense n:100/45 r:100/55
+mage    Geist-Elite L17          heute n:50/18 r:68/22 | O1 n:80/24 r:97/26 | defense n:25/6 r:100/14
+mage    Ghul-Lord L22 (L20 PC)   heute n:100/37 r:100/37 | O1 n:100/37 r:100/37 | defense n:100/49 r:100/59
+rogue   Gruppe 3 Goblins L15     heute n:0/0 r:0/0 | O1 n:0/0 r:0/0 | defense n:100/22 r:100/48
+rogue   Elite-Bär L16            heute n:0/0 r:7/7 | O1 n:20/8 r:85/8 | defense n:73/14 r:100/42
+rogue   Geist-Elite L17          heute n:97/6 r:97/12 | O1 n:97/24 r:97/39 | defense n:97/6 r:100/32
+rogue   Ghul-Lord L22 (L20 PC)   heute n:0/0 r:2/1 | O1 n:2/1 r:2/1 | defense n:0/0 r:100/19
+
+## sim_r3
+heute warrior Elite-Bär L16 100/19 | Geist-Elite L17 7/2 | 3 Goblins L17 100/38 | Ghul-Lord L22 17/9
+heute mage    Elite-Bär L16 100/41 | Geist-Elite L17 50/18 | 3 Goblins L17 0/0 | Ghul-Lord L22 100/37
+heute rogue   Elite-Bär L16 0/0 | Geist-Elite L17 97/6 | 3 Goblins L17 0/0 | Ghul-Lord L22 0/0
+F+4   warrior Elite-Bär L16 100/20 | Geist-Elite L17 7/2 | 3 Goblins L17 100/38 | Ghul-Lord L22 78/12
+F+4   mage    Elite-Bär L16 100/43 | Geist-Elite L17 78/24 | 3 Goblins L17 0/0 | Ghul-Lord L22 100/37
+F+4   rogue   Elite-Bär L16 13/8 | Geist-Elite L17 97/17 | 3 Goblins L17 0/0 | Ghul-Lord L22 2/1
+F×1.4 warrior Elite-Bär L16 100/29 | Geist-Elite L17 7/2 | 3 Goblins L17 100/38 | Ghul-Lord L22 98/13
+F×1.4 mage    Elite-Bär L16 100/43 | Geist-Elite L17 87/25 | 3 Goblins L17 0/0 | Ghul-Lord L22 100/37
+F×1.4 rogue   Elite-Bär L16 33/9 | Geist-Elite L17 97/27 | 3 Goblins L17 0/0 | Ghul-Lord L22 2/1
+F×1.5 warrior Elite-Bär L16 100/34 | Geist-Elite L17 7/2 | 3 Goblins L17 100/38 | Ghul-Lord L22 100/12
+F×1.5 mage    Elite-Bär L16 100/43 | Geist-Elite L17 95/25 | 3 Goblins L17 0/0 | Ghul-Lord L22 100/37
+F×1.5 rogue   Elite-Bär L16 52/9 | Geist-Elite L17 97/30 | 3 Goblins L17 0/0 | Ghul-Lord L22 2/1
+
+## gear_longterm
+Rang | Bandmitte | STR | Skill-Basis+Koef×STR (Kalibrierung) | Waffe fine je Variante (Anteil am Rohschaden) | Bär ATK | Rüstung common DEF je Variante (Anteil am eingehenden ATK, plus VIT/4)
+F | L7 | 18 | 46 | W0 14 (23 %) · W1 14 (23 %) · W2 14 (23 %) · W3 15 (25 %) | 32 | A0 6 (19 %, gesamt 31 %) · A1 6 (19 %, gesamt 31 %) · A2 6 (19 %, gesamt 31 %)
+E | L22 | 48 | 114 | W0 15 (12 %) · W1 18 (14 %) · W2 19 (14 %) · W3 38 (25 %) | 79 | A0 11 (14 %, gesamt 29 %) · A1 10 (13 %, gesamt 28 %) · A2 11 (14 %, gesamt 29 %)
+D | L37 | 78 | 174 (E-Kalibrierung, D–S fehlen) | W0 21 (11 %) · W1 22 (11 %) · W2 26 (13 %) · W3 58 (25 %) | 125 | A0 15 (12 %, gesamt 27 %) · A1 15 (12 %, gesamt 27 %) · A2 16 (13 %, gesamt 28 %)
+C | L52 | 108 | 234 (E-Kalibrierung, D–S fehlen) | W0 27 (10 %) · W1 26 (10 %) · W2 34 (13 %) · W3 78 (25 %) | 171 | A0 20 (12 %, gesamt 27 %) · A1 25 (15 %, gesamt 30 %) · A2 21 (12 %, gesamt 28 %)
+B | L67 | 138 | 294 (E-Kalibrierung, D–S fehlen) | W0 33 (10 %) · W1 30 (9 %) · W2 47 (14 %) · W3 98 (25 %) | 217 | A0 24 (11 %, gesamt 27 %) · A1 40 (18 %, gesamt 34 %) · A2 26 (12 %, gesamt 28 %)
+A | L82 | 168 | 354 (E-Kalibrierung, D–S fehlen) | W0 39 (10 %) · W1 34 (9 %) · W2 63 (15 %) · W3 118 (25 %) | 263 | A0 29 (11 %, gesamt 27 %) · A1 63 (24 %, gesamt 40 %) · A2 31 (12 %, gesamt 28 %)
+S | L97 | 198 | 414 (E-Kalibrierung, D–S fehlen) | W0 45 (10 %) · W1 38 (8 %) · W2 85 (17 %) · W3 138 (25 %) | 310 | A0 33 (11 %, gesamt 26 %) · A1 102 (33 %, gesamt 49 %) · A2 36 (12 %, gesamt 27 %)
+
+Preisrichtwert Waffe fine nach heutiger Formel (Punkte×8×Qualitätsfaktor 1,25×(1+0,75R)) je Variante, gegen Vergütungsmitte (Content proposed) und Wolfbeute ×3^R
+F: W0 140 · W1 140 · W2 140 | Vergütung Mitte 105 | Wolf 12 cp | Preis ×2,5^R-Variante 140
+E: W0 263 · W1 315 · W2 333 | Vergütung Mitte 350 | Wolf 36 cp | Preis ×2,5^R-Variante 350
+D: W0 525 · W1 550 · W2 650 | Vergütung Mitte 900 | Wolf 108 cp | Preis ×2,5^R-Variante 875
+C: W0 878 · W1 845 · W2 1105 | Vergütung Mitte 2400 | Wolf 324 cp | Preis ×2,5^R-Variante 2188
+B: W0 1320 · W1 1200 · W2 1880 | Vergütung Mitte – | Wolf 972 cp | Preis ×2,5^R-Variante 5469
+A: W0 1853 · W1 1615 · W2 2993 | Vergütung Mitte – | Wolf 2916 cp | Preis ×2,5^R-Variante 13672
+S: W0 2475 · W1 2090 · W2 4675 | Vergütung Mitte – | Wolf 8748 cp | Preis ×2,5^R-Variante 34180
+
+## skill_profiles
+== warrior L15 (STR34 VIT34 AGI19 INT5 PER5 WIL5; STA 100)
+  warrior.basic_attack     C1 ENGAGED | E heute: Roh 62 (Waffe 24 %) · E F×1,4: Roh 67 (Waffe 30 %) | P1 67/5 · P3 70/5 · P5 80/5 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 20
+  warrior.heavy_slash      C1 ENGAGED | E heute: Roh 76 (Waffe 20 %) · E F×1,4: Roh 81 (Waffe 25 %) | P1 81/7 · P3 85/7 · P5 97/6 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 14
+  warrior.quick_slash      C1 ENGAGED | E heute: Roh 63 (Waffe 24 %) · E F×1,4: Roh 68 (Waffe 30 %) | P1 68/5 · P3 71/5 · P5 81/5 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 20
+  warrior.charge           C1 ENGAGED +Band | E heute: Roh 73 (Waffe 21 %) · E F×1,4: Roh 78 (Waffe 26 %) | P1 78/8 · P3 82/8 · P5 93/7 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 12
+  warrior.cleave           C2 ENGAGED Fläche caster_engaged | E heute: Roh 66 (Waffe 23 %) · E F×1,4: Roh 71 (Waffe 28 %) | P1 71/10 · P3 74/10 · P5 85/9 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 10
+== mage L15 (STR5 VIT33 AGI5 INT34 PER5 WIL20; MP 352)
+  mage.basic_attack        C1 MEDIUM | E heute: Roh 62 (Waffe 24 %) · E F×1,4: Roh 67 (Waffe 30 %) | P1 67/0 · P3 70/0 · P5 80/0 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat ∞
+  mage.arcane_bolt         C1 MEDIUM | E heute: Roh 89 (Waffe 17 %) · E F×1,4: Roh 94 (Waffe 21 %) | P1 94/10 · P3 98/10 · P5 113/9 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 35
+  mage.flame_lance         C2 LONG | E heute: Roh 112 (Waffe 13 %) · E F×1,4: Roh 117 (Waffe 17 %) | P1 117/16 · P3 123/15 · P5 140/14 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 22
+  mage.arcane_wave         C2 MEDIUM Fläche target_band | E heute: Roh 66 (Waffe 23 %) · E F×1,4: Roh 71 (Waffe 28 %) | P1 71/14 · P3 74/13 · P5 85/13 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 25
+== rogue L15 (STR5 VIT33 AGI34 INT5 PER20 WIL5; STA 100)
+  rogue.basic_attack       C1 ENGAGED | E heute: Roh 62 (Waffe 24 %) · E F×1,4: Roh 67 (Waffe 30 %) | P1 67/5 · P3 70/5 · P5 80/5 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 20
+  rogue.razor_cut          C1 ENGAGED | E heute: Roh 72 (Waffe 21 %) · E F×1,4: Roh 77 (Waffe 26 %) | P1 77/5 · P3 81/5 · P5 92/5 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 20
+  rogue.piercing_thrust    C1 ENGAGED | E heute: Roh 86 (Waffe 18 %) · E F×1,4: Roh 91 (Waffe 22 %) | P1 91/9 · P3 95/9 · P5 109/8 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 11
+  rogue.long_lunge         C1 ENGAGED +Band | E heute: Roh 74 (Waffe 20 %) · E F×1,4: Roh 79 (Waffe 25 %) | P1 79/8 · P3 83/8 · P5 95/7 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 12
+  rogue.guarded_cut        C1 ENGAGED | E heute: Roh 68 (Waffe 22 %) · E F×1,4: Roh 73 (Waffe 27 %) | P1 73/8 · P3 76/8 · P5 87/7 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 12
+  rogue.fan_of_blades      C2 SHORT Fläche target_band | E heute: Roh 59 (Waffe 25 %) · E F×1,4: Roh 64 (Waffe 31 %) | P1 64/10 · P3 67/10 · P5 77/9 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 10
+== warrior L22 (STR48 VIT48 AGI26 INT5 PER5 WIL5; STA 100)
+  warrior.basic_attack     C1 ENGAGED | E heute: Roh 79 (Waffe 19 %) · E F×1,4: Roh 84 (Waffe 24 %) | P1 84/5 · P3 88/5 · P5 101/5 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 20
+  warrior.heavy_slash      C1 ENGAGED | E heute: Roh 97 (Waffe 15 %) · E F×1,4: Roh 102 (Waffe 20 %) | P1 102/7 · P3 107/7 · P5 122/6 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 14
+  warrior.quick_slash      C1 ENGAGED | E heute: Roh 79 (Waffe 19 %) · E F×1,4: Roh 84 (Waffe 24 %) | P1 84/5 · P3 88/5 · P5 101/5 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 20
+  warrior.charge           C1 ENGAGED +Band | E heute: Roh 93 (Waffe 16 %) · E F×1,4: Roh 98 (Waffe 20 %) | P1 98/8 · P3 103/8 · P5 117/7 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 12
+  warrior.cleave           C2 ENGAGED Fläche caster_engaged | E heute: Roh 83 (Waffe 18 %) · E F×1,4: Roh 88 (Waffe 23 %) | P1 88/10 · P3 92/10 · P5 106/9 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 10
+== mage L22 (STR5 VIT47 AGI5 INT48 PER5 WIL27; MP 492)
+  mage.basic_attack        C1 MEDIUM | E heute: Roh 79 (Waffe 19 %) · E F×1,4: Roh 84 (Waffe 24 %) | P1 84/0 · P3 88/0 · P5 101/0 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat ∞
+  mage.arcane_bolt         C1 MEDIUM | E heute: Roh 115 (Waffe 13 %) · E F×1,4: Roh 120 (Waffe 17 %) | P1 120/10 · P3 126/10 · P5 144/9 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 49
+  mage.flame_lance         C2 LONG | E heute: Roh 145 (Waffe 10 %) · E F×1,4: Roh 150 (Waffe 13 %) | P1 150/16 · P3 158/15 · P5 180/14 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 30
+  mage.arcane_wave         C2 MEDIUM Fläche target_band | E heute: Roh 83 (Waffe 18 %) · E F×1,4: Roh 88 (Waffe 23 %) | P1 88/14 · P3 92/13 · P5 106/13 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 35
+== rogue L22 (STR5 VIT47 AGI48 INT5 PER27 WIL5; STA 100)
+  rogue.basic_attack       C1 ENGAGED | E heute: Roh 79 (Waffe 19 %) · E F×1,4: Roh 84 (Waffe 24 %) | P1 84/5 · P3 88/5 · P5 101/5 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 20
+  rogue.razor_cut          C1 ENGAGED | E heute: Roh 93 (Waffe 16 %) · E F×1,4: Roh 98 (Waffe 20 %) | P1 98/5 · P3 103/5 · P5 118/5 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 20
+  rogue.piercing_thrust    C1 ENGAGED | E heute: Roh 110 (Waffe 14 %) · E F×1,4: Roh 115 (Waffe 17 %) | P1 115/9 · P3 121/9 · P5 138/8 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 11
+  rogue.long_lunge         C1 ENGAGED +Band | E heute: Roh 95 (Waffe 16 %) · E F×1,4: Roh 100 (Waffe 20 %) | P1 100/8 · P3 105/8 · P5 120/7 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 12
+  rogue.guarded_cut        C1 ENGAGED | E heute: Roh 87 (Waffe 17 %) · E F×1,4: Roh 92 (Waffe 22 %) | P1 92/8 · P3 97/8 · P5 110/7 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 12
+  rogue.fan_of_blades      C2 SHORT Fläche target_band | E heute: Roh 75 (Waffe 20 %) · E F×1,4: Roh 80 (Waffe 25 %) | P1 80/10 · P3 84/10 · P5 96/9 (Roh/Kosten mit Waffe 20; Kosten jeweils Untergrenze des Kostenbands) | Einsätze je Vorrat 10
+
+== E-Varianten einer Funktion (Warrior, schwerer Einzelschlag), L22, Waffe 20, STR aus character(); Kosten = Untergrenze des Bands
+  F-C1 Heavy Slash P1 (Content)                              Roh×P 102 · Kosten 7 · Einsätze je 100 STA 14
+  F-C1 Heavy Slash P5                                        Roh×P 122 · Kosten 6 · Einsätze je 100 STA 16
+  F-C3 Obergrenze P5 (z. B. nach zwei Evolutionen, P geerbt) Roh×P 195 · Kosten 11 · Einsätze je 100 STA 9
+  E-C1 Obergrenze P1 (neu gelernt)                           Roh×P 134 · Kosten 8 · Einsätze je 100 STA 12
+  E-C1 Obergrenze P5                                         Roh×P 161 · Kosten 7 · Einsätze je 100 STA 14
+  S-C: F-C3 P5 → E-C3 (Rang-Evolution, P geerbt)             Roh×P 212 · Kosten 14 · Einsätze je 100 STA 7
+  E-C3 Obergrenze P1                                         Roh×P 177 · Kosten 16 · Einsätze je 100 STA 6
+
+STA-Vorrat Mensch fest: 100 | MP = 8×INT + 4×WIL wächst mit Stats
+
+## econ_r6
+## R2 korrigiert: XP je Person für einen PC auf L15 (nächstes Level 1.500 XP)
+  solo: 1 E-Einzeltier L16                       gesamt    960 | je Person    960 (0.64 Level)
+  solo Warrior (entwickelt): 3 Goblins L17       gesamt   3060 | je Person   3060 (2.04 Level)
+  solo: 3 Goblins L11 (F, Rangabstand 0,5)       gesamt    990 | je Person    990 (0.66 Level)
+  Party 2: 3 Goblins L17                         gesamt   3060 | je Person   1530 (1.02 Level)
+  Party 2: Elite-Bär L18                         gesamt   1620 | je Person    810 (0.54 Level)
+  Party 2: E-Boss L22 (Ghul-Lord)                gesamt   3300 | je Person   1650 (1.10 Level)
+  Standardvertrag L15 solo                       gesamt   2250 | je Person   2250 (1.50 Level)
+  Standardvertrag L15 Party 2 (geteilt)          gesamt   2250 | je Person   1125 (0.75 Level)
+
+## Abenteuerzyklus am E-Einstieg: 1 Proven-Vertrag + 4 Begegnungen (was die jeweilige Seite laut R1 sicher gewinnt)
+  Solo Mage/Rogue: 4 E-Einzeltiere L16 (Wolf/Bär gemischt)             Vergütung niedrig: je Person   6090 XP (4.1 Level) ·    366 cp
+  Solo Mage/Rogue: 4 E-Einzeltiere L16 (Wolf/Bär gemischt)             Vergütung mittel : je Person   6090 XP (4.1 Level) ·    566 cp
+  Solo Mage/Rogue: 4 E-Einzeltiere L16 (Wolf/Bär gemischt)             Vergütung hoch   : je Person   6090 XP (4.1 Level) ·    766 cp
+  Solo Warrior: 2 Einzeltiere + 2 Goblin-Dreiergruppen L17             Vergütung niedrig: je Person  10290 XP (6.9 Level) ·    258 cp
+  Solo Warrior: 2 Einzeltiere + 2 Goblin-Dreiergruppen L17             Vergütung mittel : je Person  10290 XP (6.9 Level) ·    458 cp
+  Solo Warrior: 2 Einzeltiere + 2 Goblin-Dreiergruppen L17             Vergütung hoch   : je Person  10290 XP (6.9 Level) ·    658 cp
+  Party 2: 2 Wolfsrudel (4) L17 + 1 Elite-Bär L18 + 1 Goblin-Dreiergruppe Vergütung niedrig: je Person   7545 XP (5.0 Level) ·    273 cp
+  Party 2: 2 Wolfsrudel (4) L17 + 1 Elite-Bär L18 + 1 Goblin-Dreiergruppe Vergütung mittel : je Person   7545 XP (5.0 Level) ·    373 cp
+  Party 2: 2 Wolfsrudel (4) L17 + 1 Elite-Bär L18 + 1 Goblin-Dreiergruppe Vergütung hoch   : je Person   7545 XP (5.0 Level) ·    473 cp
+
+## Upgradezeit: Zyklen bis E-fine-Waffe + E-fine-Rüstung + ein E-Manual (je Person, Vergütung mittel)
+  heute (Richtwert E-Waffe fine 210, Rüstung 224)  + Manual 120 cp (heutiger Richtwert, nicht rangskaliert): Solo Mage/Rogue 1.0 | Solo Warrior 1.2 | Party 2 1.5
+  heute (Richtwert E-Waffe fine 210, Rüstung 224)  + E-Manual 240 cp (×2, Vorschlag)                     : Solo Mage/Rogue 1.2 | Solo Warrior 1.5 | Party 2 1.8
+  heute (Richtwert E-Waffe fine 210, Rüstung 224)  + E-Manual 300 cp (×2,5, Vorschlag)                   : Solo Mage/Rogue 1.3 | Solo Warrior 1.6 | Party 2 2.0
+  F×1,4 mit Qualitätsfaktor (350 + 224)            + Manual 120 cp (heutiger Richtwert, nicht rangskaliert): Solo Mage/Rogue 1.2 | Solo Warrior 1.5 | Party 2 1.9
+  F×1,4 mit Qualitätsfaktor (350 + 224)            + E-Manual 240 cp (×2, Vorschlag)                     : Solo Mage/Rogue 1.4 | Solo Warrior 1.8 | Party 2 2.2
+  F×1,4 mit Qualitätsfaktor (350 + 224)            + E-Manual 300 cp (×2,5, Vorschlag)                   : Solo Mage/Rogue 1.5 | Solo Warrior 1.9 | Party 2 2.3
+  ein Preisfaktor ×2,5 je Rang (350 + 180)         + Manual 120 cp (heutiger Richtwert, nicht rangskaliert): Solo Mage/Rogue 1.1 | Solo Warrior 1.4 | Party 2 1.7
+  ein Preisfaktor ×2,5 je Rang (350 + 180)         + E-Manual 240 cp (×2, Vorschlag)                     : Solo Mage/Rogue 1.4 | Solo Warrior 1.7 | Party 2 2.1
+  ein Preisfaktor ×2,5 je Rang (350 + 180)         + E-Manual 300 cp (×2,5, Vorschlag)                   : Solo Mage/Rogue 1.5 | Solo Warrior 1.8 | Party 2 2.2
+
+## Langfristig: Wachstum je Rang (Faktor gegenüber dem Rang davor)
+  Vergütungsmitte (proposed): F 105 → E 350 (×3,3) → D 900 (×2,6) → C 2.400 (×2,7)
+  Material: ×3 je Rang (rank_value_factor) · Waffenpreis heute: ≈ ×1,7–1,9 je Rang (Punkte × Rangfaktor) · XP-Bedarf je Rang: konstant 10 Standardverträge

@@ -1,6 +1,6 @@
 # Avereth – E-Rang bis S: Balancekopplungen, Weltmodell und Entscheidungsvorlage
 
-**Unabhängige Fachanalyse von Claude** · 28.11.2026 · Anschlussauftrag aus Kapitel 13 der [GPT-Fachgrundlage](AVERETH_261_E_BIS_S_SPIELDESIGN_BALANCE_WELT_FACHGRUNDLAGE_GPT.md). Keine Produktimplementierung, keine Kanonänderung.
+**Unabhängige Fachanalyse von Claude** · 28.11.2026 · **Ergänzt und in Teilen korrigiert durch die [Vertiefung nach GPT-Gegenreview R1–R9](AVERETH_262_CLAUDE_E_BALANCE_VERTIEFUNG_UND_ENTSCHEIDUNGSVORLAGE.md)** (Quest-XP-Teilung, Kampfsimulation mit entwickelten Builds, Waffenwerte, Rangquellen) · Anschlussauftrag aus Kapitel 13 der [GPT-Fachgrundlage](AVERETH_261_E_BIS_S_SPIELDESIGN_BALANCE_WELT_FACHGRUNDLAGE_GPT.md). Keine Produktimplementierung, keine Kanonänderung.
 
 | Bezug | Stand |
 |---|---|
@@ -264,7 +264,8 @@ XP-Ausbeute je Aktivität für einen PC auf L15 (nächstes Level: 1.500 XP):
 | solo Einzelbär L15 | 900 (0,60) | 900 | 900 |
 | zu zweit 3 Gegner L17 (je Person) | 1.530 (1,02) | 1.530 | 1.530 |
 | zu zweit E-Boss L22 (je Person) | 1.650 (1,10) | 1.650 | 1.650 |
-| Standardvertrag auf eigenem Level | 2.250 (1,50) | 2.250 | 2.250 |
+| Standardvertrag auf eigenem Level, solo | 2.250 (1,50) | 2.250 | 2.250 |
+| Standardvertrag zu zweit, je Person (**korrigiert**: Quest-XP werden ebenfalls geteilt, `guild.js` L573–578) | 1.125 (0,75) | 1.125 | 1.125 |
 
 **Bewertung (HYP):**
 
@@ -420,7 +421,7 @@ Getestet wurden auf L15 gegen Bär L18, Elite-Ghul L20, 2 Goblins L17 und Elite-
    
    Ich empfehle **(c) mit (a) als Absicherung**. Das passt zum Lore („Wealth strongly affects training access below the highest ranks“; mächtige Dungeons als politisches Gut) und zu GPTs „andere Märkte, Zugang, Auftraggeber, seltene Ressourcen“.
 3. **Lebenshaltung und Unterkunft** haben keine Content-Preise; sie entstehen erzählerisch. Für E genügt das. Eine Budgetrechnung „netto pro Abenteuer“ ist erst mit natürlichen E-Läufen belastbar (OFFEN).
-4. **Party:** Münzlohn wird geteilt, Quest-XP erhält jeder voll (TEST `.222–.235`). Bei E gleicht die Party die geteilte Vergütung durch Zugang zu E-Inhalten aus: zu zweit gegen drei E-Gegner L17 bringt das 1.530 XP je Person, solo gegen F-Gruppen 990 (Abschnitt 4.2).
+4. **Party:** Münzlohn wird geteilt. **Korrektur:** Auch Quest-XP werden unter allen berechtigten Teilnehmern geteilt (`splitPool`, `guild.js` L573–578, `.262`); meine frühere Angabe „Quest-XP erhält jeder voll“ war falsch, siehe [Korrektur zu GPT-R2](AVERETH_262_CLAUDE_E_BALANCE_VERTIEFUNG_UND_ENTSCHEIDUNGSVORLAGE.md#2-korrigierte-rechnungen-r2). Bei E gleicht die Party die geteilte Vergütung durch Zugang zu E-Inhalten aus: zu zweit gegen drei E-Gegner L17 bringt das 1.530 XP je Person, solo gegen F-Gruppen 990 (Abschnitt 4.2).
 
 ---
 
@@ -608,7 +609,7 @@ Mechanisch bleibt alles beim selben Muster: Fenster je Rang (`monsters.outdoor.<
 **IST/TEST:**
 
 - Die Party ist mechanisch eigenständig: eigene Ressourcen, Besitz und Entscheidungen.
-- Kampf-XP werden unter den Überlebenden geteilt, Quest-XP erhält jeder voll.
+- Kampf-XP werden unter den Überlebenden geteilt, **Quest-XP ebenfalls** unter den berechtigten Teilnehmern (Korrektur, siehe [Korrektur zu GPT-R2](AVERETH_262_CLAUDE_E_BALANCE_VERTIEFUNG_UND_ENTSCHEIDUNGSVORLAGE.md#2-korrigierte-rechnungen-r2)).
 - NPCs erhalten 5 Punkte pro Level.
 
 **SIM:** Zu zweit werden gleichstufige E-Gruppen und Elites sicher (Abschnitt 3.4).

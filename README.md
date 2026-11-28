@@ -7,8 +7,8 @@
 | Was ist der aktuelle Entwicklungsstand? | [03 · Meilensteinstand](03_AKTUELLER_PROJEKTSTAND.md) |
 | Wo wird gearbeitet und was darf gemergt werden? | [01 · Arbeitsweise](01_ARBEITSWEISE_GPT_CODEX.md) · [05 · Branch-/Archivplan](05_BRANCH_HISTORIE_UND_ARCHIVBEWERTUNG.md) |
 | Spielregeln der eingefrorenen Produktlinie und bestätigte Regeln späterer Kandidaten | [02 · Design-Kanon](02_DESIGN_KANON.md) |
-| Forschungsberichte, Gegenreviews und technische Abnahmen | [Forschungsindex](recherche/README.md) · [06 · Etappen und Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) |
-| Echte persönliche und automatisierte Runs | [10B-Runindex](testrun_10b/README.md) · [Messungen](testrun_10b/durchschnittsmessungen/README.md) |
+| Forschungsberichte, Gegenreviews und technische Abnahmen | [Forschungsindex](recherche/README.md) · [06 · Etappen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Fachplanarchiv](patch_plans_10b/README.md) |
+| Echte persönliche und automatisierte Runs | [Aktuelle Testbasis](testrun_10b/README.md) · [Runarchiv](testrun_10b/archiv/README.md) · [Messungen](testrun_10b/durchschnittsmessungen/README.md) |
 | Spätere Features | [Ideenkatalog](04_IDEENKATALOG_REVIEWS_UND_PATCHPLAN.md) · [Roadmap](07_ROADMAP_NACH_10B_ENTWURF.md) |
 
 ## Einstieg eines neuen GPT-Chats
@@ -24,7 +24,7 @@ Lies zunächst auf main vollständig:
 - 01_ARBEITSWEISE_GPT_CODEX.md
 - 03_AKTUELLER_PROJEKTSTAND.md
 
-Lies anschließend die für den aktuellen Auftrag relevanten Abschnitte des Design-Kanons, des Etappenindex und der dort verlinkten Fachberichte, Originaldaten und Reviews. Die README auf main ist der Einstieg, nicht die vollständige Fachgrundlage. Kontrolliere die tatsächlichen Remote-HEADs der genannten Branches und die Engineversion im Produktcode; main und Entwicklungsbranch haben unterschiedliche Aufgaben.
+Lies anschließend nur die für den Auftrag maßgeblichen Kanonabschnitte, aktuellen Fachentscheidungen, Abnahmen und Originalquellen. Historische Fachpläne und Tests stehen in den Archivregistern; nicht sämtliche alten Berichte erneut lesen. Die README auf main ist der Einstieg, nicht die vollständige Fachgrundlage. Kontrolliere die tatsächlichen Remote-HEADs der genannten Branches und die Engineversion im Produktcode; main und Entwicklungsbranch haben unterschiedliche Aufgaben.
 
 Zusätzlicher aktueller Kontext:
 - Vorheriger GPT-Chat im Projekt RPG Engine: [CHATNAME_ODER_LINK]. Lies die letzten [ANZAHL_ODER_ABSCHNITT] relevanten Nachrichten, insbesondere die letzte Entscheidung und den Übergabestand. (Ist der vorherige Chat nicht mehr nutzbar, z. B. wegen maximaler Länge: diese Zeile durch „Übergabestand ist 03_AKTUELLER_PROJEKTSTAND.md“ ersetzen.)

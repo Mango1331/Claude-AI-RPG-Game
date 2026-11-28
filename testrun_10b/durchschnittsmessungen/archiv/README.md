@@ -1,4 +1,4 @@
-# Messarchiv vor der integrierten .204-Linie
+# Messarchiv – historische Performancevergleiche
 
 Die persönliche Referenz endet mit dem gepufferten `.203`-Stand bei `5e5b827`. Auf den anschließenden .203-Experimentbranches wurden alte und optimierte Varianten parallel gemessen. Die A/B-Paare bleiben mit ihren gemeinsamen Rohdaten verbunden. [Messungen ab Integration und User08](../README.md)
 
@@ -42,3 +42,8 @@ Die Gruppenwerte umfassen die sechs abgeschlossenen Paare. Der vorherige abgebro
 - Im .174-NPC-Pilot betrug die summierte Modellzeit im Mittel rund 57 Sekunden je Erzählzug (63 Züge). Das Architekturaudit weist Aufrufzahlen und Modellzeit je Rolle aus. [Pilot-Audit, Abschnitt 2.2](../../../recherche/ARCHITEKTUR_AUDIT_10B_FABLE.md)
 - Für .191 und den persönlichen .200-Fehler sind einzelne Szenen und Requestspannen dokumentiert. Der .200-Fall endete mit einem Extractor-Timeout. [Architekturaudit mit Originalfenstern](../../../recherche/ARCHITEKTUR_AUDIT_REDESIGN_ENTSCHEIDUNG_2026-11-16.md)
 - Für Kampfbalance liegen eigenständige Simulationen mit Ergebnissen je Gegner, Klasse und Seed vor. [Analyse .195](../../../recherche/AUSRUESTUNG_KAMPFBALANCE_ANALYSE_195_2026-11-15.md) · [Gepaarte .196–.198-Simulation und Abschlussmatrix](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/0cd14806cd0c7fe2ab0d54b8463c486ee572714b/avereth-engine/docs/BALANCE_198_SIMULATION.md)
+
+
+## Nach der .204-Integration
+
+[Historische Messreihen .204–.213](VERGLEICHE_204_BIS_213.md) · [Aktuelle Messungen](../README.md).

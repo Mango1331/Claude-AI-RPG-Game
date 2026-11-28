@@ -1,0 +1,376 @@
+{
+  "openrouter-20261127-aa-234": {
+    "parent": {
+      "parent": "Y",
+      "parentTurn": 3,
+      "parentMessages": 43,
+      "usedMessages": 42,
+      "lastUsedRole": "player",
+      "parentAt": "loc.east_fold_below_the_moss_grown_hill",
+      "startAt": "loc.east_fold_below_the_moss_grown_hill",
+      "differentStateKeys": [
+        "memories",
+        "scene"
+      ],
+      "startWorldSHA256": "e6adfbb24da5056764c371f453d4175417d77ed49ba0a16227617a406a4c3d60"
+    },
+    "inherited": 42,
+    "source": "f8a709171c672707237fed945ac99e9c1cec57251888264b1f7fe1e755b45695",
+    "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 4,
+    "calls": 4
+  },
+  "openrouter-20261127-ai-235": {
+    "parent": "archived starting messages",
+    "inherited": 15,
+    "source": "a2e586c9be911c0484821739e53853090a83c156fe2aad79101122e6c54eee15",
+    "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 3,
+    "calls": 4
+  },
+  "openrouter-20261127-aj-235": {
+    "parent": "archived starting messages",
+    "inherited": 19,
+    "source": "52b3add993fe89be71edca88d9d57895f54e0dc12ee1f2acb551a4149c424d2d",
+    "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 4,
+    "calls": 5
+  },
+  "openrouter-20261127-ak-235": {
+    "parent": "archived starting messages",
+    "inherited": 70,
+    "source": "b0988e2011fccc0820ba7f9198214b71186237317c44a8c0708805517cc71f5c",
+    "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 7,
+    "calls": 8
+  },
+  "openrouter-20261127-ash-244": {
+    "parent": "openrouter-20261127-ai-235",
+    "inherited": 15,
+    "source": "361b5a986686872d8e6f7bb3027716cf0018e87fa32b9225f848fca28151a678",
+    "commit": "630abc2099b28155dae5ea573d0c8fbf08156086",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 2,
+    "calls": 1
+  },
+  "openrouter-20261127-birch-247": {
+    "parent": "openrouter-20261127-hearth-243",
+    "inherited": 77,
+    "source": "e509f4e2c5f0d8d5e2880508fb26997f2e63d7de115146b63cf97f4d480439ba",
+    "commit": "c954742a98da31bcb56e70d708c278e67d3495e4",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 11,
+    "calls": 10
+  },
+  "openrouter-20261127-cypress-250": {
+    "parent": "openrouter-20261127-moss-242",
+    "inherited": 55,
+    "source": "e7597d29c4fe52cc8d6da3114e430fec3a6c0748757ac574f693417ceda2117a",
+    "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 14,
+    "calls": 14
+  },
+  "openrouter-20261127-elm-250": {
+    "parent": "openrouter-20261127-juniper-249",
+    "inherited": 81,
+    "source": "ffedbf214199f8073c4600a7f4d1394b38ac7f2ccfddb9f3dcc65e2ae869b6bb",
+    "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 6,
+    "calls": 4
+  },
+  "openrouter-20261127-ember-241": {
+    "parent": "openrouter-20261127-ai-235",
+    "inherited": 15,
+    "source": "6d1f8706da207b2d441b756e1342006c187e95a3ff01d9f7d16ded2bf91f0104",
+    "commit": "1f07a4a38173b6c65c17b73f0bd9928255b758d8",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 2,
+    "calls": 2
+  },
+  "openrouter-20261127-fern-250": {
+    "parent": "openrouter-20261127-pine-250",
+    "inherited": 23,
+    "source": "ad3e98ae666f558149e256e21e826a10a758e7983efd6a55bb440dc831ead015",
+    "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+    "excluded_records": {},
+    "unassigned_requests": {
+      "336": [
+        "extractor",
+        1
+      ],
+      "337": [
+        "extractor",
+        1
+      ]
+    },
+    "cases": 2,
+    "calls": 2
+  },
+  "openrouter-20261127-flint-243": {
+    "parent": "openrouter-20261127-y-234",
+    "inherited": 43,
+    "source": "2d8326417f761e72e7aedbd0e8e03d0a197588cd562d86cc65fb16dd77e2e961",
+    "commit": "ece9390771f77dc8ae27d05c9bd4643f2f6aefc4",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 4,
+    "calls": 5
+  },
+  "openrouter-20261127-hazel-248": {
+    "parent": "openrouter-20261127-ai-235",
+    "inherited": 15,
+    "source": "748247246bc7f3e8addfff7475ee460a5ac3fbd2d637f3a1cf21807cda8bc519",
+    "commit": "a9471388e98410bd4a33e15b34a1afa2f45c629e",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 10,
+    "calls": 16
+  },
+  "openrouter-20261127-hearth-243": {
+    "parent": "openrouter-20261127-moss-242",
+    "inherited": 53,
+    "source": "d1bcb6d5275701f0bd399ee83db2a6728a241dcf36239dbbbaac956ae42250c2",
+    "commit": "ece9390771f77dc8ae27d05c9bd4643f2f6aefc4",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 29,
+    "calls": 30
+  },
+  "openrouter-20261127-heron-250": {
+    "parent": "openrouter-20261127-sage-248",
+    "inherited": 111,
+    "source": "69b05f368fed7469da4926cc8cdb00a73ec442ab65d79dbe933bbc54d8d21270",
+    "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 15,
+    "calls": 16
+  },
+  "openrouter-20261127-juniper-249": {
+    "parent": "openrouter-20261127-hearth-243",
+    "inherited": 77,
+    "source": "a4801daba6f981eddf19301d1f6aa05a184f89a91d9ad1df2ff2b9a4db0a132c",
+    "commit": "c9891834fd88d859c8a5e45a87d1e87464fabbff",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 11,
+    "calls": 11
+  },
+  "openrouter-20261127-kestrel-250": {
+    "parent": "openrouter-20261127-ai-235",
+    "inherited": 1,
+    "source": "b2afd476f98091700d46a87e55b98e3b1907676e6b2cf6df3bbbef4a0903a490",
+    "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 2,
+    "calls": 0
+  },
+  "openrouter-20261127-lantern-244": {
+    "parent": "openrouter-20261127-hearth-243",
+    "inherited": 79,
+    "source": "6c9eed24a4de3b045426fb4bbd3d7a82e716fcafccb60890dcb42bf556e49285",
+    "commit": "630abc2099b28155dae5ea573d0c8fbf08156086",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 8,
+    "calls": 11
+  },
+  "openrouter-20261127-linden-246": {
+    "parent": "openrouter-20261127-hearth-243",
+    "inherited": 77,
+    "source": "27909acce09a55021d407b86c799905859c7f4514ec5c412e579350635efa687",
+    "commit": "9a7cfe732da964165ed25267f64625ed5c5c8737",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 2,
+    "calls": 3
+  },
+  "openrouter-20261127-martin-251": {
+    "parent": "openrouter-20261127-rook-250",
+    "inherited": 7,
+    "source": "c5075c2219881b10a8c7942f474963f47d135904732e6a9695717f3475fefd8a",
+    "commit": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 10,
+    "calls": 10
+  },
+  "openrouter-20261127-moss-242": {
+    "parent": "openrouter-20261127-vale-242",
+    "inherited": 45,
+    "source": "299d3604f90e5a80845c09dea8ca7086e23584aa79d7f8d85e918f035add0175",
+    "commit": "27334c480a4dd4579022d2fac945472eb23231da",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 27,
+    "calls": 27
+  },
+  "openrouter-20261127-oriole-251": {
+    "parent": "openrouter-20261127-cypress-250",
+    "inherited": 71,
+    "source": "26ff4d7e9def5cc5e9ecb04b88fea9e35acde11fe05cd77363c4d995f0a9c93d",
+    "commit": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 12,
+    "calls": 10
+  },
+  "openrouter-20261127-pine-250": {
+    "parent": "openrouter-20261127-hazel-248",
+    "inherited": 21,
+    "source": "03541530d28d9d31ebb25ad9922c9f3354326902efaea3899c86db2efdfbd7ae",
+    "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+    "excluded_records": {},
+    "unassigned_requests": {
+      "282": [
+        "planner",
+        1
+      ],
+      "284": [
+        "extractor",
+        1
+      ],
+      "285": [
+        "extractor",
+        1
+      ]
+    },
+    "cases": 0,
+    "calls": 0
+  },
+  "openrouter-20261127-quill-244": {
+    "parent": "openrouter-20261127-rowan-244",
+    "inherited": 83,
+    "source": "643bccb2863e52fc876b4f53ac3223d7ec73b98bae6c05202ee667fef3263951",
+    "commit": "630abc2099b28155dae5ea573d0c8fbf08156086",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 9,
+    "calls": 6
+  },
+  "openrouter-20261127-reed-251": {
+    "parent": "openrouter-20261127-martin-251",
+    "inherited": 17,
+    "source": "06d826f379395c89388fd7b31c81690aaffc3c7e488f4b119eb61f8073ab836f",
+    "commit": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 6,
+    "calls": 7
+  },
+  "openrouter-20261127-rook-250": {
+    "parent": "openrouter-20261127-swift-250",
+    "inherited": 5,
+    "source": "0af6c0cf345dcc3f5867f9ccabfee5dae51411695ab7d205b0c7a7e0d6f220dc",
+    "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 11,
+    "calls": 11
+  },
+  "openrouter-20261127-rowan-244": {
+    "parent": "openrouter-20261127-hearth-243",
+    "inherited": 61,
+    "source": "6f20020b659fc0d2abcfb72ef8214b451e75a77ea358a93c6854fef4bec1e323",
+    "commit": "630abc2099b28155dae5ea573d0c8fbf08156086",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 22,
+    "calls": 28
+  },
+  "openrouter-20261127-s-232": {
+    "parent": "archived starting messages",
+    "inherited": 109,
+    "source": "3035a8cf85625605eecaeead1beb1b37254c7c5934b39596770808cd6bdd646a",
+    "commit": "b21fdba0a2171b65e9007fb1791aef956099f86a",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 8,
+    "calls": 7
+  },
+  "openrouter-20261127-sage-248": {
+    "parent": "openrouter-20261127-quill-244",
+    "inherited": 93,
+    "source": "47c61d0c3a7599e399c4bbd69116e4c87fa7ea0bc24b34a6f476458b59e28c45",
+    "commit": "a9471388e98410bd4a33e15b34a1afa2f45c629e",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 16,
+    "calls": 15
+  },
+  "openrouter-20261127-slate-242": {
+    "parent": "openrouter-20261127-y-234",
+    "inherited": 43,
+    "source": "8f7e8809b2266da389a6069a78a719fc5256a8115decef98bc1a5a0fc271111e",
+    "commit": "27334c480a4dd4579022d2fac945472eb23231da",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 2,
+    "calls": 2
+  },
+  "openrouter-20261127-swift-250": {
+    "parent": "openrouter-20261127-ai-235",
+    "inherited": 1,
+    "source": "249ca63de95dd248da774a72db7b14bc206b9ed22a2bf59ecb6622bf90f2f9ad",
+    "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 2,
+    "calls": 0
+  },
+  "openrouter-20261127-vale-242": {
+    "parent": "openrouter-20261127-ai-235",
+    "inherited": 15,
+    "source": "3fab6d9016dae71f9faf806ddd02387a5a71c3eecb07e52710afa25a18ab978a",
+    "commit": "d125bd512ff8603961c4ca445490ed8e77674b42",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 27,
+    "calls": 29
+  },
+  "openrouter-20261127-willow-247": {
+    "parent": "openrouter-20261127-hearth-243",
+    "inherited": 79,
+    "source": "142b375e9f32bf1ff0b5b6a70846b8a0ad802f9670eb5929b4ce39733d6a1232",
+    "commit": "c954742a98da31bcb56e70d708c278e67d3495e4",
+    "excluded_records": {},
+    "unassigned_requests": {},
+    "cases": 6,
+    "calls": 5
+  },
+  "openrouter-20261127-y-234": {
+    "parent": "archived starting messages",
+    "inherited": 39,
+    "source": "a99b835f5b74379d738ce33b1edafc36052fb67fd80a9385766b03f0ec5187dc",
+    "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
+    "excluded_records": {},
+    "unassigned_requests": {
+      "267": [
+        "extractor",
+        1
+      ],
+      "268": [
+        "extractor",
+        1
+      ]
+    },
+    "cases": 4,
+    "calls": 4
+  }
+}

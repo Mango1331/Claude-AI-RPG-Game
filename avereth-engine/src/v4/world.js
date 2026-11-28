@@ -5,7 +5,7 @@ import { encounterHumanLevel } from '../npcgen.js';
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
-import { sectionReport, firstSection, allowedArrival, stepsOf, reportedEndpoints, newPlaceScope, gateAlias } from './movement.js';
+import { journeySection, sectionReport, firstSection, allowedArrival, stepsOf, reportedEndpoints, newPlaceScope, gateAlias } from './movement.js';
 import { reportedContinuation } from './travel_continuation.js';
 import { sectionsOf, sectionId } from './sections.js';
 import { sceneSteps, localSceneDelta } from './extract.js';
@@ -2910,6 +2910,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         // the step's preview he goes on from here (a second step of the message goes on from the first one's part)
         const previews = (auth.gos || []).map((g) => g.section).filter(Boolean);
         let p = previews.find((x) => x.from === s.scene.at && !s.places[x.id]) || previews.find((x) => !s.places[x.id]) || previews.at(-1) || null;
+        if (!p && typeof ref === 'string' && !s.places[ref]) {
+            const leg = stepsOf(s,auth.gos).find(g => journeySection(s,g) === ref);
+            if (leg) p = {id:ref,root:leg.to,from:leg.to,level:1,k:1,down:false,name:'part 1 of level 1'};
+        }
         const n = ref && typeof ref === 'object' && ref.new && typeof ref.new === 'object' ? ref.new : null;
         const parent = n ? (typeof n.parent === 'string' && s.places[n.parent] ? n.parent : n.parent == null ? s.scene.at : null) : null;
         const root = p?.root || (parent ? trueDungeonOf(s, parent) : null);

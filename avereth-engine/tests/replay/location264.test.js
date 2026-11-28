@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {engineAt} from '../../tools/replay/replay.mjs';
+import {engineAt, normalizeEvent} from '../../tools/replay/replay.mjs';
 import {actionPrefix} from '../../src/action_input.js';
 import {newPlaceScope} from '../../src/v4/movement.js';
 
@@ -20,7 +20,7 @@ test('User16: both sides of the observed doorway, the original scouts, Guild rec
     execFileSync(process.execPath,[root+'tools/replay/user16_scene.mjs'],{stdio:'pipe'});
 });
 
-async function run(prefix, index, replies) {
+async function run(prefix, index, replies, delay = 0) {
     const msg = structuredClone(fixture.messages[index]);
     const saved = host.rec(msg);
     delete msg.extra.avereth;
@@ -31,6 +31,7 @@ async function run(prefix, index, replies) {
         const entry = replies[asked.length];
         asked.push(purpose);
         assert.equal(entry?.purpose,purpose,'unexpected request at M'+index);
+        if (delay) await new Promise(resolve=>setTimeout(resolve,delay));
         return entry.content;
     };
     if (saved?.input_hash || saved?.extraction) {
@@ -73,8 +74,8 @@ test('User17: interrupted journey, the same gate, the closed threshold and actua
             assert.deepEqual(result.asked,['extract']);
             assert(state.scene.present.includes('npc.ossler'));
             assert(state.entities['npc.ossler']);
-            const repeated=await run(JSON.parse(JSON.stringify(chat.slice(0,-1))),i,replies);
-            assert.deepEqual(repeated.events,events);
+            const repeated=await run(JSON.parse(JSON.stringify(chat.slice(0,-1))),i,replies,35);
+            assert.deepEqual(repeated.events.map(normalizeEvent),events.map(normalizeEvent));
             assert.deepEqual(repeated.state,state);
             const initialNo = structuredClone(gateReport);
             initialNo.expected[1].arrived = false;
@@ -106,6 +107,11 @@ test('P2 and P4b: the reported access connection, not the yes/no receipt or PULS
         const elsewhere={expected:r.expected,deltas:[{seq:1,type:'arrive',at:estate}]};
         assert.deepEqual(normalize(elsewhere).deltas[0].at,estate);
     }
+    const short=structuredClone(gateReport);
+    const arrival=short.deltas.find(d=>d.type==='arrive');
+    const npc=short.deltas.find(d=>d.type==='person.new');
+    [arrival.at,npc.at]=[npc.at,arrival.at];
+    assert.equal(normalize(short).deltas[0].at,dungeon);
     const unrelated=structuredClone(gateReport);
     unrelated.deltas.push({seq:9,type:'enter',who:{new:gateReport.deltas[0].at.new.name}});
     assert.deepEqual(normalize(unrelated).deltas.at(-1).who,unrelated.deltas.at(-1).who);
@@ -144,9 +150,30 @@ test('a local stop before crossing and a direct entry from the original roadside
         }
     }
     const s=structuredClone(road);
+    // A known objective can be reached at its access or just inside it, in the same journey.
+    choose(s,'I travel to the catacombs',dungeon);
+    const sectionId=dungeon+'.l1_s1';
+    const physical={expected:{1:{arrived:true}},deltas:[{type:'arrive',seq:1,at:sectionId}]};
+    const {parseExtraction}=await import('../../src/v4/extract.js');
+    const {extractorCatalog}=await import('../../src/v4/catalog.js');
+    const claim=parseExtraction(JSON.stringify(physical),content.deltaVocab,extractorCatalog(s,content),{1:'go'},
+        {sceneRequired:true,state:s,content});
+    assert.deepEqual(claim.rejected,[]);
+    assert.deepEqual(claim.issues,[]);
+    for (const barrier of ['unpaid','full']) {
+        const blocked=structuredClone(s);
+        if (barrier==='unpaid') { blocked.quests={}; blocked.dungeons[dungeon].gate.fee_cp=20; }
+        else blocked.dungeons[dungeon].capacity=0;
+        const stopped=world(blocked,true,sectionId);
+        assert(!stopped.state.places[sectionId]);
+        assert(!stopped.events.some(e=>['dungeon.part','coin.changed'].includes(e.t)));
+    }
+    const entered=world(s,true,sectionId).state;
+    assert.equal(entered.scene.at,sectionId);
+    assert(entered.dungeons[dungeon].run.floors[1].slots[0].entities.length);
     choose(s,'I go to the catacombs entrance',dungeon);
     const atGate=world(s,true,dungeon).state;
-    const local=choose(atGate,'I head down the steps to the door',{new:'on'});
+    const local=choose(atGate,'I head down the steps to the door',{scene:'the door'});
     assert(local.auth.approach && !local.auth.gos.length);
     assert.equal(atGate.scene.at,dungeon);
 });

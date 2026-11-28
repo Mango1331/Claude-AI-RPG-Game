@@ -2,7 +2,7 @@ import { tokenize } from '../util.js';
 import { movementEvidence, visualDetail } from './narration_evidence.js';
 import { thresholdSlot } from './living.js';
 import { placeKey } from './place_refs.js';
-import { newPlaceScope, reportedEndpoints, reportsEndpoint } from './movement.js';
+import { journeySection, newPlaceScope, reportedEndpoints, reportsEndpoint } from './movement.js';
 import { privateQuestsOf } from '../content.js';
 // Runtime V4: the world-delta extractor (docs/RUNTIME_V4_PLAN.md §5, D2 = A). After every story reply a separate call
 // reads the reply and reports, as typed deltas in story order, what it established in the world; the engine answers
@@ -601,6 +601,9 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     // A new dungeon section already has an engine ID in the authorized step. Its
     // name becomes a place reference in this report only alongside its reported arrival.
     for (const go of state?.last?.outcome?.auth?.gos || []) {
+        const first = journeySection(state,go);
+        if (first && expectedKeys?.[go.seq] === 'go' && Array.isArray(value.deltas) && value.deltas.some(d=>d?.type==='arrive' && d.at===first))
+            ids = {...ids, places:[...(ids.places || []), first]};
         const section = go.section, at = exp[go.seq]?.at || section?.id;
         if (!section || !exp[go.seq]?.arrived || expectedKeys?.[go.seq] !== 'go') continue;
         if (at !== section.id && !(at?.new?.kind === 'interior' && at.new.parent === section.root)) continue;

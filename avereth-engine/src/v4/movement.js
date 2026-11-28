@@ -66,11 +66,13 @@ export function travelTargetLines(state, content, outcome, narrator = false) {
         lines.push(`GO ${go.seq}: ${go.to}.` + (gate && root === go.to
             ? ` Its access (${gate.text || gate.names?.join(', ')}) is ${root}. Only a crossing reaches an interior section.` : ''));
         if (state.scene.approaching === go.to) lines.push('Continuation from the last stop: account only for the remaining walk.');
-        if (!narrator || !gate || go.section || go.to !== root || root === state.scene.at) continue;
+        if (!gate || go.section || go.to !== root || root === state.scene.at) continue;
         const group = 1 + new Set([...following(state).map(m=>m.who), ...(go.with || [])]).size;
         const terms = gateCheck(state,content,root,{group});
         if (terms) lines.push(terms.refuse || `Entry requires the keeper's fee of ${terms.fee} cp.`);
-        else if (!go.enter.gate && !outcome.auth.pulse?.open) {
+        else if (!narrator && journeySection(state,go)) {
+            lines.push(`If the reply ends just inside, report ${firstSection(state,root)} for the first section.`);
+        } else if (narrator && !go.enter.gate && !outcome.auth.pulse?.open) {
             const preview = aheadEvents(state,content,{into:true,root,floor:1,section:1});
             if (preview) lines.push('Only if he actually crosses the gate:', ...preview.lines);
         }
@@ -91,9 +93,10 @@ export function reportedEndpoints(answer, state, content, rejected = []) {
         const root = g.enter?.root;
         // A step explicitly entering previews a particular section. Reaching only
         // its gate is a valid stop but does not complete that objective.
-        const interior = !g.section && !g.enter?.gate && g.to === root && root &&
-            arrivals.some(d => sectionReport(state,root,firstSection(state,root),d.at));
-        const ref = g.section?.id || (interior ? firstSection(state,root) : g.to) || e?.at;
+        const first = journeySection(state,g);
+        const interior = first &&
+            arrivals.some(d => sectionReport(state,root,first,d.at));
+        const ref = g.section?.id || (interior ? first : g.to) || e?.at;
         if (ref) ends.set(String(g.seq), ref);
     }
     const unresolved = goals.filter(g => !ends.has(String(g.seq)) && answer?.expected?.[g.seq]?.arrived === true);
@@ -122,7 +125,6 @@ function mapReportPlaces(answer, vocab, transform) {
 
 function reportPlaceIdentity(answer, state, content) {
     if (!content?.deltaVocab || !Array.isArray(answer?.deltas)) return answer;
-    const stops = answer.deltas.filter(d => d?.type === 'arrive' && !d.forced_by);
     const byName = new Map();
     // A short reference can repeat a declaration but cannot supply its missing kind or parent.
     const key = ref => {
@@ -139,6 +141,8 @@ function reportPlaceIdentity(answer, state, content) {
         return ref;
     }
     mapReportPlaces(answer,content.deltaVocab,collect);
+    const declared = ref => typeof ref?.new === 'string' ? byName.get(ref.new) || ref : ref;
+    const stops = answer.deltas.filter(d => d?.type === 'arrive' && !d.forced_by).map(d=>declared(d.at));
     const aliases = new Map();
     const goals = stepsOf(state, state.last?.outcome?.auth?.gos);
     const root = goals.length === 1 && goals[0].enter?.root;
@@ -148,26 +152,26 @@ function reportPlaceIdentity(answer, state, content) {
     // report connects this very access to a room of the chosen dungeon AND
     // identifies the established gate. A different stop in the same realm is free.
     if (gate && goals[0].to === root && state.scene.at !== root) {
-        const candidates = stops.filter(d => {
-            const n = d.at?.new;
-            return n?.kind === 'site' && key(byName.get(n.name)) === key(d.at) &&
+        const candidates = stops.filter(ref => {
+            const n = ref?.new;
+            return n?.kind === 'site' && key(byName.get(n.name)) === key(ref) &&
                 n.parent === state.places[root]?.realm &&
                 gate.names?.some(alias => (' '+norm(n.name)+' ').includes(' '+norm(alias)+' '));
         });
-        for (const d of candidates) {
-            const touches = stops.filter(child => child.at?.new?.kind === 'interior' &&
-                nameOf(child.at.new.parent) === d.at.new.name && key(byName.get(nameOf(child.at))) === key(child.at));
+        for (const ref of candidates) {
+            const touches = stops.filter(child => child?.new?.kind === 'interior' &&
+                nameOf(child.new.parent) === ref.new.name && key(byName.get(nameOf(child))) === key(child));
             const linked = touches.filter(child => answer.deltas.some(link => link?.type === 'passage' &&
-                nameOf(link.from) === nameOf(child.at) && link.to?.new?.parent === root));
+                nameOf(link.from) === nameOf(child) && declared(link.to)?.new?.parent === root));
             if (linked.length === 1 && candidates.length === 1) {
-                aliases.set(d.at.new.name, root);
-                aliases.set(nameOf(linked[0].at), root);
+                aliases.set(ref.new.name, root);
+                aliases.set(nameOf(linked[0]), root);
             }
         }
     }
     function resolve(ref, depth = 0) {
         if (!ref || typeof ref !== 'object' || Object.keys(ref).length !== 1 || depth > 2) return ref;
-        const full = typeof ref.new === 'string' ? byName.get(ref.new) : ref;
+        const full = declared(ref);
         if (!full?.new?.name) return ref;
         const n = full.new;
         if (aliases.has(n.name) && byName.get(n.name) &&
@@ -177,6 +181,14 @@ function reportPlaceIdentity(answer, state, content) {
         return full;
     }
     return mapReportPlaces(answer,content.deltaVocab,ref=>resolve(ref));
+}
+
+/** A journey to the dungeon may physically end in its first section. A trip only
+ * to the gate, or a reserved section of an interior route, has its own endpoint. */
+export function journeySection(state, go) {
+    const root = go.enter?.root;
+    return root && go.to === root && !go.enter.gate && !go.section &&
+        trueDungeonOf(state,state.scene.at) !== root ? firstSection(state,root) : null;
 }
 
 export function firstSection(state, root) {

@@ -76,6 +76,13 @@ test('User17: interrupted journey, the same gate, the closed threshold and actua
             const repeated=await run(JSON.parse(JSON.stringify(chat.slice(0,-1))),i,replies);
             assert.deepEqual(repeated.events,events);
             assert.deepEqual(repeated.state,state);
+            const initialNo = structuredClone(gateReport);
+            initialNo.expected[1].arrived = false;
+            const alternate = await run(chat.slice(0,-1),i,[{purpose:'extract',content:JSON.stringify(initialNo)}]);
+            assert.equal(alternate.state.scene.at,dungeon);
+            assert(alternate.state.scene.present.includes('npc.ossler'));
+            assert(!alternate.state.dungeons[dungeon].run?.floors?.[1]?.slots?.[0]?.entities?.length);
+            assert(!Object.keys(alternate.state.places).some(id=>id.includes('ruined_chapel_above')));
         }
         if (i===22) {
             assert.equal(state.scene.at,dungeon+'.l1_s1');

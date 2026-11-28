@@ -4,6 +4,7 @@ Hier stehen Vorschläge, über deren Umsetzung noch zu entscheiden ist. Fachlich
 
 | Idee | Offene Frage |
 |---|---|
+| Gildenboard | Soll das Board bereits beim Eintreffen entstehen? Welche bekannten Gerüchte eignen sich als Inspiration für lokale Aufträge? [User18 und Abgrenzung .266](recherche/AVERETH_266_USER18_PARTY_SPIELFLUSS_ABNAHME.md) |
 | Erkundung und Beute | Welche orts- oder risikogebundenen Funde ergänzen Suche, Dungeon und Kampfbeute sinnvoll? [Camp-Fachplan](patch_plans_10b/USER07_C_CAMPAUSSTATTUNG_UND_SUCHE.md) |
 | Journal und Karte | Welche bekannten Orte, Zusagen oder offenen Aufgaben sollte der Spieler unmittelbar wiederfinden und bearbeiten können? |
 | Handel und kleine Zahlungen | Welche bekannten Angebote lassen sich direkt über die vorhandene Preis- und Zahlungslogik abwickeln? [Vorschlag für Board und Handel](patch_plans_10b/PATCH_ENGINE_BOARD_AND_TRADE_OFFERS.md) |

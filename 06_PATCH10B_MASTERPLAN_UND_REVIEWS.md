@@ -4,6 +4,7 @@ Nur Wegweiser, keine Wiederholung der Fachberichte. [Projektstand](03_AKTUELLER_
 
 | Abgeschlossene Etappe | Maßgebliche Quelle |
 |---|---|
+| .266 Party und Spielfluss / User18 | [Abnahme und Fortsetzung](recherche/AVERETH_266_USER18_PARTY_SPIELFLUSS_ABNAHME.md) |
 | .265 Reise und Spielerhoheit | [Abnahme .265](recherche/AVERETH_265_SPIELERHOHEIT_UND_REISEFLUSS.md) |
 | .264 Ortsidentität / User17 | [Abnahme .264](recherche/AVERETH_264_ORTSIDENTITAET_USER17_KONSOLIDIERUNG_ABNAHME.md) |
 | .263 E-Rank | [Entscheidungen](recherche/AVERETH_263_E_RANK_FACHENTSCHEIDUNGEN.md) · [Abnahme](recherche/AVERETH_263_E_RANK_IMPLEMENTIERUNG_ABNAHME.md) · [Gegenreview](recherche/AVERETH_263_UNABHAENGIGER_GEGENREVIEW.md) |

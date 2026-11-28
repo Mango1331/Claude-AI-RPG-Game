@@ -1,0 +1,40 @@
+{
+  "head": "a083311d8142baa4e6451af8f47f8fd08cc4db71",
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "st": "1.19.0",
+  "count": 15,
+  "costUSD": "0.009121560",
+  "redactions": {
+    "st.log.gz": "local sandbox paths"
+  },
+  "sha256": {
+    "parent-check.json.gz": "f7c5faa574ba64f17dcf9df3b5361f821d9859bf1935f38f2a2b712316e3f32b",
+    "chat-0.jsonl.gz": "2eca2ca185985cb01c1fbcd0ec1304579d43e3672abecb4094c3ef9f075eeee5",
+    "world-0.json.gz": "6f3f468ddfe1157e0fc24c03a2c4eb8b7161366339f25e1e965ef40697dfbd1d",
+    "actions.jsonl.gz": "76fcb341debe3d1a2d3a29d2ba786d11923fa671381f485ebde4daaa3dbdc564",
+    "chat.jsonl.gz": "68bc347ab4ba20436085904c7f2a5c5e1e7259b718529622026a9aa75c5d56d7",
+    "events.json.gz": "bf44af43d4f9357a741e87b5c1e75be5aea5ef5b8e8e50bc0bffd249cfba1838",
+    "turns.jsonl.gz": "ccd1d90e44459f30b2bcedd1bd6410ee2ef2d8297da13afd3a48ef8e35a150aa",
+    "profile.json.gz": "247c483dfc8ec8d307e30cb273e7abb9b13244bd15c0aad30af1d8652ec0c8e2",
+    "visible.json.gz": "35a51d79d7beba9fc7c4145e86181d00daa3a016923633fe8204940d51b23d50",
+    "st.log.gz": "73d7aba0a918e74226521886c8e35acf6c958e037bef1fc4aee47de62c161bdd",
+    "last-verified-world.json.gz": "585c6448431333451c882cfef2e76e74b435ba9dc5472f2e36e8ec87ef81485b",
+    "requests.jsonl.gz": "4f2ef77019ce6c771ddd2f5aa7b024e31d3c6301311cb4861a6bcae96b6242da",
+    "raw-31.gz": "919453a4278b1a923a37ff7d308beb9339679599edf77012875f5421cf526fe3",
+    "raw-32.gz": "cf86eac7c1dfc1ccaa920896dd60c3786809f0b700e24c6b5e4709dd09bd261e",
+    "raw-33.gz": "03a8936c71e59548d371b2a1288810cd8d6249a25d19f1bf2cfe657a551ee8e4",
+    "raw-34.gz": "428f507d3053b5b344ac5f215b93fc85817e42571ddd9dade44a25632f3ad471",
+    "raw-35.gz": "99d2fd0a8fd5295bc029b87de10155184cfe8c41db402d7fb09552a3800fa708",
+    "raw-36.gz": "ddb6da0dd5ebecc4a417407e5f71eb1e4392903b335158b88b11af1aad1d2af1",
+    "raw-37.gz": "01d88aa1ac16aa558aa33b6dc1ab9e6816384770c809761136de648f37cbcc59",
+    "raw-38.gz": "140779dc06dc2e541372d5dd3bb865ea43e3ba4ff1347470ed570ede94400e2d",
+    "raw-39.gz": "2f52e8471744603de5f3751013a8a02795dabc4a701fc437a291bd86f0b05648",
+    "raw-40.gz": "594d82c6a50fec2fc4ffb3f4fe40082427c5b903753c3e8791b86a17d0aabfe7",
+    "raw-41.gz": "405135317523ae06c4042610d9f2e4ef8e7313347bfddbfd30fcf140b89ed761",
+    "raw-42.gz": "9e3621b93820f89a8bf8938b4940295e6ea3794d4958cc89738aa0108c47c190",
+    "raw-43.gz": "0b918b0e94125b3f1f1be4c3e07ee9babc9127f23de6893c8a119f85d947d633",
+    "raw-44.gz": "938476871e4b89bff2cb8bc360be2fd6d90d2149ed15cc9aa9b5571d67daec2c",
+    "raw-45.gz": "dec5cc2d4e88896ae66b0651594d2e4de1c5febf296f32c24506f81e7170101c"
+  }
+}

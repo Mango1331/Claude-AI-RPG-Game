@@ -2,10 +2,11 @@
 
 | Quelle | Status |
 |---|---|
-| [Usertest 17](../03_AKTUELLER_PROJEKTSTAND.md#nächste-schritte) | Noch nicht begonnen; .263 hat GPT-GO. |
-| [.263 E-Rank-Modellserie](openrouter-20261128-e-rank-263/README.md) | Neueste natürliche Abnahme, E-Fixture separat ausgewiesen. |
+| [.264 Modellserie](openrouter-20261128-ortsidentitaet-264/README.md) | Fünf natürliche Gegenproben der User17-Reise. |
+| [Usertest 17](user-20261128-051828-263/README.md) | Persönlicher Lauf auf .263, Abbruch am Dungeonzugang; Kettenabnahme auf .264. |
+| [.263 E-Rank-Modellserie](openrouter-20261128-e-rank-263/README.md) | Natürliche E-Abnahme, E-Fixture separat ausgewiesen. |
 | [.262 Rangfundament](openrouter-20261128-fundament-262/README.md) | Unmittelbare Vergleichsbasis. |
-| [User16](user-20261126-233937-220/README.md) | Letzter persönlicher Test und Elternquelle. |
+| [User16](user-20261126-233937-220/README.md) | Frühere persönliche Dungeon- und Szenengegenprobe. |
 
 [Abnahme .263](../recherche/AVERETH_263_E_RANK_IMPLEMENTIERUNG_ABNAHME.md) · [Gegenreview](../recherche/AVERETH_263_UNABHAENGIGER_GEGENREVIEW.md) · [Messungen](durchschnittsmessungen/README.md).
 

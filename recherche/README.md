@@ -4,6 +4,7 @@ Aktuelle Quellen zuerst. Historische Forschung ist keine offene Aufgabenliste.
 
 | Zweck | Maßgebliche Quelle |
 |---|---|
+| Ortsidentität, Dungeonzugänge und User17 | [Abnahme .264](AVERETH_264_ORTSIDENTITAET_USER17_KONSOLIDIERUNG_ABNAHME.md) |
 | Verabschiedete Regeln | [E-Fachentscheidungen](AVERETH_263_E_RANK_FACHENTSCHEIDUNGEN.md) |
 | Umsetzung, Balance, Tests und Installation | [Abnahme .263](AVERETH_263_E_RANK_IMPLEMENTIERUNG_ABNAHME.md) |
 | Unabhängige Bewertung und offene Fragen | [Gegenreview](AVERETH_263_UNABHAENGIGER_GEGENREVIEW.md) |

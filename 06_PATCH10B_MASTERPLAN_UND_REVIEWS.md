@@ -4,6 +4,7 @@ Nur Wegweiser, keine Wiederholung der Fachberichte. [Projektstand](03_AKTUELLER_
 
 | Abgeschlossene Etappe | Maßgebliche Quelle |
 |---|---|
+| .264 Ortsidentität / User17 | [Abnahme .264](recherche/AVERETH_264_ORTSIDENTITAET_USER17_KONSOLIDIERUNG_ABNAHME.md) |
 | .263 E-Rank | [Entscheidungen](recherche/AVERETH_263_E_RANK_FACHENTSCHEIDUNGEN.md) · [Abnahme](recherche/AVERETH_263_E_RANK_IMPLEMENTIERUNG_ABNAHME.md) · [Gegenreview](recherche/AVERETH_263_UNABHAENGIGER_GEGENREVIEW.md) |
 | .262 Rangfundament / modernes Replay | [Abnahme](recherche/AVERETH_262_RANGFAEHIGES_FUNDAMENT_ABNAHME.md) |
 | .252–.261 Claim + State / Recovery | [Validierung](recherche/AVERETH_252_VALIDIERUNGSVEREINFACHUNG_ABNAHME.md) · [Recovery](recherche/AVERETH_261_EXTRACTOR_RECOVERY_ABNAHME.md) |

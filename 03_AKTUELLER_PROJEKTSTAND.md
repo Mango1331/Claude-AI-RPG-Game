@@ -1,14 +1,16 @@
 # Avereth Engine – aktueller Projektstand
 
-**28.11.2026 · Build 4.3.0-c.6.6.263 · GPT-GO für Usertest 17.**
+**28.11.2026 · Build 4.3.0-c.6.6.264 · bereit für den unabhängigen GPT-Diffreview.**
 
-Erste spielbare E-Erweiterung: gemischte F/E-Welt, Proven-Jagden, individuelle Rangprofile, E-Ausrüstung, Lernquellen und Rank-Evolution, O1 und HUD. Keine vollständige D–S-Implementierung.
+User17 brach auf .263 am bekannten Dungeonzugang ab. Die korrigierte Kette erreicht auf .264 den ersten Abschnitt mit regulärer Begegnung. [Abnahme und Restrisiken](recherche/AVERETH_264_ORTSIDENTITAET_USER17_KONSOLIDIERUNG_ABNAHME.md)
+
+Erste spielbare E-Erweiterung seit .263: gemischte F/E-Welt, Proven-Jagden, individuelle Rangprofile, E-Ausrüstung, Lernquellen und Rank-Evolution, O1 und HUD. Keine vollständige D–S-Implementierung.
 
 ## Verifizierte Referenzen
 
 | Zweck | Stand |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [928172b9](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/928172b9bbaae3d133bad7097100dc2127334b8e) |
+| Aktiver Entwicklungs-/Testbranch | `experiment/211-openrouter-helper-single-runner` · [05880e68](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/05880e68bada1479471557ec5bd1f8aa343b7acd) |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [c2ddc780](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt .200 | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [0cd14806](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
@@ -22,7 +24,7 @@ main ist die Dokumentations- und Originalarchivlinie. Vor neuer Arbeit Remote-HE
 
 ## Nächste Schritte
 
-1. Usertest 17 nach Entscheidung des Nutzers auf .263. Vollständigen Extensionordner `avereth-engine` aus dem Produktcommit ersetzen, ST neu laden, Version prüfen. Seit .262 keine separaten Änderungen an Card, Characterbeschreibung, Preset, Lorebook, Regex, Narrator Contract .211 oder ST-Einstellungen.
+1. Unabhängiger GPT-Diffreview .263 → .264, danach Nutzerentscheidung über den persönlichen Spieltest. [Installation, Vergleich und Abnahme](recherche/AVERETH_264_ORTSIDENTITAET_USER17_KONSOLIDIERUNG_ABNAHME.md)
 2. Natürliches F→E-Spiel, Wirtschaft, Manual-/Lehrerfolgen, Rank-/Complexity-Evolution und gemischte Welt beobachten. Einzelheiten ausschließlich im [Gegenreview](recherche/AVERETH_263_UNABHAENGIGER_GEGENREVIEW.md).
 3. Neue Originale und Feedback gemäß [Usertest-Ablauf](01_ARBEITSWEISE_GPT_CODEX.md#persönliche-usertests--verbindlicher-ablauf) archivieren; unabhängige Reviews, danach gemeinsame Patchentscheidung.
 

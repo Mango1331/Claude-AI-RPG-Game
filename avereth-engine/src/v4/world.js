@@ -5,7 +5,7 @@ import { encounterHumanLevel } from '../npcgen.js';
 import { floorRefusal, namedLevel, goesFrom, otherEnd } from './dungeon.js';
 import { placeParent, placeIdentity, placeKey, samePlace } from './place_refs.js';
 import { resolvePlaceRef, usualPersonNamed } from './place_book.js';
-import { allowedArrival, stepsOf, reportedEndpoints, newPlaceScope, gateAlias } from './movement.js';
+import { firstSection, allowedArrival, stepsOf, reportedEndpoints, newPlaceScope, gateAlias } from './movement.js';
 import { reportedContinuation } from './travel_continuation.js';
 import { sectionsOf, sectionId } from './sections.js';
 import { sceneSteps, localSceneDelta } from './extract.js';
@@ -1366,12 +1366,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     localDetail = {at:s.scene.at,ref};
                     travel.push({seq:d.seq,ok:true});
                     break;
-                }
-                const root = trueDungeonOf(s, at.id);
-                if (!forcedHere && root && root !== at.id && !insideOf(s,root) && livingOf(s,root)?.ahead?.turn !== s.turn &&
-                    stepsOf(s,auth.gos).some(g => g.to === root && !g.enter?.gate)) {
-                    const ahead = aheadEvents(s,content,{into:true,root,floor:1,section:1});
-                    for (const event of ahead?.events || []) emit(event);
                 }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
@@ -2926,9 +2920,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             // its first part; a step that names the gate ends there, and no step for it is a room elsewhere (movement.js)
             const step = stepsOf(s, auth.gos).find((g) => g.enter?.root === root);
             if (!step || step.enter.gate || roomByName(s, root, n, s.scene.at)) return null;
-            const first = sectionsOf(s, root, 1)[0];
-            if (first) return { id: first };
-            p = { id: sectionId(root, 1, 1), root, level: 1, k: 1, from: root, down: false, name: 'part 1 of level 1' };
+            const first = firstSection(s, root);
+            if (s.places[first]) return { id: first };
+            p = { id: first, root, level: 1, k: 1, from: root, down: false, name: 'part 1 of level 1' };
         }
         if (p && (ref === p.id || inside)) {
             if (!s.places[p.id]) {
@@ -3193,6 +3187,11 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (fresh) {
             const root = trueDungeonOf(s, id);
             grant('dungeon.part');
+            if (voluntary && trueDungeonOf(s,from) !== root && livingOf(s,root)?.ahead?.turn !== s.turn &&
+                stepsOf(s,auth.gos).some(g => g.to === root && !g.enter?.gate)) {
+                const ahead = aheadEvents(s,content,{into:true,root,floor:1,section:1});
+                for (const event of ahead?.events || []) emit(event);
+            }
             emit({ t: 'dungeon.part', d: { id: root, cycle: s.dungeons[root].cycle, floor: floorAt(s, id), at: id } });
             freshPart = id;
         }

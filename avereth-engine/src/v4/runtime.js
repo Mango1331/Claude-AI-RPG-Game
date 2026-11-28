@@ -30,6 +30,7 @@ import {
     turnBlock, laterTurns, showPanel, syncSwipe, messageEvents, foldStats, inputRecordError,
 } from '../host.js';
 import { negotiationReaction, playerTurn } from '../engine.js';
+import { travelTargetLines } from './movement.js';
 import { recordLine, loreKeys } from '../context.js';
 import { extractReport } from '../delta.js';
 import { renderHud, boardView, targetChoices } from '../hud.js';
@@ -1098,6 +1099,7 @@ export function extractionRequest(chat, id, content) {
     if (typeof o.auth?.continuation === 'object' && o.auth.continuation) actions += '\nChosen possible continuation: '+JSON.stringify(o.auth.continuation)+'. Report arrive only after the actual movement, with its participants. If conditional, after quotes its concrete subject in the actual fulfilled prerequisite before arrival; evidence quotes the PC at the stop. No fulfillment or no agreement means no move.';
     else if (o.auth?.c && !o.auth.gos?.length && ordinaryChoice(state,player,o.auth.continuation)?.assisted)
         actions += '\nVoluntary assistance: if he was actually carried to the requested place, report arrive with the participants and forced_by:null. A request or promise alone is not an arrival.';
+    for (const line of travelTargetLines(state,content,o)) actions += '\n'+line;
     for (const go of o.auth?.gos || []) {
         if (!go.section) continue;
         const {id, from, name} = go.section;

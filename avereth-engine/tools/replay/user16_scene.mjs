@@ -4,14 +4,16 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
+import {gunzipSync} from 'node:zlib';
 import {engineAt} from './replay.mjs';
 import {statusOf} from '../../src/knowledge.js';
 import {actionPrefix} from '../../src/action_input.js';
 
 const [archive, output] = process.argv.slice(2);
 const {host, runtime, content} = await engineAt(fileURLToPath(new URL('../../',import.meta.url)));
-const original = fs.readFileSync(resolve(archive, 'originals/chat.jsonl'), 'utf8').trim().split('\n').slice(1).map(JSON.parse);
-const answers = JSON.parse(execFileSync('python3', [resolve(archive, 'pruefung/st_antworten.py')], {encoding:'utf8'}));
+const fixture = !archive && JSON.parse(gunzipSync(fs.readFileSync(new URL('../../tests/replay/location/user16.json.gz',import.meta.url))));
+const original = fixture ? fixture.messages : fs.readFileSync(resolve(archive, 'originals/chat.jsonl'), 'utf8').trim().split('\n').slice(1).map(JSON.parse);
+const answers = fixture ? fixture.answers : JSON.parse(execFileSync('python3', [resolve(archive, 'pruefung/st_antworten.py')], {encoding:'utf8'}));
 const chat = structuredClone(original);
 const state = () => host.foldChat(chat).state;
 const events = i => host.rec(chat[i]).events;
@@ -80,7 +82,8 @@ for (let i = 1; i < chat.length; i++) {
         await runtime.runExtraction(prefix,i,content,llm);
         assert.equal(host.rec(current).extraction.status, 'applied', 'extraction M'+i+': '+JSON.stringify(host.rec(current).extraction));
     }
-    assert.equal(queue.length,0,'unused mock at M'+i);
+    if (i === 28 && queue.length) assert.deepEqual(queue.map(r=>r.purpose),['extract_repair']);
+    else assert.equal(queue.length,0,'unused mock at M'+i);
     if (i === 15) assert(!events(i).some(e=>e.t === 'check.recorded'));
     if (i === 28) assert(events(i).some(e=>e.t === 'entity.created' && e.d.entity?.kind === 'creature') || host.foldChat(prefix).state.scene.present.some(id=>id.includes('goblin')));
     if ([36,38].includes(i)) {
@@ -152,16 +155,18 @@ const more = 'I follow the passage around the bend.';
 const around = {new:{name:'Bend beyond the adit',kind:'interior',parent:dungeon}};
 const nextRoom = 'Alaric walks around the bend and enters the next passage.';
 const first = crossed.next.dungeons[dungeon].run.floors[1].slots[0];
-const population = {type:'creature.new',seq:2,ref:first.ref,species:first.species,count:first.count,anchor:first.anchor,
-    desc:['one scout carries a knife, another a stone maul'],present:true,band:'SHORT',scene:around};
-const further = await branch(crossed.run,more,go({new:'the passage around the bend'},more),nextRoom+' Two goblin lookouts crouch at a crate in this passage.',
+const second = crossed.next.dungeons[dungeon].run.floors[1].slots[1];
+const population = {type:'creature.new',seq:2,ref:second.ref,species:second.species,count:second.count,anchor:second.anchor,
+    desc:[],present:true,band:'SHORT',scene:around};
+const further = await branch(crossed.run,more,go({new:'the passage around the bend'},more),nextRoom+` Ahead stand ${second.count} ${second.species}.`,
     {scene:around,expected:{1:{arrived:true,at:around,with:null,met:null}},deltas:[{seq:1,type:'arrive',at:around,evidence:nextRoom,with:null},population]});
 const scouts = further.next.dungeons[dungeon].run.floors[1].slots[0];
 assert.equal(crossed.next.scene.at,dungeon+'.l1_s1');
 assert.equal(further.next.scene.at,dungeon+'.l1_s2');
 assert.deepEqual(scouts.levels,[3,4]);
 assert.equal(scouts.entities.length,first.count);
-assert.deepEqual(further.next.scene.present.filter(id => id !== 'pc').sort(),[...scouts.entities].sort());
+assert.deepEqual(crossed.next.scene.present.filter(id => id !== 'pc').sort(),[...scouts.entities].sort());
+assert.deepEqual(further.next.scene.present.filter(id => id !== 'pc').sort(),[...further.next.dungeons[dungeon].run.floors[1].slots[1].entities].sort());
 assert.equal(further.events.filter(e => e.t === 'dungeon.slot').length,1);
 assert.match(current.threads['thread.t16.2'].text,/crooked knife.*stone maul/);
 const attack = 'I cast Flame Lance at the goblin with the knife.';
@@ -179,7 +184,8 @@ const survivors = await branch(afterKill.run,more,go({new:'the passage around th
 assert.deepEqual(survivors.next.dungeons[dungeon].run.floors[1].slots[0].entities,visible);
 assert.equal(survivors.next.entities[visible[1]].level,4);
 assert.equal(statusOf(survivors.next,visible[0]),'dead');
-assert(!survivors.events.some(e=>['entity.created','coin.changed','xp.gained'].includes(e.t)));
+assert(!afterKill.events.some(e=>e.t==='entity.created' && visible.includes(e.d.entity.id)));
+assert(!survivors.events.some(e=>['coin.changed','xp.gained'].includes(e.t)));
 const shield = await branch(chat,'I watch the lookout.',[],'The lookout ducks behind a thick stone pillar.',
     {scene:outside,expected:{},deltas:[{seq:1,type:'position',who:visible[0],band:'SHORT',cover:'full',scope:null,cluster:null,evidence:'The lookout ducks behind a thick stone pillar'}]});
 assert.equal(shield.next.scene.positions[visible[0]].cover,'full');

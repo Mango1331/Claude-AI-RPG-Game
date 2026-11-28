@@ -1,0 +1,107 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import fs from 'node:fs';
+import {gunzipSync} from 'node:zlib';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {engineAt} from '../../tools/replay/replay.mjs';
+import {actionPrefix} from '../../src/action_input.js';
+import {newPlaceScope} from '../../src/v4/movement.js';
+
+const root = fileURLToPath(new URL('../../',import.meta.url));
+const fixture = JSON.parse(gunzipSync(fs.readFileSync(new URL('./location/user17.json.gz',import.meta.url))));
+const {host,runtime,content} = await engineAt(root);
+const dungeon = 'loc.old_crown_catacombs';
+const gateReport = JSON.parse(fixture.answers[18][0].content);
+const roadside = 'loc.roadside_west_of_alderwatch';
+const estate = {new:{name:'Roadside shrine-chapel by the ford road',kind:'site',parent:'realm.valedorn_crown'}};
+
+test('User16: both sides of the observed doorway, the original scouts, Guild recall and revision',()=>{
+    execFileSync(process.execPath,[root+'tools/replay/user16_scene.mjs'],{stdio:'pipe'});
+});
+
+async function run(prefix, index, replies) {
+    const msg = structuredClone(fixture.messages[index]);
+    const saved = host.rec(msg);
+    delete msg.extra.avereth;
+    const chat = [...prefix,msg];
+    if (msg.extra.avereth_action_input) msg.extra.avereth_action_input.base_revision = actionPrefix(chat,index);
+    const asked = [];
+    const llm = async ({purpose}) => {
+        const entry = replies[asked.length];
+        asked.push(purpose);
+        assert.equal(entry?.purpose,purpose,'unexpected request at M'+index);
+        return entry.content;
+    };
+    if (saved?.input_hash || saved?.extraction) {
+        if (msg.is_user) {
+            if (msg.is_system && saved.command) msg.is_system = false;
+            await runtime.prepareGenerationAsync(chat,content,{type:'normal',llm});
+        } else {
+            assert.ok(runtime.processReplyAny(chat,index,content,{}).extract);
+            await runtime.runExtraction(chat,index,content,llm);
+        }
+    }
+    assert.ok(asked.length<=replies.length,'unmatched model request at M'+index);
+    const folded = host.foldChat(chat);
+    assert.deepEqual(folded.errors,[]);
+    return {chat,state:folded.state,asked,events:host.rec(msg)?.events || []};
+}
+
+test('User17: interrupted journey, the same gate, the closed threshold and actual entry',async()=>{
+    let chat = [structuredClone(fixture.messages[0])];
+    for (let i=1;i<fixture.messages.length;i++) {
+        const replies = [...(fixture.answers[i] || [])];
+        // The archived M20 references a phantom parent that a corrected M18 never created.
+        // Supply the current contract's repair for the original prose stopping BEFORE the closed door.
+        if (i===20) replies.push({purpose:'extract_repair',content:JSON.stringify({
+            expected:{1:{arrived:false}},deltas:[{seq:1,type:'arrive',at:dungeon}]
+        })});
+        const result=await run(chat,i,replies);
+        chat=result.chat;
+        const {state,events}=result;
+        if (i===16) {
+            assert.equal(state.scene.at,roadside);
+            assert.equal(state.scene.approaching,dungeon);
+        }
+        if (i===18 || i===20) {
+            assert.equal(state.scene.at,dungeon);
+            assert(!Object.keys(state.places).some(id=>id.includes('ruined_chapel_above') || id.startsWith(dungeon+'.')));
+            assert(!Object.values(state.links || {}).some(l=>l.a.startsWith(dungeon+'.') || l.b.startsWith(dungeon+'.')));
+        }
+        if (i===18) {
+            assert.deepEqual(result.asked,['extract']);
+            assert(state.scene.present.includes('npc.ossler'));
+            assert(state.entities['npc.ossler']);
+            const repeated=await run(JSON.parse(JSON.stringify(chat.slice(0,-1))),i,replies);
+            assert.deepEqual(repeated.events,events);
+            assert.deepEqual(repeated.state,state);
+        }
+        if (i===22) {
+            assert.equal(state.scene.at,dungeon+'.l1_s1');
+            assert.equal(state.places[state.scene.at].parent,dungeon);
+            assert.equal(state.places[state.scene.at].section,1);
+            const first=state.dungeons[dungeon].run.floors[1].slots[0];
+            assert(first.entities.length>0 && first.entities.every(id=>state.scene.present.includes(id)));
+            assert.equal(JSON.stringify(host.foldChat(JSON.parse(JSON.stringify(chat))).state),JSON.stringify(state));
+        }
+    }
+});
+
+test('P2 and P4b: the reported access connection, not the yes/no receipt or PULSE, identifies the gate',()=>{
+    const state=host.foldChat(fixture.messages.slice(0,18)).state;
+    const normalize=r=>newPlaceScope(r,state,[],content);
+    for(const arrived of [false,true]) for(const open of [false,true]) {
+        state.last.outcome.auth.pulse.open=open;
+        const r=structuredClone(gateReport);
+        r.expected[1].arrived=arrived;
+        assert.equal(normalize(r).deltas[0].at,dungeon);
+        const elsewhere={expected:r.expected,deltas:[{seq:1,type:'arrive',at:estate}]};
+        assert.deepEqual(normalize(elsewhere).deltas[0].at,estate);
+    }
+    const unrelated=structuredClone(gateReport);
+    unrelated.deltas.push({seq:9,type:'enter',who:{new:gateReport.deltas[0].at.new.name}});
+    assert.deepEqual(normalize(unrelated).deltas.at(-1).who,unrelated.deltas.at(-1).who);
+    state.last.outcome.auth.gos.push({...state.last.outcome.auth.go,seq:2,to:'loc.alderwatch'});
+    assert.deepEqual(normalize(gateReport).deltas[0].at,gateReport.deltas[0].at);
+});

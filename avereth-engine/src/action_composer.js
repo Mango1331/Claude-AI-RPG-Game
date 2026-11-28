@@ -22,7 +22,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
             + (included ? '' : escape(input.label) + ' · ') + mode + '</small>';
     };
     const box=document.createElement('div');box.id='avereth-action-composer';box.className='avereth-action-composer';
-    box.innerHTML=`<div id="avereth-action-home"></div><div><span id="avereth-action-status" role="status"></span> <button id="avereth-action-retry" type="button" hidden>Abschluss prüfen / fortsetzen</button></div>`;
+    box.innerHTML=`<div><span id="avereth-action-status" role="status"></span> <button id="avereth-action-retry" type="button" hidden>Abschluss prüfen / fortsetzen</button></div><div id="avereth-action-home"></div>`;
     const area=textarea();if(!area)return null;area.closest('#send_form')?.prepend(box);
     const controls=document.createElement('section');controls.className='avereth-action-controls';
     controls.innerHTML=`<div id="avereth-action-choices"></div><div id="avereth-action-targets"></div>
@@ -68,7 +68,14 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     rest.id = 'avereth-rest'; rest.className = 'avereth-shop';
     rest.innerHTML = '<summary>Rasten</summary><select aria-label="Rastdauer"><option value="30">30 Minuten</option><option value="60">1 Stunde</option><option value="120">2 Stunden</option><option value="">Eigene Dauer</option></select> <input aria-label="Rastdauer in Minuten" type="number" min="1" max="1440" value="30" hidden> <button type="button" aria-describedby="avereth-rest-reason">Rast beginnen</button> <span id="avereth-rest-reason" role="status"></span>';
     box.append(rest);
+    const partyButton = document.createElement('button');
+    partyButton.type = 'button';
+    partyButton.dataset.averethParty = 'open';
+    partyButton.textContent = 'Party';
+    partyButton.onclick = openParty;
+    box.append(partyButton);
     const routes=document.createElement('details');
+    routes.className = 'avereth-shop';
     routes.innerHTML='<summary>Bekannte Wege</summary>';
     box.append(routes);
     function drawRoutes(s) {
@@ -155,6 +162,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         box.hidden=!enabled();controls.hidden=box.hidden;if(box.hidden)return;
         const owner=key();if(controlsOrigin!==owner){clearControls();controlsOrigin=owner;}
         const s=state(),projected=availableActions(s,content());options=projected.actions;targets=projected.targets;
+        partyButton.hidden = !(s.party || (s.meta?.ruleset >= 2 && s.scene.present.some(id=>s.entities[id]?.kind === 'npc')));
         drawRoutes(s);
         rest.hidden = !canRestHere(s);
         refreshTrade(s,content());
@@ -360,9 +368,6 @@ export function installActionComposer({context,state,content,enabled,settings,bl
             textarea().dispatchEvent(new Event('input', {bubbles:true}));
             textarea().focus();
             return;
-        }
-        if (e.type==='click' && e.target.closest?.('[data-avereth-party]')?.closest('#chat')) {
-            e.preventDefault();e.stopImmediatePropagation();openParty();return;
         }
         const send=e.type==='click'?e.target.closest?.('#send_but'):e.target===textarea() && e.key==='Enter' && !e.shiftKey && !e.isComposing;
         if(!send)return;

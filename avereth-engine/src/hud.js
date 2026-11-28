@@ -325,7 +325,7 @@ export function targetChoices(state, content, candidates, sourceIndex) {
 export function renderHud(state, content, mode = 'closed', options = {}) {
     if (mode === 'off' || !state.meta?.started || !state.entities.pc?.sheet) return '';
     const crew = partyView(state,content,true);
-    const party = (state.party || (rulesetOf(state)>=2 && state.scene.present.some(id=>state.entities[id]?.kind==='npc'))) ? '<div class="avereth-party"><button type="button" data-avereth-party="open">Party</button> '+crew.map(esc).join(' · ')+'</div>' : '';
+    const party = crew.length ? '<div class="avereth-party">Party · '+crew.map(esc).join(' · ')+'</div>' : '';
     if (state.encounter) return combatHud(state, content)+party;
     const s = state.entities.pc.sheet;
     const dv = deriveCharacter(s, content);

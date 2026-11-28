@@ -25,6 +25,7 @@ import { goalLines } from './v4/intents.js';
 import { featuresAt, featureText } from './v4/features.js';
 import { dungeonOf, trueDungeonOf, dungeonText, nearDungeons, exitsFrom, exitText, roomLabel, wayBetween } from './v4/dungeon.js';
 import { sectionExits } from './v4/sections.js';
+import { travelTargetLines } from './v4/movement.js';
 import { contextLines as livingLines, thresholdSlot, encounterRoster, guardianAccessLines, floorAt as livingFloorAt } from './v4/living.js';
 import { settlementOf, realmOf, hallOf, listedToday, lineage, placeName } from './v4/domain.js';
 import { estimateTokens, formatClock, itemLabel, joinList, normText, tokenize } from './util.js';
@@ -989,7 +990,7 @@ export function buildContext(state, content, opts = {}) {
     if (v4) add('chronicle', chronicleLine(opts.chronicle), 0, true);
     // .190 (N1): where he is, which travel this turn has and who he speaks of that is not here, at the head of the block;
     // the location sentences of the corrections it replaces are not repeated at their end
-    const where = v4 && state.scene?.at && state.mode !== 'creation' ? whereLines(state, input, opts) : null;
+    const where = v4 && state.scene?.at && state.mode !== 'creation' ? whereLines(state, input, opts, content) : null;
     if (where) add('where', where, 0, true);
     const located = /^(?:Alaric is still (?:in|at)\b|Alaric is at\b|Alaric remains at\b|Alaric did not voluntarily travel\b)/;
     const fixes = (opts.corrections || []).filter((c) => !where || !located.test(String(c)));
@@ -1154,7 +1155,7 @@ function compactNpcCard(state, content, id, focusWords, { arriving = false } = {
  * .190 (stage 4D, N1): WHERE (his place and the places the last reply told that he never reached), TRAVEL THIS TURN (the
  * steps the engine authorized, or none), NOT HERE (known people his message speaks to or of who are elsewhere).
  */
-function whereLines(state, input, opts) {
+function whereLines(state, input, opts, content) {
     const here = placeName(state, state.scene.at);
     const town = state.scene.location && state.places?.[state.scene.location]?.name;
     const said = (to) => (typeof to === 'string' ? (state.places?.[to] ? placeName(state, to) : null) : to?.name || null);
@@ -1177,6 +1178,7 @@ function whereLines(state, input, opts) {
     return [
         `WHERE — ${here}${town && town !== here ? ` (${town})` : ''}.${missed.length ? ` The last reply's ${missed.join(', ')} ${missed.length > 1 ? 'were' : 'was'} not reached. Only established observations from here carry forward.` : ''}`,
         state.scene.focus ? `Standpoint at this site: ${state.scene.focus}` : '',
+        ...travelTargetLines(state,content,opts.outcome,true),
         `TRAVEL THIS TURN — ${steps.length ? steps.join('; ') : unbooked}.`,
         roster ? 'OBSERVED ACROSS THIS THRESHOLD — '+roster+'. Keep each individual’s current condition.' : '',
         absent.length ? `NOT HERE — ${absent.map((e) => `${e.name}${e.at && state.places?.[e.at] ? ` (${placeName(state, e.at)})` : ''}`).join(', ')}: he speaks of them from where he is; they answer only if the story brings them here.` : '',

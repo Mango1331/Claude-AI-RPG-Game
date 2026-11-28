@@ -10,8 +10,10 @@
 // never a destination: another place of the same town or realm is not reached because it lies there.
 import { lineage, sameSettlement, settlementOf, realmOf } from './domain.js';
 import { dungeonOf, trueDungeonOf, isRoom } from './dungeon.js';
-import { sectionId } from './sections.js';
-import { placeIdentity, samePlace, placeKey } from './place_refs.js';
+import { aheadEvents, gateCheck } from './living.js';
+import { following } from '../party.js';
+import { sectionsOf, sectionId } from './sections.js';
+import { placeIdentity, samePlace } from './place_refs.js';
 
 /**
  * The fixed fields of a step, decided by the GO handler at authorization.
@@ -54,6 +56,28 @@ export function stepOf(s, go) {
 /** The steps of this turn (outcome.auth.gos), each with its fields. */
 export const stepsOf = (s, gos) => (gos || []).map((g) => stepOf(s, g));
 
+/** Describe the authorized destination at request time, without changing the saved action. */
+export function travelTargetLines(state, content, outcome, narrator = false) {
+    const lines = [];
+    for (const go of outcome?.auth?.gos || []) {
+        const root = go.enter?.root;
+        const gate = state.dungeons?.[root]?.gate;
+        if (!go.to || (narrator && !gate)) continue;
+        lines.push(`GO ${go.seq}: ${go.to}.` + (gate && root === go.to
+            ? ` Its access (${gate.text || gate.names?.join(', ')}) is ${root}. Only a crossing reaches an interior section.` : ''));
+        if (state.scene.approaching === go.to) lines.push('Continuation from the last stop: account only for the remaining walk.');
+        if (!narrator || !gate || go.section || go.to !== root || root === state.scene.at) continue;
+        const group = 1 + new Set([...following(state).map(m=>m.who), ...(go.with || [])]).size;
+        const terms = gateCheck(state,content,root,{group});
+        if (terms) lines.push(terms.refuse || `Entry requires the keeper's fee of ${terms.fee} cp.`);
+        else if (!go.enter.gate && !outcome.auth.pulse?.open) {
+            const preview = aheadEvents(state,content,{into:true,root,floor:1,section:1});
+            if (preview) lines.push('Only if he actually crosses the gate:', ...preview.lines);
+        }
+    }
+    return lines;
+}
+
 /** Identify the reported endpoint of each GO. This never authorizes an arrival.
  * An unnamed search among several stops needs its existing optional at reference.
  * Receipt matching and the actual place reached stay separate until World accepts the move.
@@ -69,7 +93,7 @@ export function reportedEndpoints(answer, state, content, rejected = []) {
         // its gate is a valid stop but does not complete that objective.
         const interior = !g.section && !g.enter?.gate && g.to === root && root &&
             arrivals.find(d => d.at?.new?.kind === 'interior' && d.at.new.parent === root);
-        const ref = g.section?.id || (interior ? sectionId(root,1,1) : g.to) || e?.at;
+        const ref = g.section?.id || (interior ? firstSection(state,root) : g.to) || e?.at;
         if (ref) ends.set(String(g.seq), ref);
     }
     const unresolved = goals.filter(g => !ends.has(String(g.seq)) && answer?.expected?.[g.seq]?.arrived === true);
@@ -101,13 +125,20 @@ function reportPlaceIdentity(answer, state, content) {
     const stops = answer.deltas.filter(d => d?.type === 'arrive' && !d.forced_by);
     const byName = new Map();
     // A short reference can repeat a declaration but cannot supply its missing kind or parent.
-    for (const d of stops) {
-        const ref = d.at;
-        if (!ref?.new?.name) continue;
-        const prior = byName.get(ref.new.name);
-        if (!byName.has(ref.new.name)) byName.set(ref.new.name, ref);
-        else if (placeKey(state,prior,content) !== placeKey(state,ref,content)) byName.set(ref.new.name, null);
+    const key = ref => {
+        const n = ref?.new;
+        return n && typeof n === 'object' ? JSON.stringify([n.name,n.kind,n.parent ?? null]) : null;
+    };
+    function collect(ref) {
+        const n = ref?.new;
+        if (typeof n?.name !== 'string') return ref;
+        const prior = byName.get(n.name);
+        if (!byName.has(n.name)) byName.set(n.name,ref);
+        else if (key(prior) !== key(ref)) byName.set(n.name,null);
+        if (n.parent?.new?.name) collect(n.parent);
+        return ref;
     }
+    mapReportPlaces(answer,content.deltaVocab,collect);
     const aliases = new Map();
     const goals = stepsOf(state, state.last?.outcome?.auth?.gos);
     const root = goals.length === 1 && goals[0].enter?.root;
@@ -119,13 +150,13 @@ function reportPlaceIdentity(answer, state, content) {
     if (gate && goals[0].to === root && state.scene.at !== root) {
         const candidates = stops.filter(d => {
             const n = d.at?.new;
-            return n?.kind === 'site' && byName.get(n.name) === d.at &&
+            return n?.kind === 'site' && key(byName.get(n.name)) === key(d.at) &&
                 n.parent === state.places[root]?.realm &&
                 gate.names?.some(alias => (' '+norm(n.name)+' ').includes(' '+norm(alias)+' '));
         });
         for (const d of candidates) {
             const touches = stops.filter(child => child.at?.new?.kind === 'interior' &&
-                nameOf(child.at.new.parent) === d.at.new.name && byName.get(nameOf(child.at)) === child.at);
+                nameOf(child.at.new.parent) === d.at.new.name && key(byName.get(nameOf(child.at))) === key(child.at));
             const linked = touches.filter(child => answer.deltas.some(link => link?.type === 'passage' &&
                 nameOf(link.from) === nameOf(child.at) && link.to?.new?.parent === root));
             if (linked.length === 1 && candidates.length === 1) {
@@ -140,7 +171,7 @@ function reportPlaceIdentity(answer, state, content) {
         if (!full?.new?.name) return ref;
         const n = full.new;
         if (aliases.has(n.name) && byName.get(n.name) &&
-            placeKey(state,byName.get(n.name),content) === placeKey(state,full,content) &&
+            key(byName.get(n.name)) === key(full) &&
             Object.keys(n).every(k => ['name','kind','parent'].includes(k))) return aliases.get(n.name);
         if (typeof n.parent === 'object' && n.parent) return {new:{...n,parent:resolve(n.parent,depth+1)}};
         return full;
@@ -148,12 +179,16 @@ function reportPlaceIdentity(answer, state, content) {
     return mapReportPlaces(answer,content.deltaVocab,ref=>resolve(ref));
 }
 
+export function firstSection(state, root) {
+    return sectionsOf(state,root,1)[0] || sectionId(root,1,1);
+}
+
 /** Resolve an X receipt against the same destination/preview used by World. */
 export function reportsEndpoint(state, go, endpoint, ref, content) {
     if (endpoint && samePlace(state, endpoint, ref, content)) return true;
     const root = go.section?.root || go.enter?.root;
     return !!root && !go.enter?.gate && ref?.new?.kind === 'interior' &&
-        ref.new.parent === root && (go.section || endpoint === sectionId(root,1,1));
+        ref.new.parent === root && (!!go.section || endpoint === firstSection(state,root));
 }
 
 /** Normalize the place declarations and the scoped arrival in both X and World. */
@@ -183,6 +218,14 @@ export function newPlaceScope(answer, s, rejected = [], content = null) {
         }
         return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, rewrite(v)]));
     };
+    // A nested parent is still a place reference. Do not project scope into
+    // arbitrary NPC, inventory or evidence fields.
+    if (content?.deltaVocab && Array.isArray(answer?.deltas)) {
+        const normalized = mapReportPlaces(answer,content.deltaVocab,rewrite);
+        if (answer.expected) normalized.expected = Object.fromEntries(Object.entries(answer.expected).map(([seq,e]) =>
+            [seq,e?.at ? {...e,at:rewrite(e.at)} : e]));
+        return normalized;
+    }
     return rewrite(answer);
 }
 /** A report of the entrance on a step that already targets that established gate. */

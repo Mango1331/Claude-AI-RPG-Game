@@ -6,7 +6,7 @@
 export const ENGINE_VERSION = '4.3.0-c.6.6.265';
 // The revision line the V4 narrator contract carries (content/narrator/Avereth_Narrator_Contract_v4.txt): the engine
 // shows whether the character card holds the current contract (live run 30.09.2026 22:41 ran on a card from before 4.1.2).
-export const NARRATOR_CONTRACT_REVISION = 'Contract revision: 4.3.0-c.6.6.211';
+export const NARRATOR_CONTRACT_REVISION = 'Contract revision: 4.3.0-c.6.6.265';
 
 export const BANDS = ['ENGAGED', 'SHORT', 'MEDIUM', 'LONG'];
 

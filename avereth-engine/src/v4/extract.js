@@ -2,7 +2,7 @@ import { tokenize } from '../util.js';
 import { movementEvidence, visualDetail } from './narration_evidence.js';
 import { thresholdSlot } from './living.js';
 import { placeKey } from './place_refs.js';
-import { newPlaceScope, reportedEndpoints } from './movement.js';
+import { newPlaceScope, reportedEndpoints, reportsEndpoint } from './movement.js';
 import { privateQuestsOf } from '../content.js';
 // Runtime V4: the world-delta extractor (docs/RUNTIME_V4_PLAN.md §5, D2 = A). After every story reply a separate call
 // reads the reply and reports, as typed deltas in story order, what it established in the world; the engine answers
@@ -570,7 +570,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const parsed = readDeltaEnvelope(answer, expectedKeys);
     const { error, raw } = parsed;
     const resolved=resolveRepeatedScene(parsed.value,ids,expectedKeys);
-    const value = state ? newPlaceScope(normalizeSoftFields(resolved, vocab), state) : normalizeSoftFields(resolved, vocab);
+    const value = state ? newPlaceScope(normalizeSoftFields(resolved, vocab), state, [], content) : normalizeSoftFields(resolved, vocab);
     const want = Object.keys(expectedKeys || {});
     if (!value) return { value: null, valid: false, complete: false, errors: [error || 'no JSON object'], missing: want, raw: false };
     // .190 (stage 5): an expected key nobody asked for (no step of this turn has it) is left out, empty or not: it never
@@ -695,9 +695,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
             if (type !== 'go') continue;
             const g = state?.last?.outcome?.auth?.gos?.find(g => String(g.seq) === key) || {seq:key};
             const end = ends.get(key) || exp[key]?.at;
-            const section = g.section;
-            const match = arrivals.some(d => (end && placeKey(state,end,content) === placeKey(state,d.at,content))
-                || (section && d.at?.new?.kind === 'interior' && d.at.new.parent === section.root));
+            const match = arrivals.some(d => reportsEndpoint(state,g,end,d.at,content));
             // A free goal involving a known contact can have competing place identities.
             // Preserve the old continuity repair only when it can change that booked endpoint.
             if (match && !g.to && end?.new && g.newName) {
@@ -715,7 +713,7 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
                 }
             }
             if (exp[g.seq]?.arrived === true && !match)
-                semanticIssues.push({seq:g.seq,why:`GO ${g.seq} reports its objective reached without its corresponding arrive delta. Report the actual stop or correct the objective answer.`});
+                semanticIssues.push({seq:g.seq,why:`GO ${g.seq} reports its objective reached without its corresponding arrive delta. Use the chosen target ${g.to || g.newName || end || g.seq} for its established access. If the reply stopped short, report that actual stop and arrived:false.`});
             else if (!arrivals.length && exp[g.seq]?.arrived === false && reply && movementEvidence(reply) &&
                 value.scene && placeKey(state,value.scene,content) !== startScene && value.scene !== 'here')
                 semanticIssues.push({seq:g.seq,why:'The reply describes movement to another scene. Report its actual stop or confirm that no travel occurred.'});

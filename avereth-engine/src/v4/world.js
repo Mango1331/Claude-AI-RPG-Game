@@ -54,7 +54,7 @@ import { freeObjectId, itemTraits, useOf, itemProfile, priceAudit, gearRetailPri
 import { groupMembers, groupWords as groupWordsOf, resolveRef } from './identity.js';
 import { combatTruth, stripFalseDeaths } from './combat_truth.js';
 import { anchorFor, speciesAnchor, templateFor, npcTemplate, rulesetOf } from '../content.js';
-import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, clearDone, livingOf, floorAt, slotMet, resolved, nextSlot, thresholdSlot, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
+import { entranceOf, sealRefusal, gateCheck, gateState, gateOfferId, entryLine, aheadEvents, clearDone, livingOf, floorAt, slotMet, resolved, nextSlot, thresholdSlot, slotForNew, resolvedSlotNamed, slotEntityEvents, establishEvents, syncEvents, insideOf } from './living.js';
 import { refusedCreatureInThread, unbookedDungeonThreat } from './run9_evidence.js';
 import { jobOf, paymentJob, recordJobWork } from './private_jobs.js';
 import { forcedRelocation, visualDetail, narratedEvent } from './narration_evidence.js';
@@ -277,7 +277,7 @@ function noRoleWords(answer) {
 }
 
 export function applyWorld(state, content, answer, { msg = null, prose = '', chronicle = null, invalid = [] } = {}) {
-    answer = noRoleWords(newPlaceScope(answer, state, invalid));
+    answer = noRoleWords(newPlaceScope(answer, state, invalid, content));
     const s = clone(state);
     const dice = Dice.from(s);
     const events = [];
@@ -1301,9 +1301,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 const mark = events.length;
                 const unmake = () => {
                     const made = events.slice(mark);
-                    if (!made.length || !made.every((e) => e.t === 'place.created' || e.t === 'link.set')) return;
-                    events.length = mark;
-                    for (const e of made) if (e.t === 'place.created') delete s.places[e.d.place.id]; else delete s.links[e.d.link.id];
+                    const created = made.filter(e => e.t === 'place.created' || e.t === 'link.set');
+                    if (!created.length) return;
+                    events.splice(mark, made.length, ...made.filter(e => !created.includes(e)));
+                    for (const e of created) if (e.t === 'place.created') delete s.places[e.d.place.id]; else delete s.links[e.d.link.id];
                 };
                 // .190 (B5): in a Living Dungeon the part he reaches is the section his step previewed (made now, named by
                 // this report); a room the story makes there is none
@@ -1330,6 +1331,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (at.id === s.scene.at && !(explicitTravel && s.places[at.id]?.kind === 'realm' && auth.gos?.length)) {
                     const k = goStepAt(at.id);
                     if (k != null && !d.forced_by) reachedGoals.set(k,at.id);
+                    // Two descriptions of the same stop can bracket the companions'
+                    // arrival. Keep the time attached to this leg and its original party.
+                    if (!d.forced_by && lastRoadLeg?.at === at.id) lastRoadLeg.seq = d.seq;
                     travel.push({ seq:d.seq, ok:true }); break;
                 }
                 const forcedHere = !!String(d.forced_by || '').trim() && !unprovenForced.has(d);
@@ -1362,6 +1366,12 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     localDetail = {at:s.scene.at,ref};
                     travel.push({seq:d.seq,ok:true});
                     break;
+                }
+                const root = trueDungeonOf(s, at.id);
+                if (!forcedHere && root && root !== at.id && !insideOf(s,root) && livingOf(s,root)?.ahead?.turn !== s.turn &&
+                    stepsOf(s,auth.gos).some(g => g.to === root && !g.enter?.gate)) {
+                    const ahead = aheadEvents(s,content,{into:true,root,floor:1,section:1});
+                    for (const event of ahead?.events || []) emit(event);
                 }
                 const party = companions(d.with, d);
                 perceiveAll(s, emit, seeing());
@@ -2120,7 +2130,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     }
     if (auth.c && arrived && arrived !== startAt && arrived !== transit && !continuation?.choice?.lodging) {
         const t = content.rules.time.engine_clock;
-        const floor = settlementOf(s, startAt) === settlementOf(s, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
+        const continuationAtGoal = state.scene.approaching === arrived && auth.gos?.some(g => g.to === arrived);
+        const floor = continuationAtGoal ? 0 : settlementOf(s, startAt) === settlementOf(s, arrived) ? t.go_min_same_settlement : t.go_min_elsewhere;
         if (journeyTime && lastRoadLeg) {
             bookRoadTime(Math.max(0, floor-travelMinutes),lastRoadLeg.travellers);
         } else {
@@ -3016,7 +3027,8 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
     function passage(d) {
         // .190 (B5): the ways of a Living Dungeon are the engine's (on, back, down, out along its sections)
         if (explicitTravel && !oldSteps) {
-            const root = [s.scene.at, typeof d.to === 'string' ? d.to : null, typeof d.from === 'string' ? d.from : null].map((x) => x && s.places[x] ? trueDungeonOf(s, x) : null).find((r) => livingOf(s, r));
+            const ancestry = ref => typeof ref === 'string' ? ref : ref?.new?.parent;
+            const root = [s.scene.at, ancestry(d.to), ancestry(d.from)].map(ref => typeof ref === 'string' ? ref : ancestry(ref)).map((x) => x && s.places[x] ? trueDungeonOf(s, x) : null).find((r) => livingOf(s, r));
             if (root) { reject(d, 'dungeon_way', `the engine keeps the ways of ${s.places[root].name}: he goes on, back, down or out along its parts, never by a way the story tells`); return; }
         }
         // Patch 8: a way into the room this reply already brought him to (the stair he went down) starts where he was

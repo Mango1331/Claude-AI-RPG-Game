@@ -531,11 +531,11 @@ function livingGo(s, content, c, ctx, emit, { known, nav, envx, section = null }
     const x = livingOf(s, dest);
     if (!x) return null;
     // past the gate: from the gate (or from outside) into a part of it
-    const crossing = section?.from === dest && s.scene.approaching === dest;
+    const crossing = section?.from === dest && !insideOf(s, dest);
     const passing = !insideOf(s, dest) && (crossing || (known ? c.to !== dest : s.scene.at === dest));
     if (passing) {
         // he and whoever travels with him (an escort's charge) take places
-        const group = 1 + (companionOf(s, envx).with || []).length;
+        const group = 1 + new Set([...following(s).map(m=>m.who), ...(companionOf(s, envx).with || [])]).size;
         const g = gateCheck(s, content, dest, { group });
         // Patch 8.1 (§4): the gate's System card whenever it turns him back or waits for its fee
         if (g?.refuse || g?.fee) ctx.engineLines.push(...gateCard(s, content, dest, { group }));
@@ -734,8 +734,9 @@ const HANDLERS = {
         // level's track (previewed now, made only by the confirmed arrival); a part he knows by his words for it first
         let section = null;
         if (envx?.c && rulesetOf(s) >= 2 && roomRoot && c.to === roomRoot && !c.gateFirst
-            && s.scene.approaching === roomRoot && entersThisDungeon(c.quote, placeName(s, roomRoot))) {
+            && trueDungeonOf(s, s.scene.at) !== roomRoot && entersThisDungeon(c.quote, placeName(s, roomRoot))) {
             // He already observes this gate. Crossing it uses the same first room as entry from the gate itself.
+            for (const event of establishEvents(s, content, roomRoot)) emit(event);
             const first = sectionStep({ ...s, scene: { ...s.scene, at: roomRoot } }, 'on');
             if (first?.to) c = { ...c, to: first.to };
             else if (first?.preview) section = first.preview;
@@ -822,6 +823,15 @@ const HANDLERS = {
                 go.solo=/\b(?:alone|on my own|by myself)\b/i.test(c.quote || '');
             }
         }
+        if (known && livingOf(s,c.to) && c.to !== s.scene.at && !go.way_in && !section) {
+            const group = 1 + new Set([...following(s).map(m=>m.who), ...(companionOf(s,envx).with || [])]).size;
+            const gate = gateCheck(s,content,c.to,{group});
+            if (gate) ctx.extra.push(...gateCard(s,content,c.to,{group}));
+            else {
+                const preview = aheadEvents(s,content,{into:true,root:c.to,floor:1,section:1});
+                if (preview) ctx.extra.push('Only if the journey actually crosses the gate, inside:', ...preview.lines);
+            }
+        }
         ctx.auth.go = go;
         ctx.auth.gos.push(go);
         travelManner(c, go, ctx);
@@ -875,7 +885,10 @@ const HANDLERS = {
         const pace = knownDungeonWay ? ' Follow the established way to the chosen place or its actual obstruction. Leave any further movement to Alaric.' :
             envx?.c ? ' Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop.' : '';
         if (sought) return { status: 'authorized', line: `GOES — on to find a way to ${sought}: he knows of it, not of a way there; he gets there only by a way the story shows him find (a stair, a door, a passage), never straight.${pace}` };
-        return { status: 'authorized', line: `GOES — to ${name} (the story decides whether and where he arrives).${pace}` };
+        const gate = known && livingOf(s, c.to)?.gate;
+        if (known && s.scene.approaching === c.to) ctx.extra.push('This continues the earlier leg. Describe only the remaining walk and its elapsed time.');
+        const destination = known ? `${name} [${c.to}]${gate ? ` — access: ${gate.text || gate.names.join(', ')}. At the entrance use ${c.to}; only crossing leads inside` : ''}` : name;
+        return { status: 'authorized', line: `GOES — to ${destination} (the story decides whether and where he arrives).${pace}` };
     },
     // Patch 2: his goals are his own decisions (src/v4/intents.js); setting one changes nothing in the world
     'intent.set'(s, content, c, ctx, emit) {

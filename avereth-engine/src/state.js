@@ -164,7 +164,9 @@ export function applyEvent(state, e) {
             const from = state.scene.at;
             if (d.reset_present || (d.at && d.at !== from)) {
                 delete state.scene.focus;
-                delete state.scene.approaching;
+                const go = state.last?.outcome?.auth?.go;
+                const nearby = state.places?.[d.at]?.parent === from || state.places?.[from]?.parent === d.at;
+                if (!nearby || go?.to || go?.enter?.root) delete state.scene.approaching;
                 const goal = state.last?.outcome?.auth?.go?.enter?.root;
                 if (goal && state.dungeons?.[goal] && d.at !== goal && !d.at?.startsWith(goal + '.')) state.scene.approaching = goal;
             }

@@ -7,6 +7,7 @@ Aktuelle Quellen zuerst. Historische Forschung ist keine offene Aufgabenliste.
 | Verabschiedete Regeln | [E-Fachentscheidungen](AVERETH_263_E_RANK_FACHENTSCHEIDUNGEN.md) |
 | Umsetzung, Balance, Tests und Installation | [Abnahme .263](AVERETH_263_E_RANK_IMPLEMENTIERUNG_ABNAHME.md) |
 | Unabhängige Bewertung und offene Fragen | [Gegenreview](AVERETH_263_UNABHAENGIGER_GEGENREVIEW.md) |
+| Ortsidentität / Reise (User17) | [GPT-Erstreview](../testrun_10b/user-20261128-051828-263/REVIEW.md) · [Claude-Gegenreview](AVERETH_USER17_263_CLAUDE_GEGENREVIEW_ORTSIDENTITAET.md) |
 | Weitere Rangentwicklung | [GPT-Konsolidierung](AVERETH_261_E_BIS_S_SPIELDESIGN_BALANCE_WELT_FACHGRUNDLAGE_GPT.md) · [Claude-Vertiefung](AVERETH_262_CLAUDE_E_BALANCE_VERTIEFUNG_UND_ENTSCHEIDUNGSVORLAGE.md) |
 | Originale / Messwerte | [Modellserie](../testrun_10b/openrouter-20261128-e-rank-263/README.md) · [Balance .263](avereth_263_abnahme/) · [Messvergleich](../testrun_10b/durchschnittsmessungen/README.md) |
 

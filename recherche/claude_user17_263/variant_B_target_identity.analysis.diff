@@ -1,0 +1,43 @@
+--- a/avereth-engine/src/v4/movement.js	2026-11-28 05:21:56.342079677 +0000
++++ b/avereth-engine/src/v4/movement.js	2026-11-28 05:29:57.138011418 +0000
+@@ -75,6 +75,7 @@
+ 
+ /** The parent of a new place told on arrival for a step whose scope fixes it: the habitat, or the Dungeon. */
+ export function newPlaceScope(answer, s, rejected = []) {
++    answer = targetIdentity(answer, s);
+     const steps = stepsOf(s, s.last?.outcome?.auth?.gos).filter((g) => g.scope && (g.mode !== 'within' || (s.places[g.scope]?.population && lineage(s, s.scene.at).includes(g.scope))));
+     if (!steps.length) return answer;
+     const ends = reportedEndpoints(answer,s,null,rejected);
+@@ -169,3 +170,32 @@
+     return !!realm && (realm === realmOf(s, here) || realm === realmOf(s, target));
+ }
+ 
++
++/** ANALYSIS VARIANT B (not product): a known GO target reported as reached keeps its identity. When the report says
++ * this step reached its known target (expected.<seq>.arrived true), names no arrival at that target and tells exactly
++ * one new outdoor place or site as an arrival, that new place is the target told in other words: every reference to it
++ * in this answer is the target id. No name matching; the claim (arrived) is the model's, the identity is the state's. */
++export function targetIdentity(answer, s) {
++    if (process.env.U17_VARIANT !== 'B' || !answer || !Array.isArray(answer.deltas) || !s?.places) return answer;
++    // only a target out in the land (a Dungeon's gate, a ruin, a habitat): inside a town a scope is never a destination
++    const steps = stepsOf(s, s.last?.outcome?.auth?.gos).filter((g) => typeof g.to === 'string' && s.places[g.to] && !g.section
++        && ['site', 'wilderness'].includes(s.places[g.to].kind) && !settlementOf(s, g.to));
++    let out = answer;
++    for (const g of steps) {
++        if (answer.expected?.[String(g.seq)]?.arrived !== true) continue;
++        const arrivals = out.deltas.filter((d) => d?.type === 'arrive' && !d.forced_by);
++        if (arrivals.some((d) => d.at === g.to || (typeof d.at === 'string' && lineage(s, d.at).includes(g.to)))) continue;
++        const fresh = arrivals.filter((d) => d.at?.new && typeof d.at.new === 'object' && ['site', 'wilderness'].includes(d.at.new.kind)
++            && (d.at.new.parent == null || (typeof d.at.new.parent === 'string' && d.at.new.parent !== g.to && lineage(s, g.to).includes(d.at.new.parent) && ['realm', 'region', 'wilderness'].includes(s.places[d.at.new.parent]?.kind))));
++        if (fresh.length !== 1) continue;
++        const name = norm(fresh[0].at.new.name);
++        const rewrite = (v) => {
++            if (Array.isArray(v)) return v.map(rewrite);
++            if (!v || typeof v !== 'object') return v;
++            if (v.new && norm(typeof v.new === 'string' ? v.new : v.new.name) === name) return g.to;
++            return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, rewrite(x)]));
++        };
++        out = { ...out, deltas: rewrite(out.deltas), ...(out.scene ? { scene: rewrite(out.scene) } : {}) };
++    }
++    return out;
++}

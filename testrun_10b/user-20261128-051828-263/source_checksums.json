@@ -1,0 +1,40 @@
+{
+  "build": "4.3.0-c.6.6.263",
+  "product_reference": "928172b9bbaae3d133bad7097100dc2127334b8e",
+  "seed": 717544094,
+  "files": [
+    {
+      "original_name": "Avereth Engine Test v4 - 2026-11-28@05h18m28s255ms.jsonl",
+      "path": "originals/chat.jsonl",
+      "bytes": 392833,
+      "sha256": "562259c8b1bf8c71e787ff443fcdac96d3bded1dded5176e5c11651f1a75353c",
+      "git_blob": "73b4828b723cc806e9070b818712c4971bb7b4fa"
+    },
+    {
+      "original_name": "avereth-events-[_Avereth Engine Test v4.png_,_Avereth Engine Test v4 - 2026-11-28@05h18m28s255ms_].json",
+      "path": "originals/avereth-events.json",
+      "bytes": 104319,
+      "sha256": "213d64baf9d9bbc4280e9f4c0d93a37139cce43f826105d53f41c41efe1175bf",
+      "git_blob": "37b31b82a8770b9ea0e67319799fdcb18eaf2d59"
+    },
+    {
+      "original_name": "ST_2026-11-28_05-17-57.txt",
+      "path": "originals/st-log.txt.gz",
+      "bytes": 699402,
+      "sha256": "3ef36b10f2846f2a960639e1ec4795c13e26b1ffbb5ae7ea30d50199eea3d1bd",
+      "uncompressed_bytes": 3442696,
+      "uncompressed_sha256": "e119dd167ccfb140298cd865ad0fee0c7b856ed972b77b9027dc6f2fb9b7bdca",
+      "redaction": "one local path: Windows user name replaced by <redacted> (UTF-16LE, BOM kept)",
+      "private_original_bytes": 3442686,
+      "private_original_sha256": "9cf427576e4982ec40416a61257deb5c4caec6e42f524b45deaba35310f0867e"
+    },
+    {
+      "original_name": "Userfeedback Spielgefühl(20261128-050456).txt",
+      "path": "USER_FEEDBACK.txt",
+      "bytes": 895,
+      "sha256": "a4b0b65169a7ad6352c8f6324d37b8e6e0e811d4ce314e72dfef381784eb99db",
+      "note": "text taken over earlier by GPT; original upload (897 bytes, dab604a7b1b566722628a632b73f6b171d8ca7bf9e308cf03c1abbe3d9d0b956) not available to this review, byte identity NOT established",
+      "verify": false
+    }
+  ]
+}

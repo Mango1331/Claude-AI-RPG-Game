@@ -626,6 +626,8 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     const invalid = new Map();
     const violations = validate(clean, schema);
     const diagnostics = [];
+    // The optional rank hint has no meaning when empty, including in a rejected receipt.
+    if (Array.isArray(value.deltas)) for (const d of value.deltas) if (d?.individual_rank === null) delete d.individual_rank;
     for (const reason of violations) {
         const entry = /^\$\.deltas\[(\d+)\]/.exec(reason);
         const step = /^\$\.expected\.(\d+)\b/.exec(reason);
@@ -653,7 +655,6 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
     }
     if (!errors.length) for (const d of value.deltas) {
         if (d.type === 'creature.new' && d.across === null) delete d.across;
-        if (d.individual_rank === null) delete d.individual_rank;
     }
     const semanticIssues = [];
     let stepAt = startScene;

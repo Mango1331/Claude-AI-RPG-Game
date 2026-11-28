@@ -80,12 +80,21 @@ const classes={'reed-251#22':'fachlich_bestätigt','vale-242#24':'bekannter_fehl
 if(record) fs.writeFileSync(reference,JSON.stringify({sha,default_class:'beobachtet',classes,cases:results},null,1)+'\n');
 else{
     const base=JSON.parse(fs.readFileSync(reference));
+    if (!process.argv.includes('--original-reference')) {
+        const reviewed=JSON.parse(fs.readFileSync(path.join(dir,'rank263.json')));
+        assert.equal(createHash('sha256').update(fs.readFileSync(reference)).digest('hex'),reviewed.base);
+        for (const [id, fields] of Object.entries(reviewed.cases)) {
+            assert.ok(base.cases[id],id);
+            Object.assign(base.cases[id],fields);
+        }
+    }
     const knownChanges=[];
     for(const id of new Set([...Object.keys(results),...Object.keys(base.cases)])){
         if(JSON.stringify(results[id])===JSON.stringify(base.cases[id])) continue;
         if(results[id] && base.cases[id] && base.classes[id]==='bekannter_fehler_akzeptiert') knownChanges.push(id);
         else issues.push(id);
     }
+    if(knownChanges.length) process.exitCode=1;
     console.log('Known-error cases changed (review required):',JSON.stringify(knownChanges));
     console.log('Changed cases:',JSON.stringify(issues));
 }

@@ -65,10 +65,15 @@ export function developmentEvents(state, content, enc) {
     const g = growthOf(state);
     if (Object.values(g.marks || {}).some((list) => list.some((x) => x.fight === enc.id)) || Object.values(g.pairs || {}).some((list) => list.some((x) => x.fight === enc.id))) return [];
     const marks = {};
-    for (const [sid, patterns] of Object.entries(enc.pp.marks || {})) {
+    const eligibleRank = !rankBar(content, {rank:'E'}, sheet.level);
+    const usedSkills = new Set([...Object.keys(enc.pp.marks || {}), ...(eligibleRank ? Object.keys(enc.pp.used || {}) : [])]);
+    for (const sid of usedSkills) {
+        const patterns = enc.pp.marks?.[sid] || [];
         if (!sheet.skills[sid] || !fixed[sid] || fixed[sid].weapon || !skillFightQualifies(state, content, enc, sid)) continue;
         const kept = STEP_ORDER.filter((p) => patterns.includes(p));
-        if (kept.length) marks[sid] = { prof: fixed[sid].prof || 1, patterns: kept };
+        const masteredUse = eligibleRank && enc.pp.used?.[sid] && fixed[sid].prof === 5
+            && (skillOf(content,sid,state)?.rank || 'F') === 'F' && !skillOf(content,sid,state)?.basic;
+        if (kept.length || masteredUse) marks[sid] = { prof: fixed[sid].prof || 1, patterns: kept };
     }
     const pairs = (enc.pp.pairs || []).filter((k) => k.split('+').every((id) => sheet.skills[id] && fixed[id] && !fixed[id].weapon && enc.pp.used[id] && skillFightQualifies(state, content, enc, id))).sort();
     if (!Object.keys(marks).length && !pairs.length) return [];

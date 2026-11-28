@@ -589,7 +589,7 @@ export function projectPromptHistory(messages, { keepTurns = 4, currentInput = n
     const refused = new Set();
     for (let i=0;i<messages.length;i++) {
         const r=rec(messages[i]);
-        if (messages[i]?.is_user && r?.action_error && !r.events?.length) refused.add(i);
+        if (messages[i]?.is_user && (r?.interp?.failed || r?.action_error) && !r.events?.length) refused.add(i);
     }
     for (let i=messages.length-1;i>=0;i--) {
         const m = messages[i];

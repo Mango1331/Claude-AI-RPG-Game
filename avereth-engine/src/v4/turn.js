@@ -12,7 +12,7 @@ import { applyEvent } from '../state.js';
 import { clone, hash32 } from '../util.js';
 import { readTurn } from '../ir.js';
 import { campInspection } from './camp.js';
-import { resolveCommands } from './commands.js';
+import { commandSequence } from './commands.js';
 import { applyWorld } from './world.js';
 import { syncEvents } from './living.js';
 import { INTERPRETER_VERSION } from './interpret.js';
@@ -58,7 +58,11 @@ function coinBooked(events) {
  *   interp: {version, ms, source, failed?, error?}; board: the Board generator's validated listings for this turn
  * @returns {{events, outcome, state, command: null|{panels: string[], llm: null}}}
  */
-export function playerTurnV4(state, content, text, { msg = null, commands = [], dropped = [], interp = {}, board = null, c = false, skipPulse = false } = {}) {
+export function playerTurnV4(...args) {
+    return storySequence(...args).next().value;
+}
+
+export function* storySequence(state, content, text, { msg = null, commands = [], dropped = [], interp = {}, board = null, c = false, skipPulse = false, invitations = false } = {}) {
     if (!state.meta.started) throw new Error('campaign not started');
     const s = clone(state);
     const dice = Dice.from(s);
@@ -80,7 +84,7 @@ export function playerTurnV4(state, content, text, { msg = null, commands = [], 
     const freeLook = c && !interp.failed && !commands.length && !dropped.length && /^\s*\*?(?:I (?:look|inspect|survey|examine|search)|what (?:is|lies))\b/i.test(input)
         && !/["“”]|\b(?:and|then)\b/i.test(input) && campInspection(s, input);
     const steps = freeLook ? [{seq:1, type:'activity', kind:'search', quote:input, what:input}] : commands;
-    const ctx = resolveCommands(s, content, steps, emit, { msg, dice, board, c, dropped, text, skipPulse });
+    const ctx = yield* commandSequence(s, content, steps, emit, { msg, dice, board, c, dropped, text, skipPulse, invitations });
     if (c) syncEvents(s, content, emit);
     const clarify = ctx.resolutions.find((r) => r.status === 'clarify');
     // Patch 3 (live 18.10.2026: "I settle on the ring of stones for my camp this night and go looking for animals to

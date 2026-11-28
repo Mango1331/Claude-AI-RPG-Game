@@ -22,7 +22,10 @@ const witnessRows = [
     ['Hedwin [npc.npcmillpond_farmer]', "Hedwin's boy Wat asked the stranger to cut the dead wolf's good ear off", "Hedwin's boy Wat asked Alaric to cut the dead wolf's good ear off"],
 ];
 function measure(x) {
-    const ctx = render(x);
+    // The .199 byte capture includes the Guild block. Exercise that same packing
+    // scenario with an explicit Guild interaction; User18 tests cover outdoor omission.
+    const outcome=x.opts.outcome ?? x.state.last.outcome;
+    const ctx = render({...x,opts:{...x.opts,outcome:{...outcome,resolutions:[...(outcome?.resolutions || []),{type:'board.read'}]}}});
     const sectionTokens = new Map();
     const old = "PLAYER ACTIONS (the engine resolved Alaric's message; narrate exactly these, in this order; he decides nothing else):";
     const blocks = ctx.text.split('\n\n').map(block => {

@@ -37,7 +37,7 @@ import { renderHud, boardView, targetChoices } from '../hud.js';
 import { worldPanel } from '../display.js';
 import { applyEvent } from '../state.js';
 import { hash32, clone, swapWords, stripTrackerBlocks } from '../util.js';
-import { playerTurnV4, replyTurnV4 } from './turn.js';
+import { playerTurnV4, storySequence, replyTurnV4 } from './turn.js';
 import { readTurn, irRecord, interpretedActs, IR_VERSION } from '../ir.js';
 import { buildCatalog, extractorCatalog, guardContext } from './catalog.js';
 import { interpreterRequest, parseInterpretation, INTERPRETER_VERSION } from './interpret.js';
@@ -455,7 +455,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
 
     const recruitment=pc?.type==='party' && (pc.act==='invite' || pc.act==='offer' && !pc.agreement &&
         (!before.party?.members[pc.who] || before.party.members[pc.who].mode==='left'));
-    if(pc?.type==='party' && pc.needs==null && rest.every(c=>['go','other'].includes(c.type)) && (recruitment || pc.act === 'disband' || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who] && before.party.members[pc.who].mode!=='left')){
+    if(pc?.type==='party' && (!recruitment || rest.every(c=>c.seq>pc.seq)) && pc.needs==null && rest.every(c=>['go','other'].includes(c.type)) && (recruitment || pc.act === 'disband' || ['wait','follow','leave'].includes(pc.act) && before.party?.members[pc.who] && before.party.members[pc.who].mode!=='left')){
         const local=await partyControl(before,content,{act:recruitment?'invite':pc.act==='leave'?'remove':pc.act,ref:pc.who,source:msg.mes,revision:actionPrefix(chat,u),
             proposal:recruitment && (pc.act==='offer' || hasPartyTerms(msg.mes,content,pc)) ? pc : null},
             messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}));
@@ -517,6 +517,8 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
     const turn=await executeMappedTurn(chat,content,{u,before,m,guarded,inputHash,llm,previous,plan,interp,irRec,typed:!!actionInput});
     if (organisation && !turn.action_error) {
         turn.events=[...organisation.events,...turn.events];
+        const outcome=turn.events.findLast(e=>e.t==='outcome.recorded')?.d.outcome;
+        if (outcome?.actions && recruitment) outcome.actions.unshift(organisation.command.panels[0].replace('[SYSTEM // PARTY]\n','PARTY — '));
         if (organisation.party_call) turn.party_call=organisation.party_call;
     }
     return turn;
@@ -524,6 +526,19 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
 function actionRefused(inputHash,reason,extra={}) {
     return {v:RECORD_V4,input_hash:inputHash,route:'v4',events:[],command:null,action_error:reason,...extra};
 }
+async function nativePartyControl(before,content,input,ask) {
+    if (input.act!=='invite' || !input.ref?.includes(',')) return partyControl(before,content,input,ask);
+    const events=[], calls=[], lines=[];
+    const state=clone(before);
+    for (const ref of new Set(input.ref.split(',').map(id=>id.trim()).filter(Boolean))) {
+        const receipt=await partyControl(state,content,{...input,ref},ask);
+        for (const event of receipt.events) { applyEvent(state,event); events.push(event); }
+        lines.push(receipt.command.panels[0].split('\n').slice(1).join('\n'));
+        if (receipt.party_call) calls.push(receipt.party_call);
+    }
+    return {events,party_calls:calls,command:{panels:['[SYSTEM // PARTY]\n'+lines.join('\n')],llm:null}};
+}
+
 async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},inputHash,llm,previous,plan,interp,irRec,typed=false}) {
     const msg=chat[u],pl={ms:interp?.ms || 0,repaired:interp?.repaired};
     if (m.refused) return actionRefused(inputHash,m.panel,{plan,interp});
@@ -554,10 +569,21 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
     }
     const need = boardFor(before, content, m.commands, { c: true });
     const board = need ? await generateBoard(llm, before, content, need) : null;
-    const t = playerTurnV4(before, content, msg.mes, {
-        msg: u, commands: m.commands, dropped: guarded.dropped.filter((x) => !MECH_TYPES.includes(x.command?.type)), board, c: true,
+    const sequence = storySequence(before, content, msg.mes, {
+        invitations:true, msg: u, commands: m.commands, dropped: guarded.dropped.filter((x) => !MECH_TYPES.includes(x.command?.type)), board, c: true,
         interp: { travel_frame:plan?.travel_frame, version: PLANNER_VERSION, ms: pl.ms, source: pl.repaired ? 'json_repaired' : 'json', failed: false, error: null },
     });
+    const calls = [];
+    let step = sequence.next();
+    while (!step.done) {
+        const {state,command} = step.value;
+        const receipt = await partyControl(state,content,{act:'invite',ref:command.who,source:msg.mes,
+            revision:actionPrefix(chat,u),proposal:command.act==='offer' || hasPartyTerms(msg.mes,content,command) ? command : null},
+            messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}));
+        if (receipt.party_call) calls.push(receipt.party_call);
+        step = sequence.next(receipt);
+    }
+    const t = step.value;
     const pureBoardFailure = board?.failed && m.commands.length === 1 && m.commands[0].type === 'board.read'
         && t.outcome?.resolutions?.[0]?.reason === 'generator_failed';
     const growth = await withGrowth(t, content, llm, previous);
@@ -568,6 +594,7 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
     return {
         v: RECORD_V4, input_hash: inputHash, route: 'v4', ir: irRec, plan, interp,
         board: board ? { branch: board.branch, rank: board.rank, ms: board.ms, failed: board.failed || undefined, ...(board.failed && board.minimum ? {manualRetry:true} : {}), listings: board.listings.length, ...(board.calls?.length ? { llm: board.calls } : {}) } : undefined,
+        ...(calls.length ? {party_calls:calls} : {}),
         ...growth, command: t.command ? { panels: t.command.panels, llm: null } : null,
     };
 }
@@ -801,7 +828,7 @@ function closeLatePending(chat, u) {
  * calls, and how often and how long the chat was folded meanwhile.
  */
 function turnPerf(r, t0, f0, waited) {
-    const llm = (r.plan ? r.plan.ms || 0 : r.interp?.ms || 0) + (r.board?.ms || 0) + (r.forge?.ms || 0) + (r.party_call?.ms || 0);
+    const llm = (r.plan ? r.plan.ms || 0 : r.interp?.ms || 0) + (r.board?.ms || 0) + (r.forge?.ms || 0) + (r.party_call?.ms || 0) + (r.party_calls || []).reduce((a,x)=>a+(x.ms || 0),0);
     const f = foldStats();
     return {
         ...(Number.isFinite(waited) ? { wait_ms: waited } : {}),
@@ -882,9 +909,9 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             if(reason){r=actionRefused(inputHash,reason);commit();return {action:'not_executed',dirty:true,index:u,notice:reason};}
         }
         const isC = campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c';
-        const management = /^#party\s+(invite|wait|follow|remove|disband|accept|pay)(?:\s+(.+))?$/i.exec(msg.mes.trim());
+        const management = /^#party\s+(invite|tactic|wait|follow|remove|disband|accept|pay)(?:\s+(.+))?$/i.exec(msg.mes.trim());
         const native = management && !actionInput && before.mode==='story' && isC && rulesetOf(before)>=2
-            ? await partyControl(before,content,{act:management[1].toLowerCase(),ref:management[2]?.trim(),source:msg.mes,revision:actionPrefix(chat,u)},
+            ? await nativePartyControl(before,content,{act:management[1].toLowerCase(),ref:management[2]?.trim(),source:msg.mes,revision:actionPrefix(chat,u)},
                 messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}))
             : !actionInput && ir.intent?.kind === 'command' && before.mode === 'story' && isC && rulesetOf(before) >= 2
             ? nativeAction(before,content,msg.mes,u) : null;
@@ -894,7 +921,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
                 ? await executeMappedTurn(chat,content,{u,before,m:{route:'v4',commands:[{seq:1,type:'go',to:dest[1],quote:msg.mes}]},inputHash,llm,previous:null,typed:true,irRec:irRecord(ir)})
                 : actionRefused(inputHash,'Dieses Ziel ist von hier aus nicht verfügbar.');
         } else if (native) {
-            r = {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),events:native.events,command:native.command,...(native.party_call?{party_call:native.party_call}:{})};
+            r = {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),events:native.events,command:native.command,...(native.party_call?{party_call:native.party_call}:{}),...(native.party_calls?{party_calls:native.party_calls}:{})};
         } else if(actionInput?.mode==='hud_roleplay') {
             const m=validateActionSelection(actionInput.selection,before,content).mapped;
             r=await executeMappedTurn(chat,content,{u,before,m,inputHash,llm,previous:null,typed:true,

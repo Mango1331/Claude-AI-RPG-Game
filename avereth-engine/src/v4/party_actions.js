@@ -2,14 +2,37 @@ import { materialise } from '../engine.js';
 import { applyEvent } from '../state.js';
 import { truth } from '../knowledge.js';
 import { Dice } from '../rng.js';
-import { agreementsOf, membersOf, partyDecision, bindPartyEquipment } from '../party.js';
+import { agreementsOf, membersOf, partyDecision, tacticalChange, bindPartyEquipment } from '../party.js';
 import { payClaim, vestQuest } from '../party_rewards.js';
 import { contractReady } from './guild.js';
+import { tacticalHere, sideOf, attackTargetHere } from './scene_handles.js';
 import { trueDungeonOf } from './dungeon.js';
 import { hash32, normText } from '../util.js';
 
 const standard = 'Travel and fight together; equal shares of shared quest work. Personal gear stays personal.';
 const available = (s,id) => s.scene.present.includes(id) && s.entities[id]?.kind==='npc' && s.entities[id].status!=='dead';
+
+const tacticLabels = {
+    target:'Ziel bevorzugen', protect:'Person schützen', independent:'Ohne Ziel- oder Schutzpriorität',
+    front:'Vorne (normale Position)', rear:'Hinten beginnen', watch:'Wache (kein belegter Wachbonus, kann Erholung kosten)', rest:'Wache beenden',
+};
+
+export function tacticOptions(s,who) {
+    const member=s.party?.members[who];
+    if (!available(s,who) || member?.mode!=='follow') return [];
+    return Object.entries(tacticLabels).flatMap(([kind,label])=>{
+        if (!member.combat && !['watch','rest'].includes(kind)) return [];
+        const targets=kind==='target' ? tacticalHere(s,{friendly:false}).filter(id=>sideOf(s,id)==='hostile' && attackTargetHere(s,id)) :
+            kind==='protect' ? ['pc',...s.scene.present.filter(id=>id!==who && available(s,id) && sideOf(s,id)==='ally')] : [null];
+        return targets.map(target=>({kind,target,label:label+(target?' · '+(s.entities[target]?.name || target):'')}));
+    });
+}
+
+function readDecision(answer) {
+    const text=String(answer.content || '').trim();
+    const fence=/^```(?:json)?\s*\n([\s\S]*?)\n```$/i.exec(text);
+    try { return JSON.parse(fence ? fence[1] : text); } catch { return null; }
+}
 
 export function partyControls(s) {
     const actions=[];
@@ -61,6 +84,23 @@ export async function partyControl(before,content,{act,ref='',source,revision,pr
         for(const m of active) memberEvent(m.who,'left');
         return result(active.length?'The party has disbanded.':'No active companions.');
     }
+    if (act==='tactic') {
+        const [who,kind,target=null,...extra]=ref.split(/\s+/);
+        const option=!extra.length && tacticOptions(s,who).find(o=>o.kind===kind && o.target===target);
+        if (!option) return result('Select an available companion and tactical request.');
+        const id='tactic.'+hash32(revision+'|'+ref);
+        const person=s.entities[who], member=s.party.members[who];
+        const messages=[{role:'system',content:'Decide for the named NPC alone whether to accept this specific tactical request. Return only {invitation,who,decision}, with decision accept or decline.'},
+            {role:'user',content:JSON.stringify({invitation:id,who,name:person.name,request:{kind,target},role:person.sheet?.class,
+                traits:person.descriptors,place:s.places[s.scene.at]?.name,priority:member.priority,formation:member.formation})}];
+        const answer=await ask(messages); call=answer.call;
+        const d=readDecision(answer);
+        if (!d || d.invitation!==id || d.who!==who || !['accept','decline'].includes(d.decision) ||
+            Object.keys(d).some(k=>!['invitation','who','decision'].includes(k))) return result('Tactical decision unavailable.');
+        if (d.decision==='decline') return result(person.name+' declined: '+option.label);
+        memberEvent(who,member.mode,{...tacticalChange(kind,target),source:{actor:who,decision:'accept',request:id,quote:source,at:s.scene.at,turn:s.turn}});
+        return result(person.name+' agreed: '+option.label);
+    }
     const a=s.party?.agreements[ref];
     const ids=act==='accept' && a ? [a.who] : Object.keys(s.entities).filter(id=>
         (available(s,id) || active.some(m=>m.who===id)) && (id===ref || normText(s.entities[id].name)===normText(ref)));
@@ -105,13 +145,10 @@ export async function partyControl(before,content,{act,ref='',source,revision,pr
     }
     const id=offered?.id || 'party.'+who+'.'+hash32(revision+'|'+source);
     const quests=Object.values(s.quests).filter(q=>q.status==='active' && q.payout_cp>0).map(q=>({id:q.id,title:q.title,cp:q.payout_cp}));
-    const messages=[{role:'system',content:'Decide for the named NPC alone, using the supplied situation. Return one JSON object with invitation, who, decision (accept, decline or counter). Accept means exactly the supplied terms and ordinary party membership. For a counter only, add quest (one listed ID) and cp (positive fixed fee from that quest reward). Never promise equipment or act for another speaker. If the character needs an unsupported condition, decline.'},
+    const messages=[{role:'system',content:'Decide for the named NPC alone, using the supplied situation. Return one JSON object with invitation, who, decision (accept, decline or counter). Accept means exactly the supplied terms and ordinary party membership. For a counter only, add quest (one listed ID) and cp (positive fixed fee from that quest reward). Never promise equipment or act for another speaker. If the invitation depends on any condition outside the supplied terms, decline. The choice of whether to join is always yours.'},
         {role:'user',content:JSON.stringify({invitation:id,who,name:person.name,traits:person.descriptors,occupation:truth(s,who,'occupation').map(f=>f.o),role:person.sheet?.class || person.role,temperament:person.sheet?.generated?.temperament,place:s.places[s.scene.at]?.name,terms:offered?.terms || standard,source,quests})}];
     const answer=await ask(messages);call=answer.call;
-    let d;
-    const text=String(answer.content || '').trim();
-    const fence=/^```(?:json)?\s*\n([\s\S]*?)\n```$/i.exec(text);
-    try {d=JSON.parse(fence ? fence[1] : text);} catch {}
+    const d=readDecision(answer);
     if(!d || d.invitation!==id || d.who!==who || !['accept','decline','counter'].includes(d.decision) ||
         Object.keys(d).some(k=>!['invitation','who','decision',...(d.decision==='counter'?['quest','cp']:[])].includes(k)))
         {events.length=0;return result('The partner’s decision could not be recorded. The invitation can be tried again.');}

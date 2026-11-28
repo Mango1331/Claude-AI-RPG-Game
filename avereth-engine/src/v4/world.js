@@ -1521,7 +1521,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 break;
             }
             case 'creature.new': {
-                if (d.across == null) {
+                const interior = trueDungeonOf(s,s.scene.at);
+                const root = interior || s.scene.approaching;
+                const dungeon = livingOf(s,root);
+                if (d.across == null || !dungeon) {
                     if (d.ref && d.ref === thresholdSlot(s)?.ref) {
                         reject(d, 'dungeon_sight', 'The reserved encounter needs a witnessed sighting before entry.');
                         blockCreature(d);
@@ -1530,9 +1533,6 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     newEntity(d, 'creature');
                     break;
                 }
-                const interior = trueDungeonOf(s,s.scene.at);
-                const root = interior || s.scene.approaching;
-                const dungeon = livingOf(s,root);
                 const floor = interior ? floorAt(s,s.scene.at) : 1;
                 const section = s.places[s.scene.at]?.section;
                 const slot = dungeon && Number.isInteger(section)

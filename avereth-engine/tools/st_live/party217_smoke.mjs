@@ -1,5 +1,6 @@
 import {estimateTokens} from '../../src/util.js';
 import fs from 'node:fs';
+import {gunzipSync} from 'node:zlib';
 import path from 'node:path';
 let replies;
 export const partyResponse = (purpose,request) => typeof replies?.[purpose]==='function' ? replies[purpose](request) : replies?.[purpose];
@@ -28,7 +29,7 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         if (kind === 'hud') {
             const layout = await page.evaluate(()=>{
                 const button=document.querySelector('.avereth-action-composer [data-avereth-party]');
-                const close=document.querySelector('#avereth-party-panel button');
+                const close=document.querySelector('#avereth-party-panel > summary');
                 const status=document.querySelector('#avereth-action-status');
                 const home=document.querySelector('#avereth-action-home');
                 const contrast=el=>getComputedStyle(el).color==='rgb(255, 255, 255)' &&
@@ -41,7 +42,7 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
             Object.assign(checks,layout);
         }
         const text=await page.locator('#avereth-party-panel').innerText();
-        await page.getByRole('button',{name:'Schließen',exact:true}).click();
+        await page.locator('#avereth-party-panel > summary').click();
         const after=await snap();
         return /Ossen/.test(text) && before.length===after.length && JSON.stringify(before.state)===JSON.stringify(after.state) && calls.length===count;
     }
@@ -49,7 +50,8 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         await seed(original.slice(0,15));
         const clickParty=async(act,ref)=>{
             await page.fill('#send_textarea','#party');await page.click('#send_but');
-            const button=page.locator('#avereth-party-panel [data-party-action="'+act+'"]'+(ref?'[data-ref="'+ref+'"]':''));
+            if (act==='invite') await page.locator('#avereth-party-panel input[value="'+ref+'"]').check();
+            const button=page.locator('#avereth-party-panel [data-party-action="'+act+'"]'+(ref && act!=='invite'?'[data-ref="'+ref+'"]':''));
             await button.click();await idle();
         };
         replies={party_decision:req=>{const {invitation,who}=JSON.parse(req.messages.at(-1).content);return JSON.stringify({invitation,who,decision:'accept'});}};
@@ -150,6 +152,73 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         await seed(pending.slice(0,-1)); // insert original pending assistant locally, without launching a job
         await page.evaluate(msg=>SillyTavern.getContext().chat.push(msg),pending.at(-1));
         checks.pendingPanel=await panel('enter');
+        const {messages,answers}=JSON.parse(gunzipSync(fs.readFileSync(new URL('../../tests/replay/user18/original.json.gz',import.meta.url))));
+        await seed(messages.slice(0,15));
+        replies={party_decision:req=>{const {invitation,who}=JSON.parse(req.messages.at(-1).content);return JSON.stringify({invitation,who,decision:'accept'});}};
+        const panel18=page.locator('#avereth-party-panel');
+        await panel18.locator('summary').first().click();
+        const ids=['npc.sera','npc.npcwiry_adventurer'];
+        for(const id of ids) await panel18.locator('input[value="'+id+'"]').check();
+        b=calls.length;
+        await panel18.locator('[data-party-action="invite"]').click();await idle();
+        checks.multiInvite=calls.slice(b).map(c=>c.purpose).join('/')==='party_decision/party_decision';
+        const memberState=(await snap()).state.party;
+        checks.multiInvite=!!checks.multiInvite && ids.every(id=>memberState.members[id]?.mode==='follow');
+        await panel18.locator('summary').first().click();
+        const sera=panel18.locator('details').filter({has:page.locator('select[aria-label="Taktik für Sera"]')}).first();
+        await sera.locator(':scope > summary').click();
+        await sera.getByText('Taktik anfragen',{exact:true}).click();
+        await sera.locator('select').selectOption('npc.sera protect pc');
+        await sera.getByRole('button',{name:'Gefährten fragen'}).click();await idle();
+        checks.nativeTactic=(await snap()).state.party.members['npc.sera'].priority?.target==='pc';
+        await seed(messages);
+        await page.evaluate(()=>document.querySelector('#option_delete_mes').click());
+        const firstDiscard=page.locator('#chat .mes[mesid="29"]');
+        await firstDiscard.locator('.del_checkbox').waitFor({state:'visible'});
+        await firstDiscard.click();
+        await page.click('#dialogue_del_mes_ok');
+        await page.waitForFunction(()=>SillyTavern.getContext().chat.length===29);
+        await page.waitForSelector('#chat .last_mes[mesid="28"]');
+        await idle();
+        const originalArrival=await snap();
+        replies={extract:answers[28][0].content};
+        const arrival=page.locator('#chat .mes[mesid="28"]');
+        b=calls.length;
+        await arrival.locator('.mes_edit').click({force:true});
+        const field=arrival.locator('textarea');
+        await field.fill((await field.inputValue()).replace('held still a moment','held still for a moment'));
+        await arrival.locator('.mes_edit_done').click({force:true});
+        await idle();
+        const continued=await snap();
+        const foes=s=>s.scene.present.filter(id=>s.entities[id]?.kind==='creature');
+        checks.continueOneX=calls.slice(b).map(c=>c.purpose).join('/')==='extract';
+        checks.continueFour=foes(continued.state).length===4 && new Set(foes(continued.state)).size===4;
+        checks.continueParty=JSON.stringify(continued.state.party)===JSON.stringify(originalArrival.state.party);
+        checks.continueSheet=JSON.stringify(continued.state.entities.pc.sheet)===JSON.stringify(originalArrival.state.entities.pc.sheet);
+        checks.continueQuest=JSON.stringify(continued.state.quests)===JSON.stringify(originalArrival.state.quests);
+        checks.continueClock=continued.state.clock.minute===670 && continued.state.scene.at===originalArrival.state.scene.at;
+        await page.evaluate(async()=>{const c=SillyTavern.getContext();await c.saveChat();await c.reloadCurrentChat();});onReload();await idle();
+        checks.continueReload=JSON.stringify((await snap()).state)===JSON.stringify(continued.state) && calls.slice(b).length===1;
+        checks.visibleFoes=await page.locator('[data-avereth-aim^="mon."]').count()===4;
+        await panel18.locator('summary').first().click();
+        await panel18.locator('details > summary').first().click();
+        await panel18.screenshot({path:path.join(out,'user18-party.png')});
+        checks.inline=await panel18.evaluate(el=>el.tagName==='DETAILS' && el.closest('.avereth-action-composer')!==null);
+        const recovered=await page.evaluate(()=>SillyTavern.getContext().chat);
+        // Put the original failed input within the history window of an observation.
+        await seed([...recovered,messages[21],messages[22]]);
+        replies={plan:answers[34][0].content,narrator:'The four lizards remain by the millpond.',extract:answers[35][0].content};
+        b=calls.length;
+        await send(messages[34].mes);await idle();
+        const n=calls.slice(b).find(c=>c.purpose==='narrator');
+        const wire=n?.messages.map(m=>m.content).join('\n') || '';
+        const contract=fs.readFileSync(new URL('../../content/narrator/Avereth_Narrator_Contract_v4.txt',import.meta.url),'utf8').trim();
+        checks.oneContract=wire.includes(contract) && wire.split('AVERETH RPG — SANDBOX NARRATOR CONTRACT').length===2;
+        checks.contractCurrent=!/outdated|missing/i.test(await page.locator('#avereth_status').innerText().then(t=>t.match(/contract[^\n]*/i)?.[0] || ''));
+        checks.wireParty=wire.includes('Dann Weaver') && wire.includes('Sera') && wire.includes('combat ready');
+        checks.wireQuest=wire.includes('Cull the Millpond Gnashers') && !wire.includes('OFFICIAL GUILD OFFERS — ENGINE AUTHORITY');
+        checks.wireHistory=!!n && !wire.includes(messages[21].mes) && !wire.includes('NOT EXECUTED — planner failed');
+        checks.observation=foes((await snap()).state).length===4;
         return checks;
     } finally {replies=null;fs.writeFileSync(path.join(out,'party217.json'),JSON.stringify({checks,measures},null,2));}
 }

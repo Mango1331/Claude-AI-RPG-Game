@@ -1,6 +1,5 @@
 import { knownRoutes } from './v4/known_routes.js';
-import { partyControls } from './v4/party_actions.js';
-import { partyView } from './party.js';
+import { installPartyPanel } from './ui_party.js';
 import {availableActions,validateActionSelection,actionPrefix,actionInputOf,actionLabel,actionBands} from './action_input.js';
 import {surrenderAssets,negotiators,describeTerms} from './v4/surrender.js';
 import {skillOf} from './content.js';
@@ -68,12 +67,16 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     rest.id = 'avereth-rest'; rest.className = 'avereth-shop';
     rest.innerHTML = '<summary>Rasten</summary><select aria-label="Rastdauer"><option value="30">30 Minuten</option><option value="60">1 Stunde</option><option value="120">2 Stunden</option><option value="">Eigene Dauer</option></select> <input aria-label="Rastdauer in Minuten" type="number" min="1" max="1440" value="30" hidden> <button type="button" aria-describedby="avereth-rest-reason">Rast beginnen</button> <span id="avereth-rest-reason" role="status"></span>';
     box.append(rest);
-    const partyButton = document.createElement('button');
-    partyButton.type = 'button';
-    partyButton.dataset.averethParty = 'open';
-    partyButton.textContent = 'Party';
-    partyButton.onclick = openParty;
-    box.append(partyButton);
+    const partyPanel=installPartyPanel(box,{state,content,revision:()=>key()+'|'+actionPrefix(context().chat),
+        blocked:()=>blocked() || (generating?'Erzählung läuft.':null) ||
+            (state().encounter || state().pending_combat?.length?'Begegnung zuerst abschließen.':null) ||
+            (draft() || textarea().value.trim()?'Vorbereitete Eingabe zuerst senden oder entfernen.':null) ||
+            (textarea().disabled || textarea().readOnly?'Eingabe gesperrt.':null),
+        send:text=>{
+            textarea().value=text;
+            textarea().dispatchEvent(new Event('input',{bubbles:true}));
+            document.getElementById('send_but')?.click();
+        },tell});
     const routes=document.createElement('details');
     routes.className = 'avereth-shop';
     routes.innerHTML='<summary>Bekannte Wege</summary>';
@@ -115,6 +118,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     duration.onchange = () => { minutes.hidden = !!duration.value; updateRest(); };
     minutes.oninput = updateRest;
     area.addEventListener('input', updateRest);
+    area.addEventListener('input', partyPanel.update);
     new MutationObserver(updateRest).observe(area, {attributes:true, attributeFilter:['disabled','readonly']});
     startRest.onclick = () => {
         if (!canRestHere(state()) || updateRest()) return;
@@ -152,6 +156,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         },
     });
     function updateStatus(){
+        partyPanel.update();
         updateRest();
         const v=status(),text=typeof v==='string'?v:v.text;
         tell(blocked() || text);
@@ -162,7 +167,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         box.hidden=!enabled();controls.hidden=box.hidden;if(box.hidden)return;
         const owner=key();if(controlsOrigin!==owner){clearControls();controlsOrigin=owner;}
         const s=state(),projected=availableActions(s,content());options=projected.actions;targets=projected.targets;
-        partyButton.hidden = !(s.party || (s.meta?.ruleset >= 2 && s.scene.present.some(id=>s.entities[id]?.kind === 'npc')));
+        partyPanel.draw(s);
         drawRoutes(s);
         rest.hidden = !canRestHere(s);
         refreshTrade(s,content());
@@ -312,43 +317,6 @@ export function installActionComposer({context,state,content,enabled,settings,bl
             await context().generate('regenerate');
         }catch(e){tell(e.message);}
     };
-    function openParty() {
-        let panel = document.getElementById('avereth-party-panel');
-        if (!panel) {
-            panel = document.createElement('dialog');
-            panel.id = 'avereth-party-panel';
-            const details = document.createElement('pre');
-            const close = document.createElement('button');
-            close.type = 'button'; close.textContent = 'Schließen';
-            close.onclick = () => panel.close();
-            const controls=document.createElement('div');
-            controls.className='avereth-party-controls';
-            panel.append(details,controls,close); document.body.append(panel);
-        }
-        const lines = partyView(state(),content());
-        panel.querySelector('pre').textContent = ['[PARTY]',...lines.length ? lines : ['Keine Gefährten oder offenen Abreden.']].join('\n');
-        const owner=key(), revision=actionPrefix(context().chat), controls=panel.querySelector('.avereth-party-controls');
-        controls.replaceChildren();
-        for(const action of partyControls(state())){
-            const button=document.createElement('button');
-            button.type='button';button.textContent=action.label;button.dataset.partyAction=action.act;button.dataset.ref=action.ref;
-            const unavailable=()=>blocked() || (generating?'Erzählung läuft':null) ||
-                (state().encounter || state().pending_combat?.length?'Begegnung zuerst abschließen':null) ||
-                (draft() || textarea().value.trim()?'Vorbereitete Eingabe zuerst senden oder entfernen':null);
-            const reason=unavailable();
-            if(reason){button.disabled=true;button.title=reason;}
-            button.onclick=()=>{
-                if(owner!==key() || actionPrefix(context().chat)!==revision){panel.close();tell('Die Welt hat sich geändert. Party erneut öffnen.');return;}
-                const why=unavailable();if(why){tell(why);return;}
-                panel.close();
-                textarea().value=['#party',action.act,action.ref].filter(Boolean).join(' ');
-                textarea().dispatchEvent(new Event('input',{bubbles:true}));
-                document.getElementById('send_but')?.click();
-            };
-            controls.append(button);
-        }
-        if (!panel.open) panel.showModal();
-    }
     function refusal(){
         const block=blocked();if(block)return block;
         const d=draft();if(!d)return choice.hint || null;
@@ -374,7 +342,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
         if (textarea().value.trim().toLowerCase()==='#party') {
             e.preventDefault(); e.stopImmediatePropagation();
             textarea().value='';
-            openParty();
+            partyPanel.open();
             return;
         }
         const no=refusal();if(no){e.preventDefault();e.stopImmediatePropagation();tell(no);return;}

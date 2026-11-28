@@ -939,7 +939,13 @@ export function parseBoard(answer, content, need, s = null) {
     for (const l of Array.isArray(value.listings) ? value.listings : []) if (l && typeof l === 'object' && l.task === undefined) l.task = null;
     for (const l of Array.isArray(value.listings) ? value.listings : []) if (l && typeof l === 'object' && l.habitat === undefined) l.habitat = null;
     // Package C (.132): a hunt's age, stated by the generator; none stated is a hunt of the grown animals
-    for (const l of Array.isArray(value.listings) ? value.listings : []) if (l?.habitat && typeof l.habitat === 'object' && l.habitat.life_stage === undefined) l.habitat.life_stage = null;
+    for (const l of Array.isArray(value.listings) ? value.listings : []) {
+        const h = l?.habitat;
+        if (!h || typeof h !== 'object' || Array.isArray(h)) continue;
+        if (h.life_stage === undefined) h.life_stage = null;
+        const hunts = Array.isArray(l.objectives) ? l.objectives.filter(o => o?.verb === 'DEFEAT') : [];
+        if (hunts.length === 1 && typeof h.place === 'string' && h.place.trim() && h.place.trim() === hunts[0].where) delete h.place;
+    }
     for (const l of Array.isArray(value.listings) ? value.listings : [])
         for (const o of Array.isArray(l?.objectives) ? l.objectives : [])
             if (o && typeof o === 'object' && o.delivery === undefined) o.delivery = null;

@@ -94,6 +94,7 @@ for folder in sorted(archives.glob('openrouter-20261127-*')):
             if not (r.get('input_hash') is not None if j==i else r.get('extraction')):continue
             calls=[c for k in ('plan','board','forge','extraction') for c in (r.get(k) or {}).get('llm',[]) or []]
             if r.get('party_call'):calls.append(r['party_call'])
+            calls.extend(r.get('party_calls', []))
             answers=[]
             for c in calls:
                 role=c['purpose'].split('_')[0]

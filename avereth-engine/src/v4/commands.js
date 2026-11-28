@@ -1,5 +1,5 @@
 import { knownRouteTarget } from './known_routes.js';
-import { following, partyDecision } from '../party.js';
+import { following, partyDecision, hasPartyTerms } from '../party.js';
 import { applyEvent } from '../state.js';
 import { tradeDraft } from '../trade_input.js';
 import { campInspection, campLine, ordinarySupply, looksDownOnCamp } from './camp.js';
@@ -603,7 +603,11 @@ function deskStep(s, c, ctx, envx, q, kind) {
 const HANDLERS = {
     party(s, content, command, ctx, emit, env) {
         if (!env.c || rulesetOf(s) < 2) return {status:'refused',line:'Party requires the current campaign rules.'};
-        return partyDecision(s,content,command,env.text,'pc',emit,contractReady);
+        const decision = partyDecision(s,content,command,env.text,'pc',emit,contractReady);
+        if (!decision.done && (command.act === 'coordinate' || command.act === 'offer' && s.party?.members[command.who]?.mode === 'follow' && !hasPartyTerms(env.text,content,command))) {
+            return {status:'refused',reason:decision.reason,line:'PARTY DISCUSSION — '+decision.reason+' No change to terms or tactics was booked. The companions can respond in conversation.'};
+        }
+        return decision;
     },
     'journey.continue'(s, content, c, ctx, emit, envx) {
         if (s.encounter) return { status: 'refused', reason: 'not during a fight', line: 'CANNOT DEPART — not while the fight runs.' };
@@ -1967,7 +1971,23 @@ function overdrawnDispositions(s, content, commands) {
  *   index; dice: the engine's dice (the board's taken-by-others draw); board: the Board generator's validated listings
  *   for this turn; c: the planner path (Prototype C); dropped: the commands its agency guard dropped
  */
-export function resolveCommands(s, content, commands, emit, envx = {}) {
+export function resolveCommands(...args) {
+    return commandSequence(...args).next().value;
+}
+
+function* resolveInvitation(state,command,emit,dice) {
+    const receipt = yield {state,command};
+    for (const event of receipt.events) {
+        if (event.rng_to != null) dice.n = event.rng_to;
+        emit(event);
+    }
+    const joined = receipt.events.some(e=>e.t==='party.member' && e.d.mode==='follow');
+    return {status:joined?'resolved':'refused',done:joined,line:receipt.command.panels[0].replace('[SYSTEM // PARTY]\n','PARTY — ')};
+}
+
+// Only the live runner supplies invitation decisions. Each one sees the folded
+// state at its own sequence position, after the ordinary dependency checks.
+export function* commandSequence(s, content, commands, emit, envx = {}) {
     const ctx = newTurnContext(content);
     // Prototype C (the planner path): engine-owned time, recovery and contract abandonment
     if (envx.c) ctx.auth.c = true;
@@ -2081,8 +2101,10 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
         const saleQuote = trade?.sale ? ordered.filter(x => trades.get(x) === trade).map(x => x.quote || '').join(' ') : '';
         const appraise = trade?.sale && /\b(?:check|apprais\w*|inspect|worth)\b/i.test(saleQuote)
             && !/\b(?:deal|accept|agreed|sold)\b/i.test(saleQuote) && !Number.isInteger(trade.command.min_cp) && !Number.isInteger(trade.command.agreed_cp);
+        const invitation = envx.invitations && c.type === 'party' && (c.act === 'invite' ||
+            c.act === 'offer' && !c.agreement && (!s.party?.members[c.who] || s.party.members[c.who].mode === 'left'));
         const afterTravel = envx.c && rulesetOf(s) >= 2 && ctx.auth.gos.length > 0
-            && ['activity', 'attempt', 'take', 'use', 'buy', 'offer.accept', 'sell', 'pay', 'equip', 'unequip'].includes(c.type);
+            && (invitation || ['activity', 'attempt', 'take', 'use', 'buy', 'offer.accept', 'sell', 'pay', 'equip', 'unequip'].includes(c.type));
         // PULSE package C (plan §5.3, §12.4 a, §14.2): what cut his pause short came before every later step of the
         // message; none of them is booked (nothing to roll back), the steps that build on them fall with them
         const cutShort = ctx.pulse?.interruptedAt != null && (c.seq ?? 0) > ctx.pulse.interruptedAt;
@@ -2110,6 +2132,7 @@ export function resolveCommands(s, content, commands, emit, envx = {}) {
             : trade?.refused ? { status: 'refused', reason: trade.refused, line: 'NOT TRADED — the same trade remains unresolved; no separate payment or gift is made.' }
             : appraise ? { status: 'pending', reason: 'price still under appraisal', line: 'NOT SOLD — the buyer must finish appraising and name the final price. The goods remain Alaric’s; no gift or payment was booked.' }
             : trade ? HANDLERS['offer.accept'](s, content, { ...trade.command, seq: c.seq }, ctx, booking)
+            : invitation ? yield* resolveInvitation(s,c,booking,envx.dice)
             : h ? h(s, content, c, ctx, booking, envx) : { status: 'refused', reason: `unknown command ${c.type}`, line: null });
         if (trade && !trade.bought && !unmet && ['refused', 'pending', 'clarify'].includes(r.status)) trade.refused = r.reason || 'trade unresolved';
         // 4.3.0-c.6.6.3: a step that builds on one the story still decides (a take from someone's keeping) follows it there

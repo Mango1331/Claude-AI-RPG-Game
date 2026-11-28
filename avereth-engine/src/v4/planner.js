@@ -517,6 +517,7 @@ export function parsePlan(answer, vocab, ctx, message) {
     // Patch 6: the obstacles and hazards here (src/v4/features.js): what attempt and ability_world may act on
     const features = new Set((ctx.catalog.features || []).map((f) => f.id));
     const held = new Set((ctx.catalog.objects || []).filter((o) => !o.holder).map((o) => o.id));
+    const conversation = new Set();
     const list = value.commands.map((c, i) => ({ c, i }));
     // Forecast only an explicit earlier TAKE of this exact catalog object. This validates a plan, not ownership:
     // TAKE still checks custody/location/container, and attemptEvents checks actual possession before any roll.
@@ -608,6 +609,10 @@ export function parsePlan(answer, vocab, ctx, message) {
                 if (Number.isInteger(needs) && needs < c.seq && value.commands.some((o) => o && o !== c && o.seq === needs)) c.needs = needs;
                 else errors.push(`${at}: "needs" must be the seq of an earlier command of this answer, or left out`);
             }
+            if (bad.length && !ctx.fight && type === 'party' && c.act === 'coordinate') {
+                conversation.add(c);
+                continue;
+            }
             for (const e of bad) errors.push(e.replace('$.commands[0]', `$.commands[${i}]`));
             // a contract slip named as the contract: say which id the contract has (the repair writes it, nothing is replaced here)
             const slip = typeof c.quest === 'string' ? c.quest : typeof c.quest?.id === 'string' ? c.quest.id : null;
@@ -684,6 +689,7 @@ export function parsePlan(answer, vocab, ctx, message) {
             if (!Array.isArray(c.options) || c.options.some((o) => typeof o !== 'string')) errors.push(`${at}: options must be a list of ids or short texts`);
         }
     }
+    if (conversation.size) value.commands = value.commands.filter(c => !conversation.has(c));
     errors.push(...amountErrors(value.commands, ctx.currency, ctx.catalog, message));
     for (const [c, job] of jobs) c.job = job;
     for (const [c, manner] of manners) c.manner = manner;

@@ -7,6 +7,12 @@ import { coinEvidence, numberRuns } from './economy.js';
 import { narratedEvent } from './v4/narration_evidence.js';
 import { findQuote, moneyLiteral, sentenceOf, speechPassages, SPEECH_TAG } from './v4/finance_evidence.js';
 
+export function tacticalChange(kind,target=null) {
+    if (kind==='watch' || kind==='rest') return {watch:kind==='watch'};
+    if (kind==='front' || kind==='rear') return {formation:kind};
+    return {priority:{kind,target:target || null}};
+}
+
 export const membersOf = s => Object.values(s.party?.members || {});
 export const following = s => membersOf(s).filter(m => m.mode === 'follow' && s.scene.present.includes(m.who) && s.entities[m.who]?.status !== 'dead');
 export const fighters = s => following(s).filter(m => m.combat && s.entities[m.who].sheet);
@@ -164,7 +170,7 @@ function splitPot(text, sum, payout) {
 export function hasPartyTerms(words,content,command) {
     return halfShare.test(words) || coinEvidence(words,content).sums.length>0 ||
         (command.goods && words.toLowerCase().includes(command.goods.toLowerCase())) ||
-        qualified.test(words) || /\b(?:payment|advance|fee|loot|proceeds)\b/i.test(words);
+        /\b(?:payment|advance|fee|loot|proceeds)\b/i.test(words);
 }
 
 function termsFrom(s, content, c, words, actor) {
@@ -367,14 +373,14 @@ export function partyDecision(s, content, command, source, actor, emit, contract
             return {status:'resolved',done:true,line:person.name+' declined the request.'};
         }
         const simpleAnswer=matchesRequest && /^(?:yes|sure|agreed|okay|all right|I agree|I accept)[.!]?$/i.test(words.trim());
-        if ((!simpleAnswer && !kinds[c.priority]?.test(statement)) || no.test(words) || negated.test(statement)) return failure('Quote the tactical request or decision.');
+        if ((!Object.hasOwn(kinds,c.priority) || actor!== 'pc' && !simpleAnswer && !kinds[c.priority].test(statement)) || no.test(words) || negated.test(statement)) return failure('Quote the tactical request or decision.');
         if (['target','protect'].includes(c.priority) && (c.target!=='pc' && !s.scene.present.includes(c.target))) return failure('Identify the present target.');
         if (c.priority==='target' || c.priority==='protect') {
             const labels=[s.entities[c.target]?.name,s.encounter?.combatants[c.target]?.label,c.target==='pc'?(actor==='pc'?'me':'you'):null].filter(Boolean);
             if (!simpleAnswer && !labels.some(name=>new RegExp('(^|[^a-z])'+escapedName(name)+'(?=$|[^a-z])','i').test(statement)))
                 return failure('Quote the identified target of the request.');
         }
-        const changes=['watch','rest'].includes(c.priority) ? {watch:c.priority==='watch'} : ['front','rear'].includes(c.priority) ? {formation:c.priority} : {priority:{kind:c.priority,target:c.target || null}};
+        const changes=tacticalChange(c.priority,c.target);
         const delegated=s.party.agreements[member.agreement]?.terms.tactics;
         if (actor==='pc' && !delegated) {
             memberEvent(member.mode,{request:{kind:c.priority,target:c.target || null,quote:c.quote}});
@@ -431,9 +437,10 @@ export function rememberMember(s,id,at) {
     m.lastSeen={turn:s.turn,minute:s.clock.minute,at,sheet:structuredClone(e.sheet),status:e.status};
 }
 
-export function partyView(s,content,compact=false) {
+export function partyView(s,content,compact=false,who=null) {
     const lines=[];
     for (const m of membersOf(s)) {
+        if (who && who !== m.who) continue;
         const e=s.entities[m.who];
         const here=s.scene.present.includes(m.who);
         const sheet=here ? e?.sheet : m.lastSeen?.sheet;
@@ -446,6 +453,7 @@ export function partyView(s,content,compact=false) {
             const d=deriveCharacter(sheet,content);
             lines.push(`HP ${sheet.hp}/${d.maxHp} · MP ${sheet.mp}/${d.maxMp} · STA ${sheet.sta}/${d.maxSta}`+
                 (m.watch?' · on watch':''));
+            if(m.formation && !compact) lines.push('Formation · '+m.formation);
             if(m.request) lines.push('Asked · '+m.request.quote);
             if(m.priority) lines.push('Agreed · '+[m.priority.kind,m.priority.target && (s.entities[m.priority.target]?.name || m.priority.target)].filter(Boolean).join(' '));
             if (!compact) {
@@ -461,8 +469,8 @@ export function partyView(s,content,compact=false) {
         }
     }
     if (!compact) {
-        for (const a of agreementsOf(s)) lines.push(a.phase+' · '+(s.entities[a.who]?.name || a.who)+' · '+a.terms.text);
-        for (const r of claimsOf(s)) lines.push(r.id+' · '+r.paid+'/'+r.amount+' cp paid'+(r.paid<r.amount?' · #party pay '+r.id+' <cp>':'')+
+        for (const a of agreementsOf(s).filter(a=>!who || a.who===who)) lines.push(a.phase+' · '+(s.entities[a.who]?.name || a.who)+' · '+a.terms.text);
+        for (const r of claimsOf(s).filter(r=>!who || r.who===who)) lines.push(r.id+' · '+r.paid+'/'+r.amount+' cp paid'+(r.paid<r.amount?' · #party pay '+r.id+' <cp>':'')+
             (s.entities[r.who]?.status==='dead'?' · payment blocked':''));
     }
     return lines.filter(Boolean);

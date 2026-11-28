@@ -150,7 +150,7 @@ const fieldList = (d) => Object.entries(d.fields).map(([k, spec]) => `${k}:${fie
 
 // the schema's constraints in words (the validator checks exactly these); without them the P0 sample run of 27.09. was
 // 26 % valid, with them 100 %
-export const FORMAT_RULES = [
+const FORMAT_RULES = [
     'Fields shown with |null may be omitted when unknown; the engine fills them with null before validation. Other fields are required unless the delta description says otherwise.',
     'Report physical stops with arrive in story order. Local deltas without scene belong to the current stop, or the starting place before any arrival. Name scene only for a different location, including a remote sighting. In a Living Dungeon use the authorized section.',
     'SALES: Report an actual buyer price with bid (buyer, exact item ids and quantities, price, said). expected.sold is only a summary, never an independent payment. A current minimum-price instruction can accept a matching bid; a promise or appraisal is not an actual final bid.',
@@ -168,7 +168,7 @@ export const FORMAT_RULES = [
     'pricing names the reply\'s words that carry a price: {"basis":"total","quote":"the exact money words that are the price of the whole line or bid"} or {"basis":"unknown"} when the reply names no such total (only a price per piece for several pieces, only part prices, no price). Quote only money words that carry their own coin word ("fifty-six copper", "one hundred fifty copper", "eight silver and four"); currency_quote is null. A bare number ("fifty-six the lot") or an added part ("two more") is no binding total: unknown. A price per piece is the total only of one piece (qty 1). An explicit price for everything ("one hundred fifty for the lot") is the total even after line prices.',
     'phase of a bid or offer line: "firm" only when that side offers this price NOW and only Alaric\'s acceptance is missing (a choice he makes by accepting – "if you want it", "coin or credit" – is no condition); "conditional" when something must still happen first (someone\'s approval or appraisal, an inspection, a delivery, a later time, the goods passing a test), and condition says what; "unclear" when the reply does not settle it. Never firm for a promise, a guess or a price someone else would pay.',
     'money is {"quote":"the exact words of the coin handed over, with the full amount","currency_quote":null|"the coin word of the same sentence for a bare number"}.',
-    'Regular F gear offers require base and quality from GEAR MARKET; use separate lines for separate articles, never a package in one base. Missing/unknown bases do not grant equipment. For offer_line.equipment use true for intended combat equipment, false for ordinary/cosmetic merchandise, null if unspecified. This intent supplies no slot or numbers. Use supported categories from GEAR MARKET; separate armor parts have no combat slot. Do not sell ordinary decoration as a combat upgrade.',
+    'Regular {marketRank} gear offers require base and quality from GEAR MARKET; use separate lines for separate articles, never a package in one base. Missing/unknown bases do not grant equipment. For offer_line.equipment use true for intended combat equipment, false for ordinary/cosmetic merchandise, null if unspecified. This intent supplies no slot or numbers. Use supported categories from GEAR MARKET; separate armor parts have no combat slot. Do not sell ordinary decoration as a combat upgrade.',
     'teaches is {"source":"stone"|"manual","fn":"strike"|"bolt"|"guard"|"ward"|"mend"|null,"tags":string[]|null,"aspects":string[]|null} or null: only for a Skill Stone, or a manual, primer or treatise, that the reply establishes as teaching a technique. fn: strike (a close weapon or body technique), bolt (a ranged spell), guard (a defensive stance), ward (a magical barrier), mend (a healing); tags (Martial, Precision, Mobility, Defense, Arcane, Control) and aspects (Fire, Ice, Lightning, Water, Earth, Wind, Shadow, Light, Poison, Nature, Blood, Sound) only as the reply states them; null for anything the reply does not say. Never for an ordinary stone, a return stone, a storybook or a letter.',
     'A mechanical training service requires an established qualified teacher. A Skill Stone/manual is goods, never silently included in a training service: report separately priced goods and lessons only when the reply actually supplies those separate prices. An indivisible bundle with no split price remains information, not an executable training offer. Ordinary nonmechanical lessons may be service other; none grant automatic skills or progress.',
     'bid_line is {"object":object-ref (an exact OBJECTS id of a thing held by Alaric),"qty":integer>=1}.',
@@ -189,6 +189,10 @@ export function expectedText(vocab, expectedKeys) {
     }).join(' · ')}`;
 }
 
+export function formatRules(vocab) {
+    return FORMAT_RULES.map(r => r.replace('{ranks}', vocab.outdoorRanks).replace('{marketRank}', vocab.marketRank));
+}
+
 /** System prompt of the extractor (the same every turn). */
 export function extractorSystem(vocab) {
     return [
@@ -198,7 +202,7 @@ export function extractorSystem(vocab) {
         ...vocab.rules.map((r) => `- ${r}`),
         '',
         'FORMAT RULES (schema-critical):',
-        ...FORMAT_RULES.map(r => `- ${r.replace('{ranks}', vocab.outdoorRanks)}`),
+        ...formatRules(vocab).map(r => `- ${r}`),
         '',
         'Deltas:',
         deltaVocabularyText(vocab),

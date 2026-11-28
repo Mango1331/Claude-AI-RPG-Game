@@ -12,7 +12,9 @@ used_generations = set()
 manifest = {}
 messages = {}
 def rows(path):
-    return [json.loads(line) for line in gzip.open(path, 'rt') if line.strip()]
+    opener = gzip.open if path.suffix == '.gz' else open
+    with opener(path, 'rt') as stream:
+        return [json.loads(line) for line in stream if line.strip()]
 def chat(path):
     return [m for m in rows(path) if 'mes' in m]
 def digest(data):
@@ -33,17 +35,33 @@ for folder in sorted(archives.glob('openrouter-20261127-*')):
     original = chat(folder/'chat.jsonl.gz')
     turns = rows(folder/'turns.jsonl.gz') if (folder/'turns.jsonl.gz').exists() else []
     parent = None
+    part = folder.name.split('-')[-2]
+    inherited = []
     if (folder/'parent-check.json.gz').exists():
         check = json.load(gzip.open(folder/'parent-check.json.gz'))
         parent = check['parent'].split()[0]
         initial = chat(folder/'chat-0.jsonl.gz')
         start = len(initial)
+        inherited = initial
         assert start == check['count'] and chat(archives/parent/'chat.jsonl.gz')[:start] == initial
     else:
         start = min(t['inputMessageIndex'] for t in turns if t.get('inputMessageIndex') is not None)
         # Pre-.241 sometimes took an explicitly truncated prefix; retain the actual starting state.
         proof = folder/'PREFIX.json'
-        parent = json.loads(proof.read_text()) if proof.exists() else 'archived starting messages'
+        # These archives predate parent-check. Verify text, roles and physical events against
+        # the named originals; the redacted/reprocessed Y prefix and interrupted Fern are explicit.
+        ref = {'aa':'openrouter-20261127-y-234','aj':'openrouter-20261127-ai-235',
+               'ak':'openrouter-20261127-n-231','ai':'user-20261126-010332-215',
+               's':'user-20261126-085419-218','y':'user-20261126-233937-220'}[part]
+        parent = ref
+        inherited = chat(archives/ref/('originals/chat.jsonl' if ref.startswith('user') else 'chat.jsonl.gz'))
+    def authority(m):
+        return [m.get('mes'), bool(m.get('is_user')), m.get('extra',{}).get('avereth',{}).get('events',[])]
+    assert len(inherited) >= start
+    differences = [i for i in range(start) if authority(original[i]) != authority(inherited[i])]
+    if differences:
+        assert part in ('y','fern'), (part, differences)
+    prefix = [authority(m) for m in original[:start]]
     physical = rows(folder/'requests.jsonl.gz')
     starts = {r['id']:r for r in physical if r['kind']=='start'}
     for v in starts.values():
@@ -98,7 +116,8 @@ for folder in sorted(archives.glob('openrouter-20261127-*')):
                 mapped[a['id']]=j
             cases[j]=answers
     unassigned={k:[v['role'],v.get('turn')] for k,v in starts.items() if v['role']!='narrator' and k not in mapped}
-    manifest[folder.name]={'parent':parent,'inherited':start,'source':source['sha256']['chat.jsonl.gz'],'commit':source.get('commit'),
+    manifest[folder.name]={'parent':parent,'inherited':start,'prefix_note':source.get('prefix'), 'prefix_authority_sha256':digest(json.dumps(prefix,ensure_ascii=False,separators=(',',':')).encode()),
+                          'changed_parent_indices':differences, 'source':source['sha256']['chat.jsonl.gz'],'commit':source.get('commit'),
                           'excluded_records':omitted,'unassigned_requests':unassigned,'cases':len(cases),'calls':len(mapped)}
     data={'messages':ids,'cases':cases,'narrators':narrators}
     (output/(folder.name+'.json.gz')).write_bytes(gzip.compress(json.dumps(data,separators=(',',':')).encode(),mtime=0))

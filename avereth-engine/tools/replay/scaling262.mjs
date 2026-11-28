@@ -6,7 +6,8 @@ import {gunzipSync} from 'node:zlib';
 import {foldChat, messageEvents} from '../../src/host.js';
 import {buildContext} from '../../src/context.js';
 import {buildCatalog, extractorCatalog} from '../../src/v4/catalog.js';
-import {catalogText, interpreterRequest} from '../../src/v4/interpret.js';
+import {catalogText} from '../../src/v4/interpret.js';
+import {planContext, plannerRequest, recentText, withContentSkills} from '../../src/v4/planner.js';
 import {worldVocab, extractorRequest} from '../../src/v4/extract.js';
 import {loadProductContent} from '../../tests/helpers.js';
 import assert from 'node:assert/strict';
@@ -50,7 +51,8 @@ for(const [scenario,[items, places, people, quests]] of Object.entries(scenarios
     const player='I look around the hunting site.';
     function build(){
         const pc=buildCatalog(s,content,{c:true,known:true}),xc=extractorCatalog(s,content,{c:true});
-        const p=interpreterRequest(content.commandVocab,pc,player).messages;
+        const ctx=withContentSkills(planContext(s,content,pc),content,s);
+        const p=plannerRequest(content.commandVocab,ctx,player,{recent:recentText(chat.at(-1).mes)}).messages;
         const n=buildContext(s,content,{input:player,outcome:s.last?.outcome}).text;
         const x=extractorRequest(worldVocab(content.deltaVocab,s),{catalog:xc.text,actions:'none',expectedKeys:{},player,reply:'The road is quiet.',startScene:at}).messages;
         return {p,n:envelope.map(m=>m.content.startsWith('[AVERETH ENGINE —') ? {...m,content:n}:m),x,pCatalog:catalogText(pc),xCatalog:xc.text,nContext:n};

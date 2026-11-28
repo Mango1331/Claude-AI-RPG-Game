@@ -61,7 +61,7 @@ export function indexContent(pack) {
                 .replace('{windows}', windows.map(pair => pair.join('-')).join(','));
             return { ...d, fields, summary };
         });
-        c.deltaVocab = { ...c.deltaVocab, outdoorRanks: c.outdoorRanks, deltas };
+        c.deltaVocab = { ...c.deltaVocab, outdoorRanks: c.outdoorRanks, marketRank: c.gear.instances.market_rank, deltas };
     }
     for (const cls of pack.classes.classes) c.classes.set(cls.id, cls);
     for (const s of pack.classes.skills) {

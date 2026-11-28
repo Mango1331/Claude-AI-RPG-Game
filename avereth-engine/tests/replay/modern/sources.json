@@ -1,20 +1,10 @@
 {
   "openrouter-20261127-aa-234": {
-    "parent": {
-      "parent": "Y",
-      "parentTurn": 3,
-      "parentMessages": 43,
-      "usedMessages": 42,
-      "lastUsedRole": "player",
-      "parentAt": "loc.east_fold_below_the_moss_grown_hill",
-      "startAt": "loc.east_fold_below_the_moss_grown_hill",
-      "differentStateKeys": [
-        "memories",
-        "scene"
-      ],
-      "startWorldSHA256": "e6adfbb24da5056764c371f453d4175417d77ed49ba0a16227617a406a4c3d60"
-    },
+    "parent": "openrouter-20261127-y-234",
     "inherited": 42,
+    "prefix_note": "Y3: erste 42 von 43 Nachrichten. Ende beim Spielertext. Ausgangswelt und Unterschiede zum vollst\u00e4ndigen Elternzug siehe PREFIX.json.",
+    "prefix_authority_sha256": "72f1b0ded2e37b3f3ca0ae5117ff929d8c82ad4403084120438266ac96613f9b",
+    "changed_parent_indices": [],
     "source": "f8a709171c672707237fed945ac99e9c1cec57251888264b1f7fe1e755b45695",
     "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
     "excluded_records": {},
@@ -23,8 +13,11 @@
     "calls": 4
   },
   "openrouter-20261127-ai-235": {
-    "parent": "archived starting messages",
+    "parent": "user-20261126-010332-215",
     "inherited": 15,
+    "prefix_note": "Unver\u00e4nderter User14-Originalchat M0\u201314, frische freiwillige Anwerbung mit GPT-5.4-mini auf .235.",
+    "prefix_authority_sha256": "324c0fa0aa841a5e43a2e01647d845c335cb6467e31a01b72bdf593090cb0473",
+    "changed_parent_indices": [],
     "source": "a2e586c9be911c0484821739e53853090a83c156fe2aad79101122e6c54eee15",
     "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
     "excluded_records": {},
@@ -33,8 +26,11 @@
     "calls": 4
   },
   "openrouter-20261127-aj-235": {
-    "parent": "archived starting messages",
+    "parent": "openrouter-20261127-ai-235",
     "inherited": 19,
+    "prefix_note": "Vollst\u00e4ndiger AI2 einschlie\u00dflich der Kl\u00e4rung. Eigene Startwelt stimmt mit AI2 \u00fcberein.",
+    "prefix_authority_sha256": "f436869c4b0a7f717827a505afa3949193991234869a774f4b2f70299ab292db",
+    "changed_parent_indices": [],
     "source": "52b3add993fe89be71edca88d9d57895f54e0dc12ee1f2acb551a4149c424d2d",
     "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
     "excluded_records": {},
@@ -43,8 +39,11 @@
     "calls": 5
   },
   "openrouter-20261127-ak-235": {
-    "parent": "archived starting messages",
+    "parent": "openrouter-20261127-n-231",
     "inherited": 70,
+    "prefix_note": "Vollst\u00e4ndiger N5-Chat mit gebuchtem Abschluss und anwesendem Ossen. Bitte zu warten, Marktgang, R\u00fcckkehr und versuchte Wiederaufnahme.",
+    "prefix_authority_sha256": "c4dff96ee5be8261270e0e3d678071f7174640ae05b900c9bd2cc9ef7085af4d",
+    "changed_parent_indices": [],
     "source": "b0988e2011fccc0820ba7f9198214b71186237317c44a8c0708805517cc71f5c",
     "commit": "8750a97f5a986d328db4dc98a3a93d157925158c",
     "excluded_records": {},
@@ -55,6 +54,9 @@
   "openrouter-20261127-ash-244": {
     "parent": "openrouter-20261127-ai-235",
     "inherited": 15,
+    "prefix_note": "Unver\u00e4nderte AI-Anwerbung, 15 Nachrichten. Direkte HUD-Einladung und lokales Entfernen.",
+    "prefix_authority_sha256": "324c0fa0aa841a5e43a2e01647d845c335cb6467e31a01b72bdf593090cb0473",
+    "changed_parent_indices": [],
     "source": "361b5a986686872d8e6f7bb3027716cf0018e87fa32b9225f848fca28151a678",
     "commit": "630abc2099b28155dae5ea573d0c8fbf08156086",
     "excluded_records": {},
@@ -65,6 +67,9 @@
   "openrouter-20261127-birch-247": {
     "parent": "openrouter-20261127-hearth-243",
     "inherited": 77,
+    "prefix_note": "Hearth T12 vor Zimmerkauf. Freitext, Rast, Wirtin und Mahlzeit.",
+    "prefix_authority_sha256": "00b57be93fd7fcbe3965f370a48aebafd59980127fa7b1c5327fafe8996140fc",
+    "changed_parent_indices": [],
     "source": "e509f4e2c5f0d8d5e2880508fb26997f2e63d7de115146b63cf97f4d480439ba",
     "commit": "c954742a98da31bcb56e70d708c278e67d3495e4",
     "excluded_records": {},
@@ -75,6 +80,9 @@
   "openrouter-20261127-cypress-250": {
     "parent": "openrouter-20261127-moss-242",
     "inherited": 55,
+    "prefix_note": "Moss T5, erste Quest gemeinsam abgegeben. Andere Vorbereitung, gezielte Angriffe und zweiter gemeinsamer Auftrag.",
+    "prefix_authority_sha256": "0f2596a35032727691e4f7a1d0549358765888aaa0a3a9760b37256cf32d91ed",
+    "changed_parent_indices": [],
     "source": "e7597d29c4fe52cc8d6da3114e430fec3a6c0748757ac574f693417ceda2117a",
     "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
     "excluded_records": {},
@@ -85,6 +93,9 @@
   "openrouter-20261127-elm-250": {
     "parent": "openrouter-20261127-juniper-249",
     "inherited": 81,
+    "prefix_note": "Juniper T2 im Zimmer. Zur\u00fcck zur wartenden Gruppe und Madge per Orts-HUD, Mahlzeit und Markt.",
+    "prefix_authority_sha256": "de25bfa7d977562826457d28c5397b784d0e37dd84c8e662819fc9aa8715f687",
+    "changed_parent_indices": [],
     "source": "ffedbf214199f8073c4600a7f4d1394b38ac7f2ccfddb9f3dcc65e2ae869b6bb",
     "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
     "excluded_records": {},
@@ -95,6 +106,9 @@
   "openrouter-20261127-ember-241": {
     "parent": "openrouter-20261127-ai-235",
     "inherited": 15,
+    "prefix_note": "AI \u00b7 15 Nachrichten bis zur noch offenen Anwerbung, vollst\u00e4ndiger Weltzustand gepr\u00fcft",
+    "prefix_authority_sha256": "324c0fa0aa841a5e43a2e01647d845c335cb6467e31a01b72bdf593090cb0473",
+    "changed_parent_indices": [],
     "source": "6d1f8706da207b2d441b756e1342006c187e95a3ff01d9f7d16ded2bf91f0104",
     "commit": "1f07a4a38173b6c65c17b73f0bd9928255b758d8",
     "excluded_records": {},
@@ -105,6 +119,11 @@
   "openrouter-20261127-fern-250": {
     "parent": "openrouter-20261127-pine-250",
     "inherited": 23,
+    "prefix_note": "Pine am bytegepr\u00fcften unterbrochenen Diskchat. Ein gezielter nativer X-Retry und Fortsetzung nach Wiederaufnahme.",
+    "prefix_authority_sha256": "8033328ed7182bd56170db443fc3f2eeaa90133eb02d76be9f9af43074bc0e8a",
+    "changed_parent_indices": [
+      22
+    ],
     "source": "ad3e98ae666f558149e256e21e826a10a758e7983efd6a55bb440dc831ead015",
     "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
     "excluded_records": {},
@@ -124,6 +143,9 @@
   "openrouter-20261127-flint-243": {
     "parent": "openrouter-20261127-y-234",
     "inherited": 43,
+    "prefix_note": "Vollst\u00e4ndiger, unver\u00e4nderter Y-Endstand wie Slate. Expliziter Eintritt und Wahrnehmung ab dem tats\u00e4chlichen Standort.",
+    "prefix_authority_sha256": "ce6c2659888503f547a60a239187afceb9206fc6565386faaaa3aea159a9d406",
+    "changed_parent_indices": [],
     "source": "2d8326417f761e72e7aedbd0e8e03d0a197588cd562d86cc65fb16dd77e2e961",
     "commit": "ece9390771f77dc8ae27d05c9bd4643f2f6aefc4",
     "excluded_records": {},
@@ -134,6 +156,9 @@
   "openrouter-20261127-hazel-248": {
     "parent": "openrouter-20261127-ai-235",
     "inherited": 15,
+    "prefix_note": "AI vor erster Einladung. Gemischte Organisation und anschlie\u00dfende Erkundung auf .248.",
+    "prefix_authority_sha256": "324c0fa0aa841a5e43a2e01647d845c335cb6467e31a01b72bdf593090cb0473",
+    "changed_parent_indices": [],
     "source": "748247246bc7f3e8addfff7475ee460a5ac3fbd2d637f3a1cf21807cda8bc519",
     "commit": "a9471388e98410bd4a33e15b34a1afa2f45c629e",
     "excluded_records": {},
@@ -144,6 +169,9 @@
   "openrouter-20261127-hearth-243": {
     "parent": "openrouter-20261127-moss-242",
     "inherited": 53,
+    "prefix_note": "Moss nach verifiziertem Warden-Sieg, vor Questabgabe (53 Nachrichten). Abwesenheit, Teilzahlung, Markt, soziale Orientierung, Gasthaus und Trennung.",
+    "prefix_authority_sha256": "50a9396370ff49713019ebe3c82afb66fe1f21e9bce68760b09ceea126d82d07",
+    "changed_parent_indices": [],
     "source": "d1bcb6d5275701f0bd399ee83db2a6728a241dcf36239dbbbaac956ae42250c2",
     "commit": "ece9390771f77dc8ae27d05c9bd4643f2f6aefc4",
     "excluded_records": {},
@@ -154,6 +182,9 @@
   "openrouter-20261127-heron-250": {
     "parent": "openrouter-20261127-sage-248",
     "inherited": 111,
+    "prefix_note": "Sage nach abgeschlossener Ausbildung. Statverteilung, Anwendung des neuen Skills und n\u00e4chster Auftrag.",
+    "prefix_authority_sha256": "6b18f90443275c6702adc66696c9beb2f73a651ab738904982a2aac620bb52bd",
+    "changed_parent_indices": [],
     "source": "69b05f368fed7469da4926cc8cdb00a73ec442ab65d79dbe933bbc54d8d21270",
     "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
     "excluded_records": {},
@@ -164,6 +195,9 @@
   "openrouter-20261127-juniper-249": {
     "parent": "openrouter-20261127-hearth-243",
     "inherited": 77,
+    "prefix_note": "Hearth vor Kauf. Folgeweg, tats\u00e4chliche Begleitung, Mahlzeit und erneuter Marktbesuch.",
+    "prefix_authority_sha256": "00b57be93fd7fcbe3965f370a48aebafd59980127fa7b1c5327fafe8996140fc",
+    "changed_parent_indices": [],
     "source": "a4801daba6f981eddf19301d1f6aa05a184f89a91d9ad1df2ff2b9a4db0a132c",
     "commit": "c9891834fd88d859c8a5e45a87d1e87464fabbff",
     "excluded_records": {},
@@ -174,6 +208,9 @@
   "openrouter-20261127-kestrel-250": {
     "parent": "openrouter-20261127-ai-235",
     "inherited": 1,
+    "prefix_note": "AI vor Klassenwahl. Neuer Ranger, Ausr\u00fcstung und Fletscherei, eigene Spurensuche ohne Gildenauftrag.",
+    "prefix_authority_sha256": "bef7da79f42e57d01d7e6c18db3866b771ec890b0c4e3acc6f6bffb07f5b77fc",
+    "changed_parent_indices": [],
     "source": "b2afd476f98091700d46a87e55b98e3b1907676e6b2cf6df3bbbef4a0903a490",
     "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
     "excluded_records": {},
@@ -184,6 +221,9 @@
   "openrouter-20261127-lantern-244": {
     "parent": "openrouter-20261127-hearth-243",
     "inherited": 79,
+    "prefix_note": "Hearth nach Zimmerkauf, 79 Nachrichten. R\u00fcckkehr in die Gaststube und tats\u00e4chlich gebuchte Dienstleistung.",
+    "prefix_authority_sha256": "0a6a1ceb39397ff36741fb17a837c3ddfe6df3a814cfe04b02845123ef9b0f0c",
+    "changed_parent_indices": [],
     "source": "6c9eed24a4de3b045426fb4bbd3d7a82e716fcafccb60890dcb42bf556e49285",
     "commit": "630abc2099b28155dae5ea573d0c8fbf08156086",
     "excluded_records": {},
@@ -194,6 +234,9 @@
   "openrouter-20261127-linden-246": {
     "parent": "openrouter-20261127-hearth-243",
     "inherited": 77,
+    "prefix_note": "Hearth T12 vor Zimmerkauf. Unterkunft bezahlt; P stufte den ausdr\u00fccklichen Zimmerzugang als lokalen Standpunkt ein.",
+    "prefix_authority_sha256": "00b57be93fd7fcbe3965f370a48aebafd59980127fa7b1c5327fafe8996140fc",
+    "changed_parent_indices": [],
     "source": "27909acce09a55021d407b86c799905859c7f4514ec5c412e579350635efa687",
     "commit": "9a7cfe732da964165ed25267f64625ed5c5c8737",
     "excluded_records": {},
@@ -204,6 +247,9 @@
   "openrouter-20261127-martin-251": {
     "parent": "openrouter-20261127-rook-250",
     "inherited": 7,
+    "prefix_note": "Rook T1 vor erster Abreise. Unver\u00e4nderter Rogue-Weg zum unbesuchten Markt, Handel, Erkundung und R\u00fcckkehr.",
+    "prefix_authority_sha256": "3e58ae34181355287060df8781bbc80982d0a13155374ef2bbcaff1354edc4b4",
+    "changed_parent_indices": [],
     "source": "c5075c2219881b10a8c7942f474963f47d135904732e6a9695717f3475fefd8a",
     "commit": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
     "excluded_records": {},
@@ -214,6 +260,9 @@
   "openrouter-20261127-moss-242": {
     "parent": "openrouter-20261127-vale-242",
     "inherited": 45,
+    "prefix_note": "Vollst\u00e4ndiges Vale-Ende nach 45 Nachrichten im dritten Dungeonabschnitt",
+    "prefix_authority_sha256": "5003509166d3eca7e0acee955276a3dba09863ea685f3c6e65c77cf29603503b",
+    "changed_parent_indices": [],
     "source": "299d3604f90e5a80845c09dea8ca7086e23584aa79d7f8d85e918f035add0175",
     "commit": "27334c480a4dd4579022d2fac945472eb23231da",
     "excluded_records": {},
@@ -224,6 +273,9 @@
   "openrouter-20261127-oriole-251": {
     "parent": "openrouter-20261127-cypress-250",
     "inherited": 71,
+    "prefix_note": "Cypress nach zweitem gemeinsamem Turn-in. Wiederbegegnung, Ausr\u00fcstungskauf oder Beurteilung der echten Warden-Troph\u00e4e mit Ossen.",
+    "prefix_authority_sha256": "9ee66d1fc39aca402d8c055ac0a5220749bea48052f02f9f6a626ecd2ef5cea3",
+    "changed_parent_indices": [],
     "source": "26ff4d7e9def5cc5e9ecb04b88fea9e35acde11fe05cd77363c4d995f0a9c93d",
     "commit": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
     "excluded_records": {},
@@ -234,6 +286,9 @@
   "openrouter-20261127-pine-250": {
     "parent": "openrouter-20261127-hazel-248",
     "inherited": 21,
+    "prefix_note": "Hazel T3 beim Wiedersehen am Markt. Wiederaufnahme, Kapelle und freies Nachforschen.",
+    "prefix_authority_sha256": "92e575cb21dd458956a499a6ebbc9b4d4c7da4dacb31172d2caccb1475c8fac2",
+    "changed_parent_indices": [],
     "source": "03541530d28d9d31ebb25ad9922c9f3354326902efaea3899c86db2efdfbd7ae",
     "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
     "excluded_records": {},
@@ -257,6 +312,9 @@
   "openrouter-20261127-quill-244": {
     "parent": "openrouter-20261127-rowan-244",
     "inherited": 83,
+    "prefix_note": "Rowan vor Annahme des konkreten 3-cp-Gebots, 83 Nachrichten. Verkauf im HUD und Finanzierung eines Heilprimers.",
+    "prefix_authority_sha256": "aa9ac4443797026963b6c3891d27d34a768c0d912e1d05b1317840f6672d10c7",
+    "changed_parent_indices": [],
     "source": "643bccb2863e52fc876b4f53ac3223d7ec73b98bae6c05202ee667fef3263951",
     "commit": "630abc2099b28155dae5ea573d0c8fbf08156086",
     "excluded_records": {},
@@ -267,6 +325,9 @@
   "openrouter-20261127-reed-251": {
     "parent": "openrouter-20261127-martin-251",
     "inherited": 17,
+    "prefix_note": "Martin nach expliziter R\u00fcckkehr zum Markt. Nat\u00fcrliche Folgeinteraktion, Kontakt zur Lederarbeiterin und Nachgehen des Hinweises zum Fischer an der Br\u00fccke.",
+    "prefix_authority_sha256": "73370f10780f6fe7e438364183b9d91496b3ac156ceddf1dbe7c49d5884de70e",
+    "changed_parent_indices": [],
     "source": "06d826f379395c89388fd7b31c81690aaffc3c7e488f4b119eb61f8073ab836f",
     "commit": "4933a5f005a86a381a922981d3d7377e8ba84b5c",
     "excluded_records": {},
@@ -277,6 +338,9 @@
   "openrouter-20261127-rook-250": {
     "parent": "openrouter-20261127-swift-250",
     "inherited": 5,
+    "prefix_note": "Swift am lokalen Auswahlpanel, vollst\u00e4ndiger Rogue-Start mit den angebotenen Skills, Markt, Handel und Spuren an der Br\u00fccke.",
+    "prefix_authority_sha256": "9250564972ad035343008a15f647b7b844d055352b88f92ef2ad6fefca65a84e",
+    "changed_parent_indices": [],
     "source": "0af6c0cf345dcc3f5867f9ccabfee5dae51411695ab7d205b0c7a7e0d6f220dc",
     "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
     "excluded_records": {},
@@ -287,6 +351,9 @@
   "openrouter-20261127-rowan-244": {
     "parent": "openrouter-20261127-hearth-243",
     "inherited": 61,
+    "prefix_note": "Identischer Hearth-Zustand vor erster Teilzahlung, 61 Nachrichten. Freitext, HUD, Verkauf, Ausbildung.",
+    "prefix_authority_sha256": "8e7f7382abb0bd7b4227b9eb879273f23d9ad0f5ecd4f32916105005e734b68a",
+    "changed_parent_indices": [],
     "source": "6f20020b659fc0d2abcfb72ef8214b451e75a77ea358a93c6854fef4bec1e323",
     "commit": "630abc2099b28155dae5ea573d0c8fbf08156086",
     "excluded_records": {},
@@ -295,8 +362,11 @@
     "calls": 28
   },
   "openrouter-20261127-s-232": {
-    "parent": "archived starting messages",
+    "parent": "user-20261126-085419-218",
     "inherited": 109,
+    "prefix_note": "Unver\u00e4nderter User15-Pr\u00e4fix M0\u2013108, danach zwei native Itemdetails und Marktgesch\u00e4ft.",
+    "prefix_authority_sha256": "0cdf7097e8764969ed350c47bf4e49dd95e427a9d50918af1d1899add277ebf3",
+    "changed_parent_indices": [],
     "source": "3035a8cf85625605eecaeead1beb1b37254c7c5934b39596770808cd6bdd646a",
     "commit": "b21fdba0a2171b65e9007fb1791aef956099f86a",
     "excluded_records": {},
@@ -307,6 +377,9 @@
   "openrouter-20261127-sage-248": {
     "parent": "openrouter-20261127-quill-244",
     "inherited": 93,
+    "prefix_note": "Quill unmittelbar nach Lernbeginn. Studium, Gildenbesuch und n\u00e4chster Auftrag.",
+    "prefix_authority_sha256": "f7b75ccc5d98ecde32ab91d3cd4f1d447e2e52d6dc83e27b9e1e96fb5317997c",
+    "changed_parent_indices": [],
     "source": "47c61d0c3a7599e399c4bbd69116e4c87fa7ea0bc24b34a6f476458b59e28c45",
     "commit": "a9471388e98410bd4a33e15b34a1afa2f45c629e",
     "excluded_records": {},
@@ -317,6 +390,9 @@
   "openrouter-20261127-slate-242": {
     "parent": "openrouter-20261127-y-234",
     "inherited": 43,
+    "prefix_note": "Vollst\u00e4ndiger Y-Endstand mit get\u00f6tetem Messertr\u00e4ger und lebendem zweiten Gegner; ausdr\u00fccklicher Eintritt.",
+    "prefix_authority_sha256": "ce6c2659888503f547a60a239187afceb9206fc6565386faaaa3aea159a9d406",
+    "changed_parent_indices": [],
     "source": "8f7e8809b2266da389a6069a78a719fc5256a8115decef98bc1a5a0fc271111e",
     "commit": "27334c480a4dd4579022d2fac945472eb23231da",
     "excluded_records": {},
@@ -327,6 +403,9 @@
   "openrouter-20261127-swift-250": {
     "parent": "openrouter-20261127-ai-235",
     "inherited": 1,
+    "prefix_note": "AI vor Klassenwahl. Regul\u00e4rer Rogue-Start, Handel und Erkundung am Wasser ohne Gildenauftrag.",
+    "prefix_authority_sha256": "bef7da79f42e57d01d7e6c18db3866b771ec890b0c4e3acc6f6bffb07f5b77fc",
+    "changed_parent_indices": [],
     "source": "249ca63de95dd248da774a72db7b14bc206b9ed22a2bf59ecb6622bf90f2f9ad",
     "commit": "b67de58941526d877964a0e669ccbb8b4ef0fb68",
     "excluded_records": {},
@@ -337,6 +416,9 @@
   "openrouter-20261127-vale-242": {
     "parent": "openrouter-20261127-ai-235",
     "inherited": 15,
+    "prefix_note": "AI vor der Einladung, 15 Nachrichten, komplette Ausgangsfaltung verifiziert",
+    "prefix_authority_sha256": "324c0fa0aa841a5e43a2e01647d845c335cb6467e31a01b72bdf593090cb0473",
+    "changed_parent_indices": [],
     "source": "3fab6d9016dae71f9faf806ddd02387a5a71c3eecb07e52710afa25a18ab978a",
     "commit": "d125bd512ff8603961c4ca445490ed8e77674b42",
     "excluded_records": {},
@@ -347,6 +429,9 @@
   "openrouter-20261127-willow-247": {
     "parent": "openrouter-20261127-hearth-243",
     "inherited": 79,
+    "prefix_note": "Hearth nach Zimmerkauf. Direkte Ortsauswahl in ST, tats\u00e4chliche Folgeinteraktionen.",
+    "prefix_authority_sha256": "0a6a1ceb39397ff36741fb17a837c3ddfe6df3a814cfe04b02845123ef9b0f0c",
+    "changed_parent_indices": [],
     "source": "142b375e9f32bf1ff0b5b6a70846b8a0ad802f9670eb5929b4ce39733d6a1232",
     "commit": "c954742a98da31bcb56e70d708c278e67d3495e4",
     "excluded_records": {},
@@ -355,8 +440,40 @@
     "calls": 5
   },
   "openrouter-20261127-y-234": {
-    "parent": "archived starting messages",
+    "parent": "user-20261126-233937-220",
     "inherited": 39,
+    "prefix_note": "User16 M38, unver\u00e4nderte Narration und derselbe gekennzeichnete Ausgangszustand wie J/O/Q/R/U. Frischer X und danach zwei neue reale Spielerz\u00fcge.",
+    "prefix_authority_sha256": "2ff41513c5c93e2f9c70a844034fe97b1dcb3cb4f9df497cd44a3003602cccd0",
+    "changed_parent_indices": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      27,
+      28,
+      29,
+      30,
+      33,
+      35,
+      36,
+      37,
+      38
+    ],
     "source": "a99b835f5b74379d738ce33b1edafc36052fb67fd80a9385766b03f0ec5187dc",
     "commit": "4e4fc9b3f52fc4ec253fd511722fd607bfd92597",
     "excluded_records": {},

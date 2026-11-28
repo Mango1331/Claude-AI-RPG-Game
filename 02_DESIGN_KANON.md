@@ -1,6 +1,6 @@
 # Avereth Engine – verbindlicher Design-Kanon
 
-Der Kanon dokumentiert die bestätigten Spielregeln der Entwicklungslinie bis zum persönlichen Teststand .263. Die eingefrorene Produktlinie .200 bleibt eine eigene Referenz; historische Regeln und Freigaben werden mit ihrem Entwicklungsstand gekennzeichnet. Neuere ausdrücklich bestätigte Regeln haben bei abweichenden historischen Angaben Vorrang. **[VERBINDLICH]** kennzeichnet geltende Regeln, **[GEPLANT]** beschlossene spätere Änderungen und **[OFFEN]** unentschiedene Optionen. Für den persönlichen Test ist der [E-Rank-Fachentscheidungsstand](recherche/AVERETH_263_E_RANK_FACHENTSCHEIDUNGEN.md) maßgeblich. Historische Fachpläne sind Belege, keine aktuellen Aufträge. [Aktueller Projektstand](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Ältere Kanonfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/292a4372654f027fb579bf8e338ff9d25d981da7/02_DESIGN_KANON.md)
+Der Kanon dokumentiert die bestätigten Spielregeln der Entwicklungslinie bis .265 einschließlich der Klarstellung nach dem persönlichen Test auf .263. Die eingefrorene Produktlinie .200 bleibt eine eigene Referenz; historische Regeln und Freigaben werden mit ihrem Entwicklungsstand gekennzeichnet. Neuere ausdrücklich bestätigte Regeln haben bei abweichenden historischen Angaben Vorrang. **[VERBINDLICH]** kennzeichnet geltende Regeln, **[GEPLANT]** beschlossene spätere Änderungen und **[OFFEN]** unentschiedene Optionen. Für den persönlichen Test ist der [E-Rank-Fachentscheidungsstand](recherche/AVERETH_263_E_RANK_FACHENTSCHEIDUNGEN.md) maßgeblich. Historische Fachpläne sind Belege, keine aktuellen Aufträge. [Aktueller Projektstand](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Ältere Kanonfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/292a4372654f027fb579bf8e338ff9d25d981da7/02_DESIGN_KANON.md)
 
 ## Gemischte Rangwelt ab .263 [VERBINDLICH für den Teststand]
 
@@ -58,6 +58,12 @@ Delivery/Escort bleiben ruhend erhalten, einschließlich echter Übergaben und f
 
 **Spielerhoheit, bedeutsame Entscheidungen, Spaß, Tempo, nachvollziehbare Folgen und freie High-Fantasy-Entwicklung** gehen vor Simulationsbürokratie. Keine zusätzlichen Pflichtbestätigungen, künstlichen Zwischenschritte oder Mechaniken allein zur technischen Vollständigkeit.
 
+**Verbindliche Gewichtung ab .265.** Die tatsächlichen Folgen bestimmen, wie streng die Engine eine Entscheidung absichert. Zahlungen, Eigentumsübergänge, Käufe, Verkäufe, Kampfhandlungen, verbindliche Vereinbarungen und dauerhafte Charakterentscheidungen brauchen weiterhin ihre jeweilige mechanische Autorisierung.
+
+Bei einer gewählten Reise darf der Narrator den gewöhnlichen Weg zusammenhängend ausführen. Auf dem Weg zu einem bekannten Dungeon kann Alaric in derselben Antwort den Eingang erreichen und den ersten zulässigen Abschnitt betreten. Die Engine erhält die Ortsidentität und prüft Gebühren, Berechtigungen, Kapazität, Hindernisse, Abschnittsfolge und Begegnung. Aus der Ankunft allein folgt keine Einwilligung zum Bezahlen oder Angreifen.
+
+„Ich bleibe draußen“ und andere eindeutige Grenzen gelten für die Erzählung. Bei gewöhnlicher Bewegung hat im Zweifel der natürliche Spielfluss Vorrang. Ein gelegentlicher Swipe ist für den Nutzer besser als wiederkehrende Bestätigungen, Ablehnungen oder Reparaturanfragen für einen einzelnen Schritt.
+
 ## 2. Zuständigkeiten von LLM und Engine
 
 - **LLM/Planner:** Sprache, Referenzen, Absichten und Weltkontext verstehen. Fragen, Hypothesen, NPC-Zitate und Wünsche sind keine autorisierten PC-Aktionen.
@@ -108,7 +114,7 @@ Narration **Englisch, dritte Person, Vergangenheit**; Wahrnehmung/Dialog statt S
 ## 4. Allgemeines Pacing und Quality of Life
 
 - Gewähltes Ziel über belanglose Reise-/Suchschritte verfolgen, bis etwas Relevantes passiert oder eine echte Entscheidung entsteht; keine Pflicht-Continues.
-- Ziel bleibt Autorisierungsgrenze: Wald betreten erlaubt nicht automatisch Höhleneintritt. Suche soll konkreten Erkenntnisgewinn haben.
+- Eine ausdrücklich gewählte Dungeonreise kann über den Zugang in den ersten erreichbaren Abschnitt führen. Eine Höhle, die auf einem Waldweg bloß sichtbar wird, bleibt eine eigene mögliche Unternehmung. Suche soll konkreten Erkenntnisgewinn haben.
 - Automatisches Loot nach echtem Sieg, keine Trophäenpflicht als Jagdbeweis, keine Traglast-/Packverwaltung.
 - **[VERBINDLICH seit .184] Monster A1 – Beute aus belegter Anatomie:** Ein Spezialorgan (Geweih, Horn, Hauer, Gift, Schleimkern) gibt es nur, wenn Art, Name oder Beschreibung der Kreatur es zeigen, und nie, wenn ihre eigenen Worte es verneinen („hornless goat“, „doe without antlers“, „non-venomous snake“). Der Angriff ihres Körperplans ist kein Beleg. Ohne passendes Wort gibt es nur den Grundertrag des Körperplans. Schleimkern nur mit Beleg (D6). [Fachplan](patch_plans_10b/FACHPLAN_MONSTER_ANATOMIE_LOOT_A1_A2.md) · [Patchnote .184](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/efcad4c02f4d2a47ab5f777d6cf6581979e36e4e/avereth-engine/docs/MONSTER_A1_184.md).
 - **[VERBINDLICH seit .186] Monster A2 – Bewaffnung aus einer Quelle:** Ein humanoides Monster erhält seine Waffe einmal beim Festlegen seines Profils: die in seiner Erzeugung gezeigte Waffe (bei einer Gruppe nur, wenn sie für alle gezeigt wird), sonst die Standardausstattung seines Körperplans; Wächter und Bosse ebenso. Kampf, Karte und Beute lesen dieselbe Angabe. Werte bleiben die des Körperplans; Fokus und Bogen ändern keinen Angriff. Die Waffe ist vor dem Tod kein Gegenstand; danach Beute, sofern verwertbar. Eine später aufgehobene Waffe ändert nichts. [Patchnote .186](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/13824919a85042184d7ced2fc2ca783bf6cf7103/avereth-engine/docs/PAID_HERE_MONSTER_A2_186.md).

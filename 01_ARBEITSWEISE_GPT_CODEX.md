@@ -13,6 +13,12 @@
 
 **Ein Dokumentationscommit, Modelltest oder positiver Review ist kein automatischer Produktmerge.** Nutzer entscheidet vor allgemeiner Übernahme. Keine unaufgeforderte Kampf-/Ökonomie-Neubalance und keine Sondervalidatoren ohne belegte allgemeine Ursache.
 
+## Spielerhoheit im Review und bei der Implementierung
+
+GPT und Codex beurteilen zuerst, welche Folgen eine Handlung tatsächlich bucht. Bei Geld, Besitz, Handel, Kampf, verbindlichen Abreden und dauerhaften Charakterentscheidungen prüfen sie die konkrete Autorisierung und den Zustand nach Speicherung. Für die gewöhnliche Durchführung einer bereits gewählten Reise bewerten sie den zusammenhängenden Spielverlauf: Hat Alaric den gemeinten Ort erreicht, hat die Erzählung seine ausdrücklich genannte Grenze respektiert, und stimmen Dungeonabschnitt und Begegnung?
+
+Bei Reibung zuerst widersprüchliche Modellanweisungen, Ortsidentität und tatsächliche Zugangshindernisse prüfen. Eine gelegentliche erzählerische Überschreitung kann der Spieler per Swipe korrigieren. Sie rechtfertigt für sich keine neue Wortliste, keinen zusätzlichen Bewegungsvalidator und keine weitere Bestätigungs- oder Repairrunde. [Verbindliche Gewichtung im Design-Kanon](02_DESIGN_KANON.md#1-spielerfahrung-und-prioritätensystem)
+
 ## Branches – ab dieser Etappe verbindlich
 
 1. **`main` nur für Dokumentation und Mess-/Testindizes.** Einträge bei Etappenabschluss bündeln; konkrete Runs dürfen ihren Originalordner bekommen, ohne dass `03`, `06` oder `recherche/README` jedes Mal geändert werden.

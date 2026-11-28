@@ -8,7 +8,7 @@ import {applyWorld} from '../../src/v4/world.js';
 import {playerTurnV4} from '../../src/v4/turn.js';
 import {lootEvents} from '../../src/v4/loot.js';
 const c=await loadProductContent(),qualities=['crude','common','fine','superior','exceptional'];
-const expected=[7,11,15,19,23];
+const expected=[8,14,20,25,31];
 const profile=(name,rank,q,balance=true)=>itemProfile(c,{name:`${q} ${rank}-Rank ${name}`,balance});
 const weapons=gearBases(c).filter(b=>profile(b.name,'F','common').slot==='weapon');
 
@@ -18,7 +18,7 @@ test('196: all supported martial/bow/focus articles use the approved E values an
         const p=profile(b.name,'E',q,balance);families.add(p.family);
         assert.equal(Math.max(p.atk,p.matk),expected[i],`${b.name} ${q}`);
         assert.equal(p.rank,'E');assert.equal(p.quality,q);assert.equal(p.value_cp,expected[i]*14);
-        assert.equal(gearRetailPrice(c,p),null,'E keeps negotiated retail prices');
+        assert.equal(gearRetailPrice(c,p),[120,200,350,650,1200][i],'E guide by quality');
         assert.equal(p.def+p.mdef,0);
         assert.ok(expected[i]>[6,10,14,18,22][i]);
     }
@@ -48,7 +48,7 @@ test('196: actual item event equips on E, contributes to derived power and refus
         applyEvent(s,{t:'object.created',d:{object:o}});
         const r=playerTurnV4(s,c,'I equip the reward',{c:true,commands:[{seq:1,type:'equip',object:o.id,quote:'I equip the reward'}],msg:21});
         if(level===14){assert.ok(!r.events.some(e=>e.t==='item.equipped'));assert.deepEqual(r.state.objects[o.id],s.objects[o.id]);}
-        else{assert.ok(r.events.some(e=>e.t==='item.equipped'));const dv=deriveCharacter(r.state.entities.pc.sheet,c);assert.equal(name==='staff'?dv.matk:dv.atk,23);assert.equal(r.state.entities.pc.sheet.equipment.weapon.family,p.family);}
+        else{assert.ok(r.events.some(e=>e.t==='item.equipped'));const dv=deriveCharacter(r.state.entities.pc.sheet,c);assert.equal(name==='staff'?dv.matk:dv.atk,31);assert.equal(r.state.entities.pc.sheet.equipment.weapon.family,p.family);}
     }
 });
 test('196: E bossloot uses exactly the same weapon/focus profile and leaves deterministic booking intact',()=>{

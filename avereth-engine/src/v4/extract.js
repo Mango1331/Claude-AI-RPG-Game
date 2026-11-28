@@ -651,7 +651,10 @@ export function parseExtraction(answer, vocab, ids, expectedKeys, { sceneRequire
         if (d.recall_at === null) delete d.recall_at;
         if (d.player_words === null) delete d.player_words;
     }
-    if (!errors.length) for (const d of value.deltas) if (d.type === 'creature.new' && d.across === null) delete d.across;
+    if (!errors.length) for (const d of value.deltas) {
+        if (d.type === 'creature.new' && d.across === null) delete d.across;
+        if (d.individual_rank === null) delete d.individual_rank;
+    }
     const semanticIssues = [];
     let stepAt = startScene;
     if (!errors.length && sceneRequired && state?.meta?.ruleset >= 2) for (const d of [...value.deltas].sort((a,b) => a.seq-b.seq)) {

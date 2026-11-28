@@ -5,7 +5,7 @@
 // too). No catalog of finished Skills, no new effect kind: the definition is validated and booked by src/skills.js
 // defineSkill like any other, and fixed once booked. Pure: the same state and request give the same definition.
 import { skillNames, skillOf } from './content.js';
-import { disciplineTags, skillAspects, calibration } from './skills.js';
+import { disciplineTags, skillAspects, calibration, skillCostBand, skillDefErrors } from './skills.js';
 import { normText, hash32 } from './util.js';
 
 const ROMAN = ['II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
@@ -63,14 +63,14 @@ function freeName(content, state, base) {
 }
 
 /** Technique identity ignores prose, source and ordering; the composer still preserves the primary scaling tag. */
-export const techniqueSignature = ({ fn, tags = [], aspects = [] }) => JSON.stringify([fn, [...new Set(tags)].sort(), [...new Set(aspects)].sort()]);
+export const techniqueSignature = ({ fn, tags = [], aspects = [], rank = 'F' }) => JSON.stringify([rank, fn, [...new Set(tags)].sort(), [...new Set(aspects)].sort()]);
 
 /** Older .42 acquisitions carry no function field. Recover it from the closed composer shapes, without rewriting. */
 export function acquiredTechnique(def) {
     if (!['teacher', 'stone', 'material'].includes(def?.origin?.kind)) return null;
     const fn = def.attack ? (def.range?.band === 'ENGAGED' ? 'strike' : def.attack.damage_type === 'magical' ? 'bolt' : null)
         : ({ temp_def: 'guard', barrier: 'ward', heal: 'mend' })[def.effects?.[0]?.kind];
-    return fn ? { fn, tags: def.tags, aspects: def.aspects || [] } : null;
+    return fn ? { fn, rank:def.rank || 'F', tags: def.tags, aspects: def.aspects || [] } : null;
 }
 
 /** The first free id for a name: dyn.<name> (letters, digits, _), else with _2 … _9. */
@@ -88,8 +88,9 @@ function freeId(content, state, name) {
  * The definition of one technique (C1, F-rank). request: {fn, tags, aspects, origin: {kind, note?}, source?: words of
  * where it came from for its description}. {def} or {errors}; the caller books it through defineSkill (validation).
  */
-export function composeSkill(state, content, { fn, tags, aspects = [], origin, source = null }) {
+export function composeSkill(state, content, { fn, tags, aspects = [], origin, source = null, rank = content.rules.composer.entry_rank }) {
     const R = rules(content);
+    if (!calibration(content, rank)) return { errors: [`No calibrated techniques for rank ${rank}`] };
     const spec = R?.functions?.[fn];
     if (!spec) return { errors: [`no technique of the kind "${fn}"`] };
     const t = composeTags(content, fn, tags);
@@ -108,7 +109,7 @@ export function composeSkill(state, content, { fn, tags, aspects = [], origin, s
     const from = source ? `, ${clean(source, 120)}` : '';
     const def = {
         id, name, description: clean(`${what}${from}.`, 300), origin: { kind: origin.kind, ...(origin.note ? { note: clean(origin.note, 200) } : {}) },
-        rank: R.entry_rank, complexity: R.entry_complexity, tags: t.tags, ...(a.aspects.length ? { aspects: a.aspects } : {}), category: spec.category, activation: 'action',
+        rank, complexity: R.entry_complexity, tags: t.tags, ...(a.aspects.length ? { aspects: a.aspects } : {}), category: spec.category, activation: 'action',
         target: spec.attack ? 'enemy' : 'self', cost: { resource, amount: spec.cost }, effects: [],
     };
     if (spec.attack) {
@@ -120,6 +121,7 @@ export function composeSkill(state, content, { fn, tags, aspects = [], origin, s
         const stat = allowed.includes(R.stat_by_tag[primary]) ? R.stat_by_tag[primary] : allowed[0];
         def.effects = [{ kind, ...fields, stat }];
     }
+    if (rank === 'E') scaleToE(content, def);
     return { def, errors: [] };
 }
 
@@ -134,7 +136,7 @@ export function techniqueOf(skill) {
     if (!skill || skill.basic || skill.weapon_attack || skill.item) return null;
     const fn = skill.attack ? (skill.range?.band === 'ENGAGED' ? 'strike' : skill.attack.damage_type === 'magical' ? 'bolt' : null)
         : ({ temp_def: 'guard', barrier: 'ward', heal: 'mend' })[skill.effects?.[0]?.kind];
-    return fn ? { fn, tags: [...(skill.tags || [])], aspects: [...(skill.aspects || [])] } : null;
+    return fn ? { fn, rank:skill.rank || 'F', tags: [...(skill.tags || [])], aspects: [...(skill.aspects || [])] } : null;
 }
 
 const featureList = (k) => {
@@ -148,7 +150,7 @@ export function techniqueShape(skill) {
     if (!skill) return null;
     const a = skill.attack;
     const kinds = (skill.effects || []).map((e) => e.kind).filter((k) => !['extra_band', 'area', 'post_attack_temp_def'].includes(k)).sort();
-    return JSON.stringify([a ? `${skill.range?.band === 'LONG' ? 'MEDIUM' : skill.range?.band}|${a.damage_type}` : 'self', featureList(skill).sort(), kinds, [...(skill.tags || [])].sort(), [...(skill.aspects || [])].sort()]);
+    return JSON.stringify([skill.rank || 'F', a ? `${skill.range?.band === 'LONG' ? 'MEDIUM' : skill.range?.band}|${a.damage_type}` : 'self', featureList(skill).sort(), kinds, [...(skill.tags || [])].sort(), [...(skill.aspects || [])].sort()]);
 }
 
 const DEFENSES = ['temp_def', 'temp_mdef', 'barrier', 'incoming_damage_reduction', 'damage_reduction_next'];
@@ -186,6 +188,18 @@ function defOf(skill) {
     };
 }
 
+function scaleToE(content, def) {
+    const f = calibration(content, 'F')[def.complexity];
+    const e = calibration(content, 'E')[def.complexity];
+    if (def.attack) def.attack.base = Math.floor(def.attack.base * e.base / f.base);
+    for (const effect of def.effects) {
+        if (['heal','barrier'].includes(effect.kind)) effect.base = Math.floor(effect.base * content.rules.skill_design.e_rank.effect_scale);
+        if (effect.kind === 'temp_def') effect.base = Math.min(6, effect.base + 1);
+        if (effect.kind === 'temp_mdef') effect.base = Math.min(4, effect.base + 1);
+    }
+    def.cost.amount = clamp(def.cost.amount, skillCostBand(content, 'E', def.complexity, def.cost.resource));
+}
+
 /** The second protection a defense takes on (the validator's pairs: never a Barrier with a DEF bonus). */
 function secondDefense(content, first, tags) {
     const R = rules(content);
@@ -203,6 +217,20 @@ function secondDefense(content, first, tags) {
  * Skill's own; a Rank without bounds is refused, never taken for F), text: words of where it came from}
  */
 export function developSkill(state, content, base, step, { origin, name = null, rank = null, text = null } = {}) {
+    if (step === 'rank') {
+        if (!base || base.basic || base.weapon_attack || base.item || (base.rank || 'F') !== 'F')
+            return {errors:['Only an F technique can reach E this way']};
+        const def = defOf(base);
+        def.rank = 'E';
+        scaleToE(content, def);
+        def.name = freeName(content, state, `Ascendant ${base.name}`);
+        def.id = def.name && freeId(content, state, def.name);
+        if (!def.id) return {errors:['No unique name for the evolved technique']};
+        def.description = clean(`${base.name}, mastered at Rank E.`, 300);
+        def.origin = {kind:'evolution', note:clean(origin?.note || base.name, 200)};
+        const errors = skillDefErrors(def, content, state);
+        return errors.length ? {errors} : {def, errors};
+    }
     const S = STEPS[step];
     if (!S) return { errors: [`no development step "${step}"`] };
     if (!base || base.item || base.weapon_attack) return { errors: ['only a Skill develops'] };
@@ -234,7 +262,7 @@ export function developSkill(state, content, base, step, { origin, name = null, 
     } else {
         def.effects.push(secondDefense(content, def.effects[0], def.tags));
     }
-    def.cost.amount = clamp(def.cost.amount + 2, cal.cost);
+    def.cost.amount = clamp(def.cost.amount + 2, skillCostBand(content, R, c, def.cost.resource));
     const preferred = name && name.length <= 40 ? name : null;
     // a Basic Attack's development is a technique of its own: named by its discipline, not "Basic Attack"
     const plain = `${S.word} ${rules(content).tag_words[def.tags[0]] || 'Iron'} ${def.attack ? (def.range.band === 'ENGAGED' ? 'Strike' : 'Bolt') : 'Guard'}`;
@@ -276,6 +304,6 @@ export function signatureSkill(state, content, person, sheet) {
     const pick = options[parseInt(hash32(key), 16) % options.length];
     const first = String(person.name || '').trim().split(/\s+/)[0] || '';
     const own = /^[A-Za-z][A-Za-z'-]{1,15}$/.test(first) ? `${first}'s ${STEPS[pick.step].word} ${pick.k.name}` : null;
-    const r = developSkill(state, content, pick.k, pick.step, { rank: 'F', name: own, origin: { kind: 'signature', note: `${person.name || 'their'} own way with ${pick.k.name}` } });
+    const r = developSkill(state, content, pick.k, pick.step, { rank: sheet.template === 'experienced_adventurer' ? 'E' : 'F', name: own, origin: { kind: 'signature', note: `${person.name || 'their'} own way with ${pick.k.name}` } });
     return signatureFit(r.def) ? r.def : null;
 }

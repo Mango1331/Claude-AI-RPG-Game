@@ -73,7 +73,7 @@ test('9D real combat end reaches E once, offers alternatives without a trait, ex
     assert.deepEqual(sheet(g).stats,stats);assert.deepEqual(sheet(g).passives,passives);assert.deepEqual(sheet(g).skills,skills);
     assert.equal(classOffer(g.state()),null);assert.equal(sheet(g).class_history.length,1);
     assert.equal(lastUser(g).events.filter((e)=>e.t==='passive.gained').length,0);
-    assert.equal(deriveCharacter(sheet(g),c).atk,before.atk+6);
+    assert.equal(deriveCharacter(sheet(g),c).atk,before.atk+12);
     assert.match(outcomeOf(g).booked.classes[0].text,/Rare/);
     assert.match(panel(g,'#class'),/Class legacy: 2/);assert.match(panel(g,'#feats'),/Extraordinary Survival/);
     assert.ok(JSON.stringify(characterRows(g.state(),c)).includes(choice.name));
@@ -83,7 +83,7 @@ test('9D real combat end reaches E once, offers alternatives without a trait, ex
     // A durable, surviving target leaves a combat snapshot in which the trait is already included.
     inject(g,[{t:'entity.created',d:{entity:{id:'mon.next',kind:'creature',anchor:'wolf',species:'wolf',profile:{...p,max_hp:250,hp:250},status:'alive',location:g.state().scene.location}}},{t:'scene.entered',d:{id:'mon.next',band:'ENGAGED',cover:'none'}},{t:'scene.awareness',d:{id:'mon.next',level:'aware'}}]);
     await say(g,'*I heavy slash it*',{type:'use_skill',skill:'warrior.heavy_slash',target:'mon.next',quote:'I heavy slash it'});
-    assert.equal(g.state().encounter.combatants.pc.fixed.atk,before.atk+6);
+    assert.equal(g.state().encounter.combatants.pc.fixed.atk,before.atk+12);
     assert.ok(outcomeOf(g).records.some((r)=>r.actor==='pc'&&r.cost&&r.cost.amount<7),'class cost reduction is executed');
 });
 

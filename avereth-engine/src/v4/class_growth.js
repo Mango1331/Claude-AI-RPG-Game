@@ -64,7 +64,7 @@ function directions(s, content) {
 
 function traitFor(direction, quality, content) {
     const b = content.rules.class_growth.budgets[quality], p = b.per;
-    const stat = (stat) => ({ kind: 'stat_bonus', stat, value: p.stat_bonus });
+    const stat = (stat) => ({ kind: 'stat_bonus', stat, value: ['ATK', 'MATK'].includes(stat) ? p.offensive_stat : p.stat_bonus });
     const pool = (resource) => ({ kind: 'max_bonus', resource, value: p.max_bonus });
     const cost = (resource, tag) => ({ kind: 'cost_reduction', resource, tag, pct: p.cost_reduction });
     const resist = (damage_type) => ({ kind: 'resist', damage_type, pct: p.resist });

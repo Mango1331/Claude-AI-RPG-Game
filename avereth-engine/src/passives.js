@@ -102,8 +102,9 @@ export function effectErrors(def, content, budget) {
         for (const [k, rule] of Object.entries(spec.fields)) {
             const v = x[k];
             if (rule === 'per') {
-                if (!per[x.kind]) e.push(`effects[${i}] ${x.kind}: only on a Passive of a quality that allows it`);
-                else if (!isInt(v) || v < 1 || v > per[x.kind]) e.push(`effects[${i}] ${x.kind}.${k}: 1-${per[x.kind]}`);
+                const limit = x.kind === 'stat_bonus' && ['ATK', 'MATK'].includes(x.stat) ? (per.offensive_stat ?? per.stat_bonus) : per[x.kind];
+                if (!limit) e.push(`effects[${i}] ${x.kind}: only on a Passive of a quality that allows it`);
+                else if (!isInt(v) || v < 1 || v > limit) e.push(`effects[${i}] ${x.kind}.${k}: 1-${limit}`);
             }
             else if (rule === 'tag') { if (v !== undefined && !tags.includes(v)) e.push(`effects[${i}] ${x.kind}.tag: one of ${tags.join(', ')}`); }
             else if (!rule.includes(v)) e.push(`effects[${i}] ${x.kind}.${k}: one of ${rule.join(', ')}`);
@@ -180,7 +181,12 @@ export function passiveTotals(sheet, content) {
         }
     }
     for (const k of CORE_STATS) out.core[k] = capped(out.core[k], total.core_stat_bonus);
-    for (const k of STATS) out.stat[k] = capped(out.stat[k], total.stat_bonus);
+    for (const k of STATS) {
+        const trait = sheet?.evolution?.trait;
+        const classValue = trait?.scope === 'always' && ['ATK', 'MATK'].includes(k)
+            ? trait.effects.find(x => x.kind === 'stat_bonus' && x.stat === k)?.value || 0 : 0;
+        out.stat[k] = capped(out.stat[k], Math.max(total.stat_bonus, classValue));
+    }
     for (const k of POOLS) out.max[k] = capped(out.max[k], total.max_bonus);
     for (const k of ['physical', 'magical']) out.resist[k] = capped(out.resist[k], total.resist);
     return out;

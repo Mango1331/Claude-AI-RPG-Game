@@ -149,6 +149,7 @@
           "type": "string",
           "nullable": true
         },
+        "learn_rank": {"enum":["F","E"],"nullable":true},
         "teacher": {
           "ref": "person",
           "nullable": true

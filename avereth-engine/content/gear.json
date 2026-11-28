@@ -455,6 +455,7 @@
   },
   "instances": {
     "market_rank": "F",
+    "market_factors": {"F": 1, "E": 2.5},
     "_note": "Patch 7.1 (4.3.0-c.6.6.19): a concrete item's own values, fixed once when it is established (an offer line, a purchase, loot, the story) and kept on the object as its profile; a later change of this file changes no item that exists. Ranks are bands, not fixed strengths: within one Rank an item's quality (the words of its name) places it in the reference range of its kind (f_rank_reference) or above it for exceptional pieces, and higher Ranks scale it as HIGHER-RANK GENERATION says. Guidelines for ordinary items; an item the story establishes with an explicit Rank keeps it.",
     "quality": [
       {
@@ -677,11 +678,11 @@
     },
     "f_shield_fine_def": 5,
     "e_weapon_values": {
-      "crude": 7,
-      "common": 11,
-      "fine": 15,
-      "superior": 19,
-      "exceptional": 23
+      "crude": 8,
+      "common": 14,
+      "fine": 20,
+      "superior": 25,
+      "exceptional": 31
     },
     "weapon_prices": { "F": {
       "fine": 140,

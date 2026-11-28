@@ -22,7 +22,7 @@
 //
 // Pure functions of the state; nothing here calls an LLM, and nothing is booked in a legacy campaign.
 import { rulesetOf, skillOf, npcTemplate } from '../content.js';
-import { affinityFor, defineSkill, learnSkill, fightQualifies, practiceProgress, skillDefErrors, disciplineTags } from '../skills.js';
+import { calibration, affinityFor, defineSkill, learnSkill, fightQualifies, practiceProgress, skillDefErrors, disciplineTags } from '../skills.js';
 import { composeSkill, composeTags, composeAspects, composerFunctions, techniqueSignature, acquiredTechnique, techniqueOf } from '../skill_composer.js';
 import { applyEvent } from '../state.js';
 import { truth, entityLabel } from '../knowledge.js';
@@ -57,14 +57,15 @@ export function openGoals(state) {
 // 9C completion: a Skill his own evolved from (a chosen starter, or one of a teacher, a stone or a manual) is not learned
 // again: its technique, by its kind, leading discipline and aspects, counts as known (a starter he still holds blocks
 // nothing, as in 9C-2a)
-const looseKey = (t) => JSON.stringify([t.fn, (t.tags || [])[0] ?? null, [...new Set(t.aspects || [])].sort()]);
+const looseKey = (t) => JSON.stringify([t.rank || 'F', t.fn, (t.tags || [])[0] ?? null, [...new Set(t.aspects || [])].sort()]);
 export function knownTechnique(state, target, content = null) {
     if (target.passive) return null;
     const key = techniqueSignature(target);
     const sheet = state.entities?.pc?.sheet;
     const ids = new Set([...Object.keys(sheet?.skills || {}), ...growthOf(state).done.map((g) => g.skill)]);
     const exact = [...ids].find((id) => {
-        const t = acquiredTechnique(state.skill_defs?.[id]);
+        const def = state.skill_defs?.[id];
+        const t = acquiredTechnique(def) || (def?.origin?.kind === 'evolution' ? techniqueOf(def) : null);
         return t && techniqueSignature(t) === key;
     });
     if (exact || !content) return exact;
@@ -167,12 +168,22 @@ export function teachingCommitment(state, id) {
 const here = (state, id) => typeof id === 'string' && (state.scene?.present || []).includes(id) && state.entities?.[id]?.status !== 'dead';
 
 /** Can this person teach these tags here and now: {ok, why}. */
-function teacherNow(state, content, id, tags) {
+function teacherNow(state, content, id, target) {
     if (typeof id !== 'string' || !state.entities?.[id] || id === 'pc') return { ok: false, why: 'no known teacher is named' };
     const name = entityLabel(state, id);
     if (!here(state, id)) return { ok: false, why: `${name} is not here` };
     const can = teacherTags(state, content, id);
     if (!can.length) return { ok: false, why: `${name} has no combat training to teach` };
+    const tags = target.tags;
+    if (target.rank === 'E') {
+        const sheet = state.entities[id].sheet;
+        const qualified = sheet && !rankRefusal(content, sheet.level, target) &&
+            Object.keys(sheet.skills).some(id => {
+                const technique = techniqueOf(skillOf(content, id, state));
+                return technique && techniqueSignature(technique) === techniqueSignature(target);
+            });
+        if (!qualified) return {ok:false, why:`${name} does not know that E technique`};
+    }
     if (!tags.every((t) => can.includes(t))) return { ok: false, why: `${name} has no mastery of ${tags.join(', ')} (${can.join(', ')})` };
     return { ok: true, name };
 }
@@ -227,10 +238,10 @@ const passiveTraining = (s, content, stat) => passiveGain(s.entities.pc.sheet, c
 /** The technique a source's fixed profile legitimizes, or why none: {target} | {refuse}. */
 function sourceTarget(content, p) {
     if (!p?.fn) return { refuse: 'what technique it holds was never established, so it teaches none' };
-    if (p.rank !== content.rules.composer.entry_rank) return { refuse: `${p.rank}-Rank techniques cannot be learned yet (only ${content.rules.composer.entry_rank}-Rank)` };
+    if (!calibration(content, p.rank)) return { refuse: `${p.rank}-Rank techniques cannot be learned yet (only ${content.rules.composer.entry_rank}-Rank)` };
     const t = composeTags(content, p.fn, p.tags?.length ? p.tags : null);
     if (t.error) return { refuse: t.error };
-    return { target: { fn: p.fn, tags: t.tags, aspects: [...(p.aspects || [])] } };
+    return { target: { ...(p.rank === 'E' ? {rank:p.rank} : {}), fn: p.fn, tags: t.tags, aspects: [...(p.aspects || [])] } };
 }
 
 const manualOf = (content, o) => { const p = profileOf(content, o); return p?.kind === 'skill_source' && p.source === 'manual' ? p : null; };
@@ -346,7 +357,7 @@ export function learningActivity(s, content, c, minutes, start) {
         if (t.error) return { status: 'refused', reason: 'not this technique', line: `NOT LEARNING — ${t.error}; nothing is booked.` };
         const a = composeAspects(content, c.aspects);
         if (a.error) return { status: 'refused', reason: 'not this aspect', line: `NOT LEARNING — ${a.error}; nothing is booked.` };
-        target = { fn: fresh, tags: t.tags, aspects: a.aspects };
+        target = { ...((material?.profile?.rank || c.learn_rank) === 'E' ? {rank:'E'} : {}), fn: fresh, tags: t.tags, aspects: a.aspects };
         // Patch 9C-2b: a manual teaches the technique its profile names, nothing else
         if (material) {
             const m = sourceTarget(content, material.profile);
@@ -358,6 +369,8 @@ export function learningActivity(s, content, c, minutes, start) {
         const same = goals.find((x) => techniqueSignature(x.target) === techniqueSignature(target));
         if (same) { goal = same; source = same.source; }
     }
+    const rankWhy = rankRefusal(content, s.entities.pc.sheet.level, target);
+    if (rankWhy) return {status:'refused', reason:'rank', line:`NOT LEARNING — ${rankWhy}`};
     if (knownTechnique(s, target, content)) return { status: 'refused', reason: 'already learned', line: `NOT LEARNING — he knows this technique already; practise the known Skill instead. Nothing is booked, no time passes.` };
     // a teacher session: the teacher he names, else the goal's own teacher when present; a new goal needs one
     if (c.teacher && typeof c.teacher !== 'string') return { status: 'refused', reason: 'no teacher', line: `NOT LEARNING — no known teacher is named ("${String(c.teacher.new ?? '').replace(/[<>`]/g, '').slice(0, 40)}" is nobody the engine knows here); nothing is booked, no time passes for it.` };
@@ -366,7 +379,7 @@ export function learningActivity(s, content, c, minutes, start) {
     let kind = 'self';
     let boundSource = null;
     if (who) {
-        const t = teacherNow(s, content, who, target.tags);
+        const t = teacherNow(s, content, who, target);
         if (!t.ok) return { status: 'refused', reason: 'no teacher', line: `NOT LEARNING — ${t.why}; nothing is booked, no time passes for it.` };
         const consent = goal?.teachers?.[who] || (who === source?.who ? source : teachingCommitment(s, who));
         if (!consent) return { status: 'refused', reason: 'no teaching commitment', line: `NOT LEARNING — ${t.name} has not agreed to teach him (no training paid for, no promise to teach him on record); nothing is booked, no time passes for it. Asking is words: the story may let them answer.` };

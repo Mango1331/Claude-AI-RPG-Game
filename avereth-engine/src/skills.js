@@ -53,6 +53,11 @@ export function calibration(content, rank = 'F') {
     };
 }
 
+export function skillCostBand(content, rank, complexity, resource) {
+    const costRank = rank === 'E' && resource === 'sta' ? 'F' : rank;
+    return calibration(content, costRank)?.[complexity]?.cost;
+}
+
 /** 9C completion: the Barrier and heal bounds of a Complexity at a Rank (Rank E: their bases × its effect_scale). */
 function effectCap(content, caps, rank, complexity) {
     const cap = caps[complexity];
@@ -124,8 +129,9 @@ export function skillDefErrors(def, content, state = null) {
     if (!!attack !== /^Offensive/.test(def.category || '')) e.push('category: Offensive exactly when it attacks');
     if (def.target !== (attack ? 'enemy' : 'self')) e.push(`target: ${attack ? 'enemy for an attack' : 'self for a Skill without an attack'}`);
     const cal = calibration(content, RANKS.includes(def.rank) ? def.rank : 'F')?.[def.complexity];
+    const costs = skillCostBand(content, def.rank, def.complexity, def.cost?.resource);
     if (!def.cost || typeof def.cost !== 'object' || Object.keys(def.cost).some((k) => !['resource', 'amount'].includes(k)) || !['sta', 'mp'].includes(def.cost.resource) || !Number.isInteger(def.cost.amount)) e.push('cost: {resource: sta|mp, amount: whole number}');
-    else if (cal && !within(def.cost.amount, cal.cost)) e.push(`cost ${def.cost.amount}: ${cal.cost[0]}-${cal.cost[1]} at Complexity ${def.complexity}`);
+    else if (costs && !within(def.cost.amount, costs)) e.push(`cost ${def.cost.amount}: ${costs[0]}-${costs[1]} at Complexity ${def.complexity}`);
     const effects = Array.isArray(def.effects) ? def.effects : null;
     if (!effects) e.push('effects: a list (may be empty for a plain attack)');
     const kinds = (effects || []).map((x) => x?.kind);
@@ -137,7 +143,9 @@ export function skillDefErrors(def, content, state = null) {
             const v = x[k];
             if (rule === 'bool') { if (v !== undefined && typeof v !== 'boolean') e.push(`effects[${i}] ${x.kind}.${k}: true or false`); }
             else if (typeof rule[0] === 'string') { if (!rule.includes(v)) e.push(`effects[${i}] ${x.kind}.${k}: one of ${rule.join(', ')}`); }
-            else if (!within(v, rule)) e.push(`effects[${i}] ${x.kind}.${k}: ${rule[0]}-${rule[1]}`);
+            else if (k === 'base' && def.rank === 'E' && ['barrier', 'heal'].includes(x.kind)) {
+                if (!isNum(v) || v < rule[0]) e.push(`effects[${i}] ${x.kind}.base: invalid base`);
+            } else if (!within(v, rule)) e.push(`effects[${i}] ${x.kind}.${k}: ${rule[0]}-${rule[1]}`);
         }
         const capped = (caps, what) => {
             if (!BARRIER_CAP[def.complexity] || !calibration(content, def.rank)) return;

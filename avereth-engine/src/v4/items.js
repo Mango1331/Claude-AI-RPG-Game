@@ -103,7 +103,9 @@ export function gearOfferProfile(content, line) {
     const base = gearBases(content).find(b => b.id === line.base);
     const quality = content.gear.instances.quality.find(q => q.tier === line.quality);
     if (!base || !quality) return null;
-    const name = `${quality.tier} ${content.gear.instances.market_rank}-Rank ${base.name}`;
+    const rank = rankInName(line.what) || content.gear.instances.market_rank;
+    if (!content.gear.instances.market_factors[rank]) return null;
+    const name = `${quality.tier} ${rank}-Rank ${base.name}`;
     return {...itemProfile(content, {name, balance:true}), title:base.name};
 }
 export const gearOfferName = p => `${p.quality} ${p.rank}-Rank ${p.title}`;
@@ -151,11 +153,17 @@ export function offerCard(state, content, offer) {
     });
 }
 
+function tiersForRank(content, rank) {
+    return content.gear.instances.quality.map(q => gearRetailPrice(content, gearOfferProfile(content, {what:rank + '-Rank staff', base:'staff', quality:q.tier})));
+}
+
 /** Same content-derived market vocabulary for narrator, planner and extractor; no new slots or numbers. */
 export function gearMarketText(content, balance = false, audience = 'narrator') {
     const kinds = content.gear?.instances?.gear_kinds || [];
     const marketRank = content.gear.instances.market_rank;
     const staff = ['common', 'fine', 'superior', 'exceptional'].map(q => `${q} ${itemProfile(content, { name: `${q} ${marketRank}-Rank staff`, balance })?.matk ?? '?'}`).join(', ');
+    const mixed = 'Specialists and connected suppliers may actually stock E equipment alongside F. Establish their wares and access from the place, trade and history. Wealth, occupation or PC level alone establish no equipment rank. State an E article’s rank in its offer. E weapon guides by quality, crude through exceptional: ' +
+        tiersForRank(content, 'E').join('/') + ' cp. E manuals ~240 cp; rare Skill Stones ~800 cp or more; stock is individual.';
     const categories = `${kinds.map(k => `${k.words.slice(0, 2).join('/')} (${k.slot})`).join('; ')}`;
     const bases = gearBases(content).map(({ id, name }) =>
         audience === 'catalog' && id === name ? id : `${id}=${name}`
@@ -163,7 +171,7 @@ export function gearMarketText(content, balance = false, audience = 'narrator') 
     const tiers = content.gear.instances.quality.map(q => q.tier);
     const quality = tiers.join(', ');
     if (audience === 'catalog') {
-        return `GEAR MARKET — Supported categories: ${categories}. BASES (ID or ID=name): ${bases}. QUALITY: ${quality}. Regular ${marketRank} gear: one base + quality per article; split packages. Names, material and price grant no stats. No separate armor parts, head, leg, hand or jewelry slots. Ordinary goods have no combat stats. Engine sets values: ${marketRank} weapon/focus ${staff}; starter staff MATK 10. Preserve recorded prices and quoted quality. Upgrades require genuine higher quality; other options include armor/offhand, consumables and Skill manuals.`;
+        return `GEAR MARKET — Supported categories: ${categories}. BASES (ID or ID=name): ${bases}. QUALITY: ${quality}. Regular ${marketRank} gear: one base + quality per article; split packages. Names, material and price grant no stats. No separate armor parts, head, leg, hand or jewelry slots. Ordinary goods have no combat stats. Engine sets values: ${marketRank} weapon/focus ${staff}; starter staff MATK 10. Preserve recorded prices and quoted quality. Upgrades require genuine higher quality; other options include armor/offhand, consumables and Skill manuals. ${mixed}`;
     }
     const prices = new Map();
     for (const {id} of gearBases(content)) {
@@ -172,7 +180,7 @@ export function gearMarketText(content, balance = false, audience = 'narrator') 
         prices.get(schedule).push(id);
     }
     const retail = `Regular ${marketRank} retail (cp per unit in quality order ${quality}): ${[...prices].map(([schedule,bases]) => `${bases.join(', ')} ${schedule}`).join('; ')}. Use these prices for new regular stock and the recorded price for existing offers.`;
-    return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${categories}. Every regular ${marketRank} equipment offer needs base and quality; names are appearance only. BASES: ${bases}. QUALITY: ${quality}. One base per line; packages need separate lines. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats. ${marketRank} weapon/focus values by actual quality: ${staff}; starter staff MATK 10. For requested upgrades, a suitable specialist may offer genuinely finer/superior/exceptional supported ware; do not keep offering common gear under expensive material names. If no upgrade is available, say so. Copper/silver cores and higher prices alone grant no stats. ${retail} Keep the named quality and price stable; armour/offhand, consumables and supported Skill manuals are other voluntary improvements.`;
+    return `GEAR MARKET — Mechanical equipment uses only these supported categories: ${categories}. Every regular ${marketRank} equipment offer needs base and quality; names are appearance only. BASES: ${bases}. QUALITY: ${quality}. One base per line; packages need separate lines. Only the engine fixes its values. No extra head, leg, hand or jewelry slots or bonuses. Separate armor parts are not whole armor. Ordinary tools, clothes and decoration remain available, explicitly without combat stats. ${marketRank} weapon/focus values by actual quality: ${staff}; starter staff MATK 10. For requested upgrades, a suitable specialist may offer genuinely finer/superior/exceptional supported ware; do not keep offering common gear under expensive material names. If no upgrade is available, say so. Copper/silver cores and higher prices alone grant no stats. ${retail} Keep the named quality and price stable; armour/offhand, consumables and supported Skill manuals are other voluntary improvements. ${mixed}`;
 }
 
 /**
@@ -202,7 +210,7 @@ export function skillSource(content, { name, kind = 'item', teaches = null, bala
     // only tags and aspects the technique supports; an unsupported one is not taken (nor replaced)
     const tags = fn ? [...new Set((Array.isArray(teaches.tags) ? teaches.tags : []).filter((t) => !composeTags(content, fn, [t]).error))].slice(0, 2) : [];
     const aspects = [...new Set((Array.isArray(teaches.aspects) ? teaches.aspects : []).filter((a) => !composeAspects(content, [a]).error))].slice(0, 2);
-    return { kind: 'skill_source', source: teaches.source, title: teaches.source === 'stone' ? 'Skill Stone' : 'manual', rank: rankInName(name) || 'F', fn, tags, aspects, value_cp: r.value_cp?.[teaches.source] ?? 0 };
+    return { kind: 'skill_source', source: teaches.source, title: teaches.source === 'stone' ? 'Skill Stone' : 'manual', rank: rankInName(name) || 'F', fn, tags, aspects, value_cp: (r.rank_values?.[rankInName(name)] || r.value_cp)?.[teaches.source] ?? 0 };
 }
 
 /**
@@ -293,8 +301,16 @@ export function valueOf(content, p) {
 
 /** Ordinary F gear retail; null leaves special/higher-rank goods and other trades flexible. */
 export function gearRetailPrice(content, profile) {
-    if (profile?.kind !== 'gear' || profile.rank !== content.gear.instances.market_rank) return null;
-    if (profile.slot === 'weapon') return content.gear.instances.weapon_prices?.[profile.rank]?.[profile.quality] ?? profile.value_cp;
+    if (profile?.kind !== 'gear' || !content.gear.instances.market_factors[profile.rank]) return null;
+    if (profile.slot === 'weapon') {
+        const pack = content.gear.instances;
+        const listed = pack.weapon_prices?.[profile.rank]?.[profile.quality];
+        if (listed != null) return listed;
+        if (profile.rank === 'E') {
+            const base = pack.weapon_prices.F[profile.quality] ?? pack.f_weapon_values[profile.quality] * pack.value.gear_cp_per_point;
+            return Math.round(base * pack.market_factors.E);
+        }
+    }
     return profile.value_cp;
 }
 

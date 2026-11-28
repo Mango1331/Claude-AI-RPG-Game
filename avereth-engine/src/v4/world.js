@@ -992,7 +992,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (kind === 'npc' && d.individual_rank === 'E' && rulesetOf(s) >= 2) {
             for (const id of created) emit({t:'entity.updated', d:{id, set:experiencedPerson(id)}});
         }
-        if (kind === 'npc' && created.length) armedFact(created[0], d.armed);
+        if (kind === 'npc' && created.length) {
+            armedFact(created[0], d.armed);
+            if (d.individual_rank === 'E' && rulesetOf(s) >= 2) materialise(s, content, dice, emit, created[0]);
+        }
         if (kind === 'npc' && pulse?.open && pulse.kind === 'danger' && d.present !== false && rulesetOf(s) >= 2) {
             const area = encounterArea(s,s.scene.at);
             for (const id of created) {
@@ -3611,13 +3614,17 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
             return q.state === 'verified' ? q.cp : null; };
         const priced = d.lines.map(l => {
             const named = l.kind === 'goods' ? itemProfile(content, {name:l.what, balance:true, effect:l.effect, teaches:l.teaches}) : null;
-            const regular = l.kind === 'goods' && l.equipment !== false && (l.base != null || l.equipment === true || (named?.kind === 'gear' && named.rank === content.gear.instances.market_rank)) && (!named?.rank || named.rank === content.gear.instances.market_rank);
-            if (regular) {
+            const regular = l.kind === 'goods' && l.equipment !== false && (l.base != null || l.equipment === true || (named?.kind === 'gear' && content.gear.instances.market_factors[named.rank])) && (!named?.rank || content.gear.instances.market_factors[named.rank]);
+            if (regular && !(named?.rank === 'E' && named.kind === 'gear' && !l.base && !l.quality)) {
                 const said = terms ? quoted(l) : evidenced(l.price_cp, l.said, d);
                 const existing = openOffers(s).filter(o=>!o.bid && o.seller===seller).flatMap(o=>o.lines).find(x=>normText(l.what) === normText(x.what) && (x.qty??1)===(l.qty??1) && x.price_cp===said);
                 if(existing) return {...existing,engine_price:true};
                 const profile = gearOfferProfile(content,l);
                 if (!profile) { reject({...d,lines:[l]}, 'gear_offer', 'regular equipment requires a supported base and quality'); return null; }
+                if (profile.rank === 'E') {
+                    const terms = dealTerms(l, {units:l.qty ?? 1, reported:l.price_cp});
+                    return {...l, profile, raw_line:l, raw_price:l.price_cp, price_cp:terms.price, terms:terms.terms, condition:terms.condition, evidence:terms.evidence, why:terms.why};
+                }
                 const price_cp = gearRetailPrice(content,profile) * (l.qty ?? 1);
                 // the engine's price needs no words; whether the seller offers it now still does
                 const t = terms ? dealTerms(l, { units: l.qty ?? 1, reported: l.price_cp, enginePrice: price_cp }) : null;
@@ -3666,7 +3673,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                 if (!profile) return { ...line, profile: null };
             }
             if (!profile) return line;
-            const retail = cPath ? gearRetailPrice(content, profile) : null;
+            const retail = cPath && profile.rank === 'F' ? gearRetailPrice(content, profile) : null;
             // Repeating an existing bargain never silently reprices that stored contract.
             const existing = openOffers(s).filter(o => !o.bid && o.seller === seller).flatMap(o => o.lines)
                 .find(x => sameArticle(line,x)

@@ -216,7 +216,7 @@ test('patch 7.1 (7): an E-Rank scroll and an E-Rank sword can be his but not use
     const k = live(37);
     inject(k, [held('obj.test.e_scroll', 'E-Rank scorchburst scroll', s0), held('obj.test.e_sword', 'E-Rank longsword', s0), { t: 'level.up', d: { id: 'pc', level: 15, free_points: 0, favored: [], xp_after: 0 } }]);
     await say(k, '*i draw the new longsword and wield it*', { type: 'equip', object: 'obj.test.e_sword', slot: null, quote: 'wield it' });
-    assert.match(outcomeOf(k).actions[0], /EQUIPS — E-Rank longsword \(weapon; ATK 11\)/);
+    assert.match(outcomeOf(k).actions[0], /EQUIPS — E-Rank longsword \(weapon; ATK 14\)/);
     await k.reply('He settled the blade.', { expected: {}, deltas: [] });
     await say(k, TEXT, USE('obj.test.e_scroll'));
     r = lastUser(k);

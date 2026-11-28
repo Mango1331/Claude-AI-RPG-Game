@@ -143,6 +143,12 @@ export function skillEvidence(state, content) {
         if ((entry.prof || 1) < 5 || open((x) => x.kind === 'evolution' && x.skill === sid)) continue;
         const spent = used((x) => x.kind === 'evolution' && x.skill === sid);
         const notes = (g.marks?.[sid] || []).filter((n) => !spent.has(n.fight));
+        const required = r.evolution_fights ?? 2;
+        if ((k.rank || 'F') === 'F' && !rankBar(content, {rank:'E'}, sheet.level) && notes.length >= required && fresh(k, 'rank')) {
+            const fights = notes.slice(-required).map(n => n.fight);
+            add({key:`evo:${sid}:rank:${fights.join('+')}`, kind:'evolution', skill:sid, step:'rank', fights, why:`${k.name} at P5 and E power, used in ${required} qualifying fights`});
+            continue;
+        }
         for (const step of STEP_ORDER) {
             const fights = STEPS[step].applies(k) ? pick(notes, step, r.evolution_fights ?? 2) : null;
             if (!fights || !fresh(k, step)) continue;

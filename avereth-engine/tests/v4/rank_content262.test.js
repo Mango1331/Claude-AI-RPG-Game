@@ -54,7 +54,7 @@ test('market, crafted skills and passive bounds use separate parameters', () => 
     assert.equal(gearRetailPrice(synthetic,staff),123);
     assert.equal(gearOfferProfile(current,offer).rank,'F');
     assert.match(gearMarketText(synthetic,true),/Regular E retail/);
-    assert.match(extractorSystem(synthetic.deltaVocab),/Regular E gear offers/);
+    assert.match(extractorSystem(synthetic.deltaVocab),/Regular F\/E gear offers/);
     const input = {fn:'bolt',tags:null,origin:{kind:'engine'}};
     const s = {entities:{pc:{sheet:{skills:{}}}}, skill_defs:{}};
     const result = composeSkill(s,synthetic,input);

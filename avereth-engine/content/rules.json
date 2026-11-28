@@ -256,7 +256,8 @@
     "passive_stone_note": "Patch 9C-2c: a Passive Stone is a legendary treasure whose power only the engine establishes (src/v4/passive_growth.js engineEvidence); a thing the story or an offer calls one is never a source of a technique, and using it gives nothing",
     "stone_objects_note": "4.3.0-c.6.6.48 (live 23.10.2026: the offered \"Lesser Spark Stone\" with its established teaches was no source): a stone the story or the offer established as teaching a technique (teaches.source stone) is a Skill Stone by any name that calls it a stone; without teaches no stone is one, whatever its name",
     "manual_words": ["manual", "primer", "treatise", "grimoire", "spellbook", "spell book", "handbook", "codex", "training book", "technique book", "lesson book", "instruction book"],
-    "value_cp": {"stone": 400, "manual": 120}
+    "value_cp": {"stone": 400, "manual": 120},
+    "rank_values": {"E":{"stone":800,"manual":240}}
   },
   "fight_lp": 12,
     "fight_note": "a fight that qualifies for Proficiency Progress (proficiency.award.challenge) in which he used a Skill sharing a tag with an open learning goal: once per fight, to the oldest such goal, times his affinity, rounded down",
@@ -687,6 +688,7 @@
         ],
         "per": {
           "stat_bonus": 4,
+          "offensive_stat": 8,
           "max_bonus": 20,
           "cost_reduction": 8,
           "resist": 8
@@ -699,6 +701,7 @@
         ],
         "per": {
           "stat_bonus": 6,
+          "offensive_stat": 12,
           "max_bonus": 35,
           "cost_reduction": 15,
           "resist": 15

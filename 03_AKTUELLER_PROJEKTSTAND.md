@@ -25,7 +25,7 @@
 
 1. GPT prüft den [Diff von .260 zu .261](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/7bdb570103d8876cb2a0ff7cac8c8de83e9b1e79...4b637c981459e1e5ff9f4bd480bc071723fe5bce).
 2. Nach dem Gegenreview entscheidet der Nutzer über Usertest 17. Für neue Originale gilt der [Usertest-Ablauf](01_ARBEITSWEISE_GPT_CODEX.md#persönliche-usertests--verbindlicher-ablauf).
-3. Die [unabhängige Claude-Gesamtanalyse zu .261](recherche/AVERETH_261_GESAMTARCHITEKTUR_EFFIZIENZ_UND_BETA_REIFE_CLAUDE.md) empfiehlt Usertest 17 als natürlichen Nachweis von Claim + State und danach ein neues Replay-Korpus. E-Rang, Altpfad-Rückbau und Speicherdiät laufen als getrennte Pakete; über sie entscheidet der Nutzer.
+3. Claude empfiehlt nach Bewertung des GPT-Gegenreviews einen autonomen Codex-Auftrag „Rangfähiges Fundament“. Er umfasst ein modernes Replay mit Invarianten, eine verhaltensneutrale Rang-Parametrisierung, einen Skalierungstest und eine kostengünstige Live-Runner-Serie. Parallel entsteht die E-Kanonvorlage von GPT und Nutzer. Usertest 17 ist keine Freigabebedingung. [Bewertung und Empfehlung](recherche/AVERETH_261_CLAUDE_BEWERTUNG_GPT_GEGENREVIEW_UND_NAECHSTE_SCHRITTE.md) · [Gesamtanalyse](recherche/AVERETH_261_GESAMTARCHITEKTUR_EFFIZIENZ_UND_BETA_REIFE_CLAUDE.md)
 
 ## Arbeitsaufteilung
 

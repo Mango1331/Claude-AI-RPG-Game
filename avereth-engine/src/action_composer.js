@@ -69,7 +69,7 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     box.append(rest);
     const partyPanel=installPartyPanel(box,{state,content,revision:()=>key()+'|'+actionPrefix(context().chat),
         blocked:()=>blocked() || (generating?'Erzählung läuft.':null) ||
-            (state().encounter || state().pending_combat?.length?'Begegnung zuerst abschließen.':null) ||
+            (state().pending_combat?.length?'Begegnung zuerst auflösen.':null) ||
             (draft() || textarea().value.trim()?'Vorbereitete Eingabe zuerst senden oder entfernen.':null) ||
             (textarea().disabled || textarea().readOnly?'Eingabe gesperrt.':null),
         send:text=>{

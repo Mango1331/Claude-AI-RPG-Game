@@ -5,6 +5,7 @@ import { Dice } from '../rng.js';
 import { agreementsOf, membersOf, partyDecision, tacticalChange, bindPartyEquipment } from '../party.js';
 import { payClaim, vestQuest } from '../party_rewards.js';
 import { contractReady } from './guild.js';
+import {canFight} from '../party_line.js';
 import { tacticalHere, sideOf, attackTargetHere } from './scene_handles.js';
 import { trueDungeonOf } from './dungeon.js';
 import { hash32, normText } from '../util.js';
@@ -17,14 +18,21 @@ const tacticLabels = {
     front:'Vorne (normale Position)', rear:'Hinten beginnen', watch:'Wache (kein belegter Wachbonus, kann Erholung kosten)', rest:'Wache beenden',
 };
 
+function activeCombatant(enc,id) {
+    const c=enc.combatants[id]?.current;
+    return c && !c.defeated && !c.escaped && !c.surrendered;
+}
+
 export function tacticOptions(s,who) {
     const member=s.party?.members[who];
     if (!available(s,who) || member?.mode!=='follow') return [];
     return Object.entries(tacticLabels).flatMap(([kind,label])=>{
+        if (s.encounter && (!s.encounter.line || s.encounter.current!=='pc' || s.encounter.negotiation ||
+            !['target','protect','independent'].includes(kind) || !activeCombatant(s.encounter,who))) return [];
         if (!member.combat && !['watch','rest'].includes(kind)) return [];
         const targets=kind==='target' ? tacticalHere(s,{friendly:false}).filter(id=>sideOf(s,id)==='hostile' && attackTargetHere(s,id)) :
             kind==='protect' ? ['pc',...s.scene.present.filter(id=>id!==who && available(s,id) && sideOf(s,id)==='ally')] : [null];
-        return targets.map(target=>({kind,target,label:label+(target?' · '+(s.entities[target]?.name || target):'')}));
+        return targets.filter(id=>!s.encounter || !id || (kind==='target' ? canFight(s.encounter,who,id) : activeCombatant(s.encounter,id))).map(target=>({kind,target,label:label+(target?' · '+(s.entities[target]?.name || target):'')}));
     });
 }
 
@@ -62,7 +70,7 @@ export async function partyControl(before,content,{act,ref='',source,revision,pr
     const emit=e=>{applyEvent(s,e);events.push(e);};
     let call;
     const result=text=>({events,command:{panels:['[SYSTEM // PARTY]\n'+text],llm:null},...(call?{party_call:call}:{})});
-    if(s.encounter || s.pending_combat?.length) return result('Finish the encounter first.');
+    if((s.encounter && act!=='tactic') || s.pending_combat?.length) return result('Finish the encounter first.');
     if (act === 'pay') {
         const payment = /^(\S+)\s+([1-9]\d*)$/u.exec(ref);
         const row = payment && s.party?.claims?.[payment[1]];
@@ -91,15 +99,15 @@ export async function partyControl(before,content,{act,ref='',source,revision,pr
         const id='tactic.'+hash32(revision+'|'+ref);
         const person=s.entities[who], member=s.party.members[who];
         const messages=[{role:'system',content:'Decide for the named NPC alone whether to accept this specific tactical request. Return only {invitation,who,decision}, with decision accept or decline.'},
-            {role:'user',content:JSON.stringify({invitation:id,who,name:person.name,request:{kind,target},role:person.sheet?.class,
+            {role:'user',content:JSON.stringify({invitation:id,who,name:person.name,request:{kind,target,person:target?s.entities[target]?.name:null},role:person.sheet?.class,
                 traits:person.descriptors,place:s.places[s.scene.at]?.name,priority:member.priority,formation:member.formation})}];
         const answer=await ask(messages); call=answer.call;
         const d=readDecision(answer);
         if (!d || d.invitation!==id || d.who!==who || !['accept','decline'].includes(d.decision) ||
             Object.keys(d).some(k=>!['invitation','who','decision'].includes(k))) return result('Tactical decision unavailable.');
-        if (d.decision==='decline') return result(person.name+' declined: '+option.label);
-        memberEvent(who,member.mode,{...tacticalChange(kind,target),source:{actor:who,decision:'accept',request:id,quote:source,at:s.scene.at,turn:s.turn}});
-        return result(person.name+' agreed: '+option.label);
+        if (d.decision==='accept') memberEvent(who,member.mode,{...tacticalChange(kind,target),source:{actor:who,decision:'accept',request:id,quote:source,at:s.scene.at,turn:s.turn}});
+        const answerLine=person.name+(d.decision==='accept'?' agreed: ':' declined: ')+option.label;
+        return {...result(answerLine),...(s.encounter ? {combatRequest:answerLine} : {})};
     }
     const a=s.party?.agreements[ref];
     const ids=act==='accept' && a ? [a.who] : Object.keys(s.entities).filter(id=>

@@ -514,7 +514,7 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
         ...guarded.dropped.map((x) => ({ act: x.command?.type ?? null, seq: x.command?.seq ?? null, quote: x.command?.quote ?? null, source: 'planner', dropped: x.rule })),
     ].map(({ type, ...a }) => a);
     const irRec = { v: IR_VERSION, route: m.route === 'v4' ? 'v4' : 'v3', reason: 'planner', links: ir.links, acts };
-    const turn=await executeMappedTurn(chat,content,{u,before,m,guarded,inputHash,llm,previous,plan,interp,irRec,typed:!!actionInput});
+    const turn=await executeMappedTurn(chat,content,{u,before,m,guarded,inputHash,llm,previous,plan,interp,irRec,typed:!!actionInput,isCurrent});
     if (organisation && !turn.action_error) {
         turn.events=[...organisation.events,...turn.events];
         const outcome=turn.events.findLast(e=>e.t==='outcome.recorded')?.d.outcome;
@@ -526,11 +526,12 @@ async function plannedTurn(chat, content, { u, before, ir, inputHash, llm, previ
 function actionRefused(inputHash,reason,extra={}) {
     return {v:RECORD_V4,input_hash:inputHash,route:'v4',events:[],command:null,action_error:reason,...extra};
 }
-async function nativePartyControl(before,content,input,ask) {
+async function nativePartyControl(before,content,input,ask,isCurrent) {
     if (input.act!=='invite' || !input.ref?.includes(',')) return partyControl(before,content,input,ask);
     const events=[], calls=[], lines=[];
     const state=clone(before);
     for (const ref of new Set(input.ref.split(',').map(id=>id.trim()).filter(Boolean))) {
+        if (!isCurrent()) break;
         const receipt=await partyControl(state,content,{...input,ref},ask);
         for (const event of receipt.events) { applyEvent(state,event); events.push(event); }
         lines.push(receipt.command.panels[0].split('\n').slice(1).join('\n'));
@@ -539,7 +540,7 @@ async function nativePartyControl(before,content,input,ask) {
     return {events,party_calls:calls,command:{panels:['[SYSTEM // PARTY]\n'+lines.join('\n')],llm:null}};
 }
 
-async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},inputHash,llm,previous,plan,interp,irRec,typed=false}) {
+async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},inputHash,llm,previous,plan,interp,irRec,typed=false,isCurrent=()=>true}) {
     const msg=chat[u],pl={ms:interp?.ms || 0,repaired:interp?.repaired};
     if (m.refused) return actionRefused(inputHash,m.panel,{plan,interp});
     if (m.route === 'panel') return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, events: [], command: { panels: [m.panel], llm: null } };
@@ -576,6 +577,7 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
     const calls = [];
     let step = sequence.next();
     while (!step.done) {
+        if (!isCurrent()) return actionRefused(inputHash,'Die Eingabe wurde geändert.');
         const {state,command} = step.value;
         const receipt = await partyControl(state,content,{act:'invite',ref:command.who,source:msg.mes,
             revision:actionPrefix(chat,u),proposal:command.act==='offer' || hasPartyTerms(msg.mes,content,command) ? command : null},
@@ -912,7 +914,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         const management = /^#party\s+(invite|tactic|wait|follow|remove|disband|accept|pay)(?:\s+(.+))?$/i.exec(msg.mes.trim());
         const native = management && !actionInput && before.mode==='story' && isC && rulesetOf(before)>=2
             ? await nativePartyControl(before,content,{act:management[1].toLowerCase(),ref:management[2]?.trim(),source:msg.mes,revision:actionPrefix(chat,u)},
-                messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}))
+                messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}),current)
             : !actionInput && ir.intent?.kind === 'command' && before.mode === 'story' && isC && rulesetOf(before) >= 2
             ? nativeAction(before,content,msg.mes,u) : null;
         const dest = !actionInput && isC && before.mode==='story' && rulesetOf(before)>=2 && /^#go\s+(\S+)$/i.exec(msg.mes.trim());
@@ -920,6 +922,13 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
             r = knownRoutes(before).includes(dest[1]) && before.entities.pc?.status!=='dead'
                 ? await executeMappedTurn(chat,content,{u,before,m:{route:'v4',commands:[{seq:1,type:'go',to:dest[1],quote:msg.mes}]},inputHash,llm,previous:null,typed:true,irRec:irRecord(ir)})
                 : actionRefused(inputHash,'Dieses Ziel ist von hier aus nicht verfügbar.');
+        } else if (native?.combatRequest) {
+            // A standalone coordination request already uses the PC's hold in battle.
+            r=await executeMappedTurn(chat,content,{u,before:after(before,native.events),m:{route:'v3',intent:{kind:'hold'}},
+                inputHash,llm,previous:null,typed:true,irRec:irRecord(ir)});
+            r.events.unshift(...native.events);
+            r.events.findLast(e=>e.t==='outcome.recorded').d.outcome.party_answer=native.combatRequest;
+            r.party_call=native.party_call;
         } else if (native) {
             r = {v:RECORD_V4,input_hash:inputHash,route:'v4',ir:irRecord(ir),events:native.events,command:native.command,...(native.party_call?{party_call:native.party_call}:{}),...(native.party_calls?{party_calls:native.party_calls}:{})};
         } else if(actionInput?.mode==='hud_roleplay') {

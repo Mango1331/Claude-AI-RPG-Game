@@ -609,7 +609,8 @@ export function parsePlan(answer, vocab, ctx, message) {
                 if (Number.isInteger(needs) && needs < c.seq && value.commands.some((o) => o && o !== c && o.seq === needs)) c.needs = needs;
                 else errors.push(`${at}: "needs" must be the seq of an earlier command of this answer, or left out`);
             }
-            if (bad.length && !ctx.fight && type === 'party' && c.act === 'coordinate') {
+            if (bad.length && type === 'party' && c.act === 'coordinate' &&
+                (!ctx.fight || !value.commands.some(step=>step?.needs===c.seq))) {
                 conversation.add(c);
                 continue;
             }
@@ -800,9 +801,11 @@ export function ineffectiveMoves(state, ctx, commands) {
 export function mapPlan(commands, ctx, content, message, state, { hudSeqs = [], orderedTurn = false } = {}) {
     if (ctx.fight && commands?.some(c=>c.type==='party')) {
         const party=commands.filter(c=>c.type==='party');
-        if (party.length!==1 || party[0].act!=='coordinate' || !state.encounter?.line)
-            return {route:'panel',panel:'Clarify the single tactical request during combat.',notes:[],refused:true};
+        if (party.some(c=>c.act!=='coordinate') || commands.some(c=>party.some(p=>c.needs===p.seq)))
+            return {route:'panel',panel:'Resolve the party decision before a combat action that depends on it.',notes:[],refused:true};
         const other=commands.filter(c=>c.type!=='party');
+        if (party.length!==1 || !party[0].priority || !state.encounter?.line)
+            return mapPlan(other,ctx,content,message,state,{hudSeqs,orderedTurn});
         const mapped=other.length ? mapPlan(other,ctx,content,message,state,{hudSeqs,orderedTurn}) : {route:'v3',intent:{kind:'hold'},notes:[]};
         return mapped.route==='v3' ? {...mapped,intent:{...mapped.intent,coordination:party[0]}} : mapped;
     }

@@ -95,6 +95,21 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         checks.deliveredPartyRecords=narrator.includes('Positions (one shared line)') && /Ossen/i.test(booked) &&
             /Risen Bones/i.test(booked) && /bow|arrow/i.test(booked);
         checks.oneHelperRound=calls.slice(b).map(c=>c.purpose).join('/')==='plan/narrator/extract';
+        const firstRound=await page.evaluate(()=>SillyTavern.getContext().chat);
+        replies={party_decision:req=>{const {invitation,who}=JSON.parse(req.messages.at(-1).content);return JSON.stringify({invitation,who,decision:'accept'});},
+            narrator:'Ossen takes Alaric under his protection.',extract:'{"scene":"here","expected":{},"deltas":[]}'};
+        b=calls.length;
+        await page.fill('#send_textarea','#party');await page.click('#send_but');
+        const tacticsPanel=page.locator('#avereth-party-panel');
+        await tacticsPanel.locator('details > summary').first().click();
+        await tacticsPanel.getByText('Taktik anfragen',{exact:true}).click();
+        await tacticsPanel.locator('select').first().selectOption('npc.ossen protect pc');
+        await tacticsPanel.getByRole('button',{name:'Fragen und eigenen Zug abwarten'}).click();await idle();
+        const coordinated=await snap();
+        checks.battleTactic=coordinated.state.party.members[who].priority?.target==='pc' &&
+            calls.slice(b).map(c=>c.purpose).join('/')==='party_decision/narrator/extract' &&
+            coordinated.events.some(e=>e.t==='outcome.recorded' && e.d.outcome.party_answer && e.d.outcome.records.some(r=>r.actor==='pc' && r.kind==='hold'));
+        await seed(firstRound);
         const second='Ossen, protect me.';b=calls.length;
         command([{seq:1,type:'party',act:'coordinate',who,priority:'protect',target:'pc',quote:'Ossen, protect me.'}],'Ossen says, "Yes, I will protect Alaric."',[
             {seq:1,type:'party',act:'coordinate',who,priority:'protect',target:'pc',quote:'Yes, I will protect Alaric.'}]);
@@ -213,7 +228,8 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         const n=calls.slice(b).find(c=>c.purpose==='narrator');
         const wire=n?.messages.map(m=>m.content).join('\n') || '';
         const contract=fs.readFileSync(new URL('../../content/narrator/Avereth_Narrator_Contract_v4.txt',import.meta.url),'utf8').trim();
-        checks.oneContract=wire.includes(contract) && wire.split('AVERETH RPG — SANDBOX NARRATOR CONTRACT').length===2;
+        const expanded=await page.evaluate(text=>SillyTavern.getContext().substituteParams(text),contract);
+        checks.oneContract=wire.includes(expanded) && wire.split('AVERETH RPG — SANDBOX NARRATOR CONTRACT').length===2;
         checks.contractCurrent=!/outdated|missing/i.test(await page.locator('#avereth_status').innerText().then(t=>t.match(/contract[^\n]*/i)?.[0] || ''));
         checks.wireParty=wire.includes('Dann Weaver') && wire.includes('Sera') && wire.includes('combat ready');
         checks.wireQuest=wire.includes('Cull the Millpond Gnashers') && !wire.includes('OFFICIAL GUILD OFFERS — ENGINE AUTHORITY');

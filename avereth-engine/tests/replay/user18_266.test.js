@@ -78,6 +78,13 @@ test('User18 T10 and T11: four actual identities, no duplicate after observing a
     const ids=arr=>host.foldChat(arr).state.scene.present.filter(id=>id.startsWith('mon.'));
     assert.equal(ids(chat).length,4);
     const expected=ids(chat);
+    const s=host.foldChat(chat).state;
+    assert.ok(Object.values(s.places).some(p=>p.dungeon?.real));
+    for (const id of expected) {
+        assert.equal(s.entities[id].population_at,s.scene.at);
+        assert.equal(s.scene.positions[id].band,'SHORT');
+        assert.ok(s.entities[id].profile.level>=1 && s.entities[id].profile.level<=3);
+    }
     const observation=structuredClone(messages.slice(34,36));
     chat.push(...observation);
     delete observation[1].extra.avereth;
@@ -85,4 +92,25 @@ test('User18 T10 and T11: four actual identities, no duplicate after observing a
     await runtime.runExtraction(chat,30,content,async()=>answers[35][0].content);
     assert.deepEqual(ids(JSON.parse(JSON.stringify(chat))),expected);
     assert.deepEqual(host.foldChat(chat).errors,[]);
+});
+test('A failed quest step cannot authorize a later invitation with a fee',async()=>{
+    const plan=JSON.parse(answers[15][0].content);
+    plan.hud_binding.seqs=[2];
+    plan.commands[0]={...plan.commands[0],seq:2,needs:1};
+    plan.commands.unshift({seq:1,type:'party',act:'coordinate',who:null,priority:'unsupported',quote:'team up'});
+    for (const [index,c] of plan.commands.slice(2).entries()) {
+        c.seq=index+3;c.needs=2;c.act='offer';c.amount=20;
+    }
+    const {calls,state,record}=await player(15,{plan});
+    assert.deepEqual(calls,['plan']);
+    assert.equal(state.quests['quest.cull_the_millpond_gnashers'].status,'listed');
+    assert.ok(!record.events.some(e=>e.t.startsWith('party.')));
+});
+test('Original failed M21 and its receipt stay out of the delivered history after reload',()=>{
+    const visible=JSON.parse(JSON.stringify(messages));
+    const history=visible.map(m=>({...m}));
+    host.projectPromptHistory(history,{keepTurns:0});
+    assert.ok(visible.some(m=>m.mes===messages[21].mes));
+    assert.ok(!history.some(m=>m.mes===messages[21].mes || m===messages[22] || m.mes===messages[22].mes));
+    assert.ok(history.some(m=>m.mes===messages[27].mes));
 });

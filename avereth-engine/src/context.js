@@ -423,7 +423,7 @@ function outcomeBlock(state, content, outcome, opts = {}) {
         : `NEW SKILL — booked by the engine in this turn: ${g.text} Show it coming to him in a sentence or two; its numbers are the engine's. No other new Skill or change.`));
     const classOffered = (outcome?.class_offers || []).map((o) => `POSSIBLE CLASS — ${o.text}. One of the alternative class options, NOT his yet. He alone chooses in a later message.`);
     const classBooked = (outcome?.booked?.classes || []).map((o) => `CLASS EVOLVED — booked by the engine: ${o.text}. Exactly this class and its one trait are his; the class itself grants no additional Skill, Passive or Domain.`);
-    return [block, ...classOffered, ...classBooked, ...notes, ...learned, ...inert, ...offers, ...gained, ...notYet, ...skillOffered, ...skillBooked].filter(Boolean).join('\n');
+    return [outcome?.party_answer, block, ...classOffered, ...classBooked, ...notes, ...learned, ...inert, ...offers, ...gained, ...notYet, ...skillOffered, ...skillBooked].filter(Boolean).join('\n');
 }
 
 /**

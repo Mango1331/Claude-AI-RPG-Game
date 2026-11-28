@@ -82,7 +82,7 @@ else{
     const base=JSON.parse(fs.readFileSync(reference));
     if (!process.argv.includes('--original-reference')) {
         let parent = reference;
-        for (const file of ['rank263.json', 'location264.json', 'travel265.json']) {
+        for (const file of ['rank263.json', 'location264.json', 'travel265.json', 'party266.json']) {
             const next = path.join(dir,file);
             const reviewed = JSON.parse(fs.readFileSync(next));
             assert.equal(createHash('sha256').update(fs.readFileSync(parent)).digest('hex'),reviewed.base);

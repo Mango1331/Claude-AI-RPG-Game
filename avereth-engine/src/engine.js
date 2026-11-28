@@ -133,7 +133,7 @@ export function playerTurn(state, content, input, { msg = null, intent: parsed =
         outcome = storyTurn(s, content, text, intent, dice, emit, situations, c);
     }
     // prototype C (src/v4/planner.js): the parts of the player's message the engine did not take this turn stay visible
-    if (intent.plan_notes?.length && outcome) outcome = { ...outcome, plan_notes: intent.plan_notes };
+    if (intent.plan_notes?.length && outcome && !outcome.plan_notes) outcome = { ...outcome, plan_notes: intent.plan_notes };
     // prototype C: a V3-routed turn the planner read; its fights and its reply's world applier know it (4.3.0-c.4)
     if (c && outcome) outcome = { ...outcome, c: true };
     if (TRADE_RE.test(text) && s.mode !== 'creation') situations.push('trade');
@@ -170,9 +170,13 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
         return {kind:'note',text:'NPC decision still open. Retry the reply or withdraw the offer to resume combat.'};
     }
     const pcAction = pcActionOf(s, content, intent, text);
+    let unbookedTactic;
     if (pcAction && s.encounter?.line && intent.coordination) {
         const r=partyDecision(s,content,intent.coordination,text,'pc',emit);
-        if (!r.done) return {kind:'note',text:r.line,illegal:r.reason};
+        if (!r.done) {
+            if (intent.kind==='hold') return {kind:'note',text:'Tactical discussion. '+r.reason};
+            unbookedTactic='Tactical request: '+r.reason;
+        }
     }
     if (pcAction?.kind==='flee' && s.encounter?.line)
         pcAction.together=intent.together===true && !/\b(?:alone|without them|leave them)\b/i.test(text);
@@ -204,7 +208,11 @@ function storyTurn(s, content, text, intent, dice, emit, situations, c = false) 
     }
     // 2) combat: an ACTIVE encounter continues (Turns before Alaric's resolve even when his own declaration needs a
     // target first: Testrun 3 dropped "the nearest one" silently); a declared attack starts one
-    if (s.encounter) return combatTurn(s, content, dice, emit, { pcAction, c }, situations);
+    if (s.encounter) {
+        const outcome=combatTurn(s, content, dice, emit, { pcAction, c }, situations);
+        if (unbookedTactic) outcome.plan_notes=[...(intent.plan_notes || []),unbookedTactic];
+        return outcome;
+    }
     if (pcAction?.note) return { kind: 'note', text: pcAction.note, notice: pcAction.notice };
     if (pcAction?.kind === 'attack') {
         // Prototype C (4.3.0-c.6.6): an area attack before a fight opens it with the visible field it is thrown into

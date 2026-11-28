@@ -716,6 +716,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const pcName = String(s.entities.pc?.name || '').trim();
         return [pcName, pcName.split(/\s+/)[0]].filter((n) => n.length >= 3).some((n) => value.includes(` ${normText(n)} `));
     };
+    const experiencedPerson = id => {
+        const profile = npcTemplate(content, 2, 'experienced_adventurer');
+        return {template:profile.id, level:encounterHumanLevel(profile, null, `${s.rng.seed}|${id}`)};
+    };
     const newEntity = (d, kind, { slot = null, sightAt = null } = {}) => {
         // Patch 8 (src/v4/living.js): a creature of an encounter the engine placed ahead is that encounter, its slot of
         // this cycle (its ref, else its kind where he went on); one of a slot already resolved (the boss he killed) is
@@ -943,6 +947,14 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         const known = r.accepted.map((a) => /^known (\S+) \(not duplicated\)$/.exec(a)?.[1]).filter(Boolean);
         const ids = [...again, ...created, ...known];
         // Package C: the validated membership and life stage, fixed with the individual and independent of its level
+        if (contract && d.individual_rank && !contract.population && d.count === 1 && contract.life_stage === 'adult'
+            && !hit && !trueDungeonOf(s, s.scene.at) && d.population === 'independent') {
+            const band = content.rules.ranks.bands.find(b => b.rank === d.individual_rank);
+            if (band) for (const id of created) {
+                const level = encounterHumanLevel({level:band}, null, `${s.rng.seed}|${id}`);
+                emit({t:'entity.updated', d:{id, set:{level}}});
+            }
+        }
         if (contract) for (const id of created) emit({ t: 'entity.updated', d: { id, set: { life_stage: contract.life_stage || 'adult', ...(contract.population ? { population_at: contract.population } : {}) } } });
         // the members of a group keep its name (the ref the story gave them), so a later "the quarry pack" means them; one
         // that joins those already here joins their group (review of c.6.6.12: the fifth wolf under the ref "wolves" is
@@ -977,6 +989,9 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         if (kind === 'npc' && d.role && created.length && !truth(s, created[0], 'occupation').length) occupation(created[0], d.role);
         // Patch 9A.1: the weapon a new person holds ready (person.new armed), as their fact; their sheet takes it when it is
         // first built (src/engine.js rulesetTwoPerson). A legacy campaign keeps no such fact
+        if (kind === 'npc' && d.individual_rank === 'E' && rulesetOf(s) >= 2) {
+            for (const id of created) emit({t:'entity.updated', d:{id, set:experiencedPerson(id)}});
+        }
         if (kind === 'npc' && created.length) armedFact(created[0], d.armed);
         if (kind === 'npc' && pulse?.open && pulse.kind === 'danger' && d.present !== false && rulesetOf(s) >= 2) {
             const area = encounterArea(s,s.scene.at);
@@ -1470,7 +1485,7 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
                     // Patch 9A review: under ruleset 2 a person established elsewhere gets the template of their role as
                     // anyone met here does (a bandit, a hedge mage), fixed now; a legacy campaign keeps 'commoner'
                     const template = rulesetOf(s) >= 2 ? templateFor(content, [...descriptors, traits].join(' '), rulesetOf(s))?.id || 'commoner' : 'commoner';
-                    emit({ t: 'entity.created', d: { entity: { id, kind: 'npc', name: d.name ? String(d.name).slice(0, 60) : null, descriptors, traits, status: 'alive', location: where ? locationOf(s, where) : s.scene.location, at: where, created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration', msg }, card: {}, template } } });
+                    emit({ t: 'entity.created', d: { entity: { id, kind: 'npc', name: d.name ? String(d.name).slice(0, 60) : null, descriptors, traits, status: 'alive', location: where ? locationOf(s, where) : s.scene.location, at: where, created: { turn: s.turn, minute: s.clock.minute }, source: { kind: 'narration', msg }, card: {}, template, ...(d.individual_rank === 'E' && rulesetOf(s) >= 2 ? experiencedPerson(id) : {}) } } });
                     refs.set(normText(d.ref), id);
                     if (d.name) refs.set(normText(d.name), id);
                     if (d.role) occupation(id, d.role);

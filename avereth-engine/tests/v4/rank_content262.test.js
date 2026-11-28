@@ -30,11 +30,11 @@ test('outdoor windows and subranges, area schema, board bounds and extractor wor
     for (const c of [current, synthetic]) {
         const enabled = c === synthetic;
         assert.equal(validEncounterLevels(c,[22,23]), enabled);
-        assert.equal(validPopulationLevels(c,[22,22]), enabled);
+        assert.equal(validPopulationLevels(c,[22,22]), true);
         assert.equal(validPopulationLevels(c,[13,22]), false);
         assert.equal(validEncounterLevels(c,[2,6]), false);
         assert.equal(validPopulationLevels(c,[2,6]), true);
-        assert.equal(c.deltaVocab.deltas.find(d=>d.type==='area').fields.max_level.max, enabled?23:14);
+        assert.equal(c.deltaVocab.deltas.find(d=>d.type==='area').fields.max_level.max, enabled?23:29);
         assert.equal(JSON.stringify(listingSchema(c)).includes('"maximum":23'), enabled);
         assert.equal(extractorSystem(c.deltaVocab).includes('12-14,22-23'), enabled);
     }
@@ -45,7 +45,7 @@ test('a synthetic board requires its own guild profile and the configured power-
     const messages = JSON.stringify(boardRequest(s, synthetic, need).messages);
     assert.match(messages,/test payout/);
     assert.match(messages,/Allowed fixed population windows: 22-23/);
-    assert.doesNotMatch(JSON.stringify(boardRequest(s,current,need).messages),/Allowed fixed population windows/);
+    assert.match(JSON.stringify(boardRequest(s,current,need).messages),/15-15.*26-29/);
 });
 test('market, crafted skills and passive bounds use separate parameters', () => {
     const offer = {base:'staff',quality:'common'};

@@ -524,6 +524,11 @@
   },
   "guild": {
     "outdoor_boards": {
+      "Proven": {
+        "legacy_required_levels": [],
+        "open": "- Offer locally plausible E hunts. Where supported, include an approachable individual for a new Proven adventurer. Warn of groups and exceptional individuals.",
+        "payout": "- E hunt payout guidance in copper by recommended level: 15–17: 100–200; 18–21: 200–350; 22–25: 350–550; 26–29: 550–800. Adjust for actual group, body plan, route and work; these are guides."
+      },
       "Novice": {
         "legacy_required_levels": [[4, 7], [8, 14]],
         "open": "- Choose locally plausible hunts across F (levels 1–14), independent of the reader. Where the region supports it, include an accessible low-risk single-foe job and some more demanding choices. Vary objective, route and nearby terrain. Warn about actual danger, including groups. The existing quest families still apply.",
@@ -543,7 +548,7 @@
     "promotion_contracts": 5,
     "drive_off": { "_doc": "Prototype C (4.3.0-c.6.6.6): a contract whose desired outcome or title allows the targets to be driven off (one of the verbs with off/away/out after it, or one of the words alone) counts each one the engine saw flee a fight with Alaric (escaped) as driven off; one the story only lets walk out of the scene is not (src/v4/guild.js defeatTally).", "verbs": "drive|driven|drove|driving|chase|chased|chasing|scare|scared|frighten|frightened|run|ran|send|sent", "after": "off|away|out", "alone": "clear|cleared|clearing|rout|routed|disperse|dispersed|banish|banished" },
     "supported_ranks": { "_status": "proposed (plan D10): runtime defaults for branches without their own list", "city": ["Novice", "Proven", "Veteran"], "capital": ["Novice", "Proven", "Veteran", "Elite"] },
-    "board": { "_status": "proposed (plan §6.4, D9, D11)", "size": 5, "taken_by_others_pct_per_day": 0, "payout_guide_cp": { "Novice": [30, 600], "Proven": [100, 600], "Veteran": [300, 1500], "Elite": [800, 4000] } }
+    "board": { "_status": "proposed (plan §6.4, D9, D11)", "size": 5, "taken_by_others_pct_per_day": 0, "payout_guide_cp": { "Novice": [30, 600], "Proven": [100, 800], "Veteran": [300, 1500], "Elite": [800, 4000] } }
   },
   "time": {
     "src": "Runtime V4 time caps per reply (docs/RUNTIME_V4_PLAN.md §6.7); runtime defaults, no world law",

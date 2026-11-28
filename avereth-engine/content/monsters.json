@@ -1235,6 +1235,10 @@
     "F": {
       "windows": [[1, 1], [1, 3], [4, 7], [8, 11], [12, 14]],
       "danger": "OUTDOOR DANGER — Establish typical danger from geography and ecology, never Alaric’s level: managed land usually L1, nearby wilderness L1–3, remote L4–7, deep L8–11, perilous F areas L12–14. Keep established populations and individuals unchanged; no mandatory encounter. An unknown area need not become dangerous."
+    },
+    "E": {
+      "windows": [[15, 15], [15, 17], [18, 21], [22, 25], [26, 29]],
+      "danger": "F and rarer E threats coexist. Establish local habitats, developed individuals and groups from ecology and history. Show observable danger and group size. Distance, profession and the reader's power determine no rank."
     }
   }
 }

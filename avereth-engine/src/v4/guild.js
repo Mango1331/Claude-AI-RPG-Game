@@ -713,7 +713,7 @@ function boardProfile(s, content, need) {
     if (!need.c || deliveryRuleset(s) < 2) return null;
     const dungeons = nearDungeons(s, need.branch, s.places[need.branch]?.realm, { guild: true })
         .filter(id => { const ns = fittingLevels(s, content, need.rank, id); return ns === null || ns.length > 0; });
-    const noDelivery = [HUNT_BOARD_PROFILE, COUNT_BOARD_PROFILE].includes(need.profile);
+    const noDelivery = need.rank === 'Proven' || [HUNT_BOARD_PROFILE, COUNT_BOARD_PROFILE].includes(need.profile);
     // Already published deliveries count during a refill, but are never newly generated in this profile.
     const delivery = noDelivery ? retainedListings(s, need).filter(l => boardFamily(s, content, l) === 'delivery').length : 2;
     return { dungeons, hunt: (content.rules.guild.board?.size ?? 5) - delivery - (dungeons.length ? 1 : 0), delivery, dungeon: dungeons.length ? 1 : 0, noDelivery, countOnly: need.profile === COUNT_BOARD_PROFILE };
@@ -815,10 +815,10 @@ export function boardRequest(s, content, need, repair = null) {
         ...noviceProfile,
         ...(progressive(content, need) ? [
             openDifficulty(content, need) ? outdoorBoard.open :
-            outdoorBoard.legacy,
+            outdoorBoard.legacy || outdoorBoard.open,
             `- For every non-Dungeon hunt copy the creature kind from DEFEAT.what into habitat.species and select its closest supported mechanical body-plan id for habitat.anchor. Keep level within its habitat min_level and max_level. Allowed fixed population windows: ${content.monsters.outdoor[content.rules.guild.rank_power[need.rank]].windows.map(([lo, hi]) => `${lo}-${hi}${lo === 1 && hi === 1 ? ' (intro)' : ''}`).join(', ')}. The quest level lies inside that window. This describes a world population, NOT a change to existing creatures or a spawn instruction. Other listings use habitat:null.`,
-            `- Intro eligible body-plan ids (ordinary level 1, calculated from Content): ${introAnchors(content).join(', ')}. Species names must still fit their body plan.`,
-            `- Supported body-plan ids: ${[...content.anchors.keys()].join(', ')}. The DEFEAT objective where is the one canonical hunting-site label (no duplicate place field in habitat); use the same species/kind. A weak introduction has one ordinary level-1 animal/Monster, anchor HP <=35 and ATK <=10, no hidden group/elite/boss. Never relabel an incompatible species or weaken its fixed stats to meet these requirements.`,
+            ...(need.rank === 'Novice' ? [`- Intro eligible body-plan ids (ordinary level 1, calculated from Content): ${introAnchors(content).join(', ')}. Species names must still fit their body plan.`,
+            `- Supported body-plan ids: ${[...content.anchors.keys()].join(', ')}. The DEFEAT objective where is the one canonical hunting-site label (no duplicate place field in habitat); use the same species/kind. A weak introduction has one ordinary level-1 animal/Monster, anchor HP <=35 and ATK <=10, no hidden group/elite/boss. Never relabel an incompatible species or weaken its fixed stats to meet these requirements.`] : [`- Supported body plans: ${[...content.anchors.keys()].join(', ')}. Use the actual site and species.`]),
             '- A world hunt is for the grown animals of its population (habitat.life_stage "adult" or null). Only a notice whose DEFEAT objective names the young of the kind (pups, cubs, yearlings ...) is a hunt of the young: habitat.life_stage "young". The engine counts only members of the hunted population of that age within its level window.',
             `- Established populations below are binding. New sites and species names are welcome, but never rename, move or upscale a known population. Do not locate several incompatible populations at the same small site. Clearly warn of stronger groups and high-${content.rules.guild.rank_power[need.rank]} work; availability never means safe for the reader.`,
         ] : []),
@@ -829,7 +829,7 @@ export function boardRequest(s, content, need, repair = null) {
                 '- Each delivery has exactly one DELIVER objective, concrete physical cargo, integer qty and a specific receiver and exact destination: where "Healer at Quarry Camp Infirmary" or "Gretha at Thornhollow", or "deposit at Receiving Shed". Name a person or a recognizable job role (healer, quartermaster, clerk), never "Recipient", "someone", "staff" or other placeholder. Place must name the ACTUAL destination, not only its parent settlement. A previously unknown interior must be visited before delivery can be confirmed. No GET/GIVE/ESCORT or other objective, signature, return trip, returned container, deadline or additional duty. proof is []. The engine renders task and desired_end_state from this objective; keep its title and client consistent. Travel and obtaining the cargo happen naturally in play; no mandatory ambush.',
             ]),
             '- Hunts have one DEFEAT objective with an exact quantity and a clear location, plus only optional FIND/GO guidance. proof is []. The target must be an animal or Monster, not people; distinguish living hostile plants from ordinary gardening.',
-            ...(outdoorBoard && !openDifficulty(content, need) ? [outdoorBoard.introduction] : []),
+            ...(outdoorBoard?.introduction && !openDifficulty(content, need) ? [outdoorBoard.introduction] : []),
             '- Dungeon clearance has one DEFEAT objective with qty null, where naming the exact known Dungeon and level number. proof is []. Include a short explicit danger/risk warning in task; a rank-compatible floor is not automatically safe for a fresh solo adventurer.',
         ] : []),
         `- rank is "${need.rank}"; level is the quest level, an integer from ${lo} to ${hi}; qtype is minor, standard, dangerous or major.`,

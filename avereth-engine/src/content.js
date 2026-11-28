@@ -83,6 +83,11 @@ export function indexContent(pack) {
     // legacy set a campaign started before keeps
     c.npcTemplates = { 1: c.templates, 2: new Map((pack.npc_templates.ruleset_2?.templates || []).map((t) => [t.id, t])) };
     // Patch 9A.1: the role words of the ruleset-2 templates, longest first (templateFor with a ruleset)
+    const specialist = pack.npc_templates.ruleset_2?.experienced;
+    if (specialist) {
+        const base = c.npcTemplates[2].get(specialist.base);
+        c.npcTemplates[2].set(specialist.id, {...base, id:specialist.id, level:specialist.level, descriptors:[]});
+    }
     c.templateDescriptors2 = [...c.npcTemplates[2].values()].flatMap((t) => t.descriptors.map((d) => [normText(d), t.id])).sort((x, y) => y[0].length - x[0].length);
     for (const t of pack.npc_templates.templates) {
         c.templates.set(t.id, t);

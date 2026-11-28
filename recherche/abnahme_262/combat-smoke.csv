@@ -1,0 +1,5 @@
+scenario,runs,pc_wins,opponent_wins,draws,escapes,mean_rounds,errors
+warrior-0-1-wolf-0-1-ENGAGED,8,8,0,0,0,2.625,0
+mage-0-1-wolf-0-1-ENGAGED,8,8,0,0,0,3,0
+rogue-0-1-wolf-0-1-ENGAGED,8,8,0,0,0,2.625,0
+duel-warrior-mage-1-ENGAGED,8,8,0,0,0,6,0

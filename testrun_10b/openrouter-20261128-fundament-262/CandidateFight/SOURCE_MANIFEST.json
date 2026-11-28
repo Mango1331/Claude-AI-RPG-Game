@@ -1,0 +1,28 @@
+{
+  "head": "489b2cdab0ae491a3d0fed2a9ca4981736cac022",
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "st": "1.19.0",
+  "count": 3,
+  "costUSD": "0.001828780",
+  "redactions": {
+    "st.log.gz": "local sandbox paths"
+  },
+  "sha256": {
+    "parent-check.json.gz": "7121c6119ded60f2d986652e880de2b296a7bbb2aec8a052e1051146416abf61",
+    "chat-0.jsonl.gz": "9b3895d183e63668b5d23ddeae183f25b2364ea4065dbe61bd499ea21102d9ff",
+    "world-0.json.gz": "149d05dc10c4726c89c04b09ad9f9e069af43d7a1b220cce07973ffa4a68eb74",
+    "actions.jsonl.gz": "7ac6d3aee52b06a8ea2069960c0d6d4dc1420a2a1f1bfe8e14b820b3d52181ca",
+    "chat.jsonl.gz": "70c27a14326171805f53d178178b8bbf85bc72b91d268e31441c70f551121b74",
+    "events.json.gz": "0752bb33c098290c60c5d874e6dac89dae1a4b45aa7bb1bf921cc35138879eae",
+    "turns.jsonl.gz": "a1d8a591e985aae28fb167b50d71233b89c121549ea870fc4a546d38eac827df",
+    "profile.json.gz": "41bac7ab2afebe8510011b16a0868cfeb6b14b48509f3ac81b56c9bc4acd3bbc",
+    "visible.json.gz": "b9331fae60066407fa395dbf1c5279e8ed3bd793e15db7b216682b4fa6bb6cc8",
+    "st.log.gz": "59fafa2f30d145a06c2483c3c0c943fd3a6691a240fba472bff339c5ea464507",
+    "last-verified-world.json.gz": "fd7f8e45686ddae2531050c54ce0b514fa207113053b256b6ca6f8f6dddcc222",
+    "requests.jsonl.gz": "a365365634f2016836f212221cde720b26441c000443c1f300f7bf1f4c328afc",
+    "raw-59.gz": "0f22a1d7cafda76a132fbb456d44e3ed8411b61eb89f8de459d27b16945874a3",
+    "raw-60.gz": "2d4d178d2eaca24762b6e054c8f6d20df1d3fc7f325d74d38a645e0fd6a04e87",
+    "raw-61.gz": "acd7e5955a6199d34bb53c21070e0a11683e767d65c7669a37a23867eb76ab5c"
+  }
+}

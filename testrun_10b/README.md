@@ -6,6 +6,7 @@
 
 | Etappe | Runordner und Auswertung |
 |---|---|
+| **.261/.262 · Rangfundament** | [GLM/Wafer · gepaarter Gilden-, Markt- und Dungeonlauf](openrouter-20261128-fundament-262/) · [Fachbericht](../recherche/AVERETH_262_RANGFAEHIGES_FUNDAMENT_ABNAHME.md) |
 | **.236–.244 · Party und exploratives Spiel** | [Archivregister, Originalmessungen und Auswertung](../recherche/AVERETH_236_PARTY_UND_EXPLORATIVE_SPIELTESTS.md#modellläufe-und-messwerte) |
 | **.222–.235 · automatisierte OpenRouter-Spielserie** | [Alle Originalarchive, Verzweigungen und Kosten](../recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md#physische-requests-je-lauf) · [Abnahme und Grenzen](../recherche/AVERETH_222_235_OPENROUTER_SPIELTESTSERIE.md) |
 | **.220 · User16** | [Originale und GPT-Review](user-20261126-233937-220/README.md) · [Codex-Gegenreview](user-20261126-233937-220/CODEX_GEGENREVIEW.md) · [Entscheidungsvorlage](../recherche/AVERETH_USER16_ORTS_UND_SZENENARCHITEKTUR_ENTSCHEIDUNGSVORLAGE.md) · [.221-Folgekandidat](../recherche/AVERETH_221_SZENE_WAHRNEHMUNG_ERINNERUNG_UND_RAST.md) |

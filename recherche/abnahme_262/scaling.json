@@ -1,0 +1,187 @@
+{
+  "node": "v24.22.1",
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "source": "Heron final chat",
+  "records": [
+    {
+      "scenario": "original",
+      "added": {
+        "items": 0,
+        "places": 0,
+        "people": 0,
+        "quests": 0
+      },
+      "stateBytes": 111698,
+      "bytes": {
+        "p": 57805,
+        "n": 55629,
+        "x": 62571,
+        "pCatalog": 7000,
+        "xCatalog": 9344,
+        "nContext": 6856
+      },
+      "build": {
+        "median_ms": 4.445,
+        "p90_ms": 4.834
+      }
+    },
+    {
+      "scenario": "typical",
+      "added": {
+        "items": 25,
+        "places": 50,
+        "people": 20,
+        "quests": 5
+      },
+      "stateBytes": 142873,
+      "bytes": {
+        "p": 70576,
+        "n": 59018,
+        "x": 78070,
+        "pCatalog": 19771,
+        "xCatalog": 24843,
+        "nContext": 10238
+      },
+      "build": {
+        "median_ms": 12.045,
+        "p90_ms": 15.323
+      }
+    },
+    {
+      "scenario": "bag",
+      "added": {
+        "items": 200,
+        "places": 0,
+        "people": 0,
+        "quests": 0
+      },
+      "stateBytes": 133568,
+      "bytes": {
+        "p": 69785,
+        "n": 55629,
+        "x": 74551,
+        "pCatalog": 18980,
+        "xCatalog": 21324,
+        "nContext": 6856
+      },
+      "build": {
+        "median_ms": 4.231,
+        "p90_ms": 4.744
+      }
+    },
+    {
+      "scenario": "sites",
+      "added": {
+        "items": 0,
+        "places": 1000,
+        "people": 0,
+        "quests": 0
+      },
+      "stateBytes": 260368,
+      "bytes": {
+        "p": 147521,
+        "n": 55629,
+        "x": 209115,
+        "pCatalog": 96716,
+        "xCatalog": 155888,
+        "nContext": 6856
+      },
+      "build": {
+        "median_ms": 12.512,
+        "p90_ms": 15.615
+      }
+    },
+    {
+      "scenario": "people",
+      "added": {
+        "items": 0,
+        "places": 0,
+        "people": 150,
+        "quests": 0
+      },
+      "stateBytes": 186708,
+      "bytes": {
+        "p": 73675,
+        "n": 59269,
+        "x": 78441,
+        "pCatalog": 22870,
+        "xCatalog": 25214,
+        "nContext": 10496
+      },
+      "build": {
+        "median_ms": 27.791,
+        "p90_ms": 31.309
+      }
+    },
+    {
+      "scenario": "jobs",
+      "added": {
+        "items": 0,
+        "places": 0,
+        "people": 0,
+        "quests": 30
+      },
+      "stateBytes": 179528,
+      "bytes": {
+        "p": 87425,
+        "n": 73358,
+        "x": 92191,
+        "pCatalog": 36620,
+        "xCatalog": 38964,
+        "nContext": 24528
+      },
+      "build": {
+        "median_ms": 17.438,
+        "p90_ms": 22.914
+      }
+    },
+    {
+      "scenario": "large",
+      "added": {
+        "items": 200,
+        "places": 1000,
+        "people": 150,
+        "quests": 30
+      },
+      "stateBytes": 425078,
+      "bytes": {
+        "p": 204991,
+        "n": 76998,
+        "x": 266585,
+        "pCatalog": 154186,
+        "xCatalog": 213358,
+        "nContext": 28168
+      },
+      "build": {
+        "median_ms": 124.667,
+        "p90_ms": 163.413
+      }
+    }
+  ],
+  "folds": [
+    {
+      "extra": 0,
+      "messages": 127,
+      "events": 971,
+      "chatBytes": 670540,
+      "median_ms": 7.787,
+      "p90_ms": 8.356
+    },
+    {
+      "extra": 250,
+      "messages": 377,
+      "events": 1221,
+      "chatBytes": 698430,
+      "median_ms": 7.732,
+      "p90_ms": 8.777
+    },
+    {
+      "extra": 1000,
+      "messages": 1127,
+      "events": 1971,
+      "chatBytes": 782430,
+      "median_ms": 7.532,
+      "p90_ms": 8.689
+    }
+  ]
+}

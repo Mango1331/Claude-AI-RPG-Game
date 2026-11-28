@@ -1,0 +1,298 @@
+{
+  "Siedlung": [
+    {
+      "case": "reed-251#17",
+      "messages": [
+        [
+          "plan",
+          "a2663438eb063b68c56cc08dd1bb25ffc2b96127c20ef852f1f4134e76716b57"
+        ],
+        [
+          "narrator",
+          "28e424cfdf28e3b2da9fb81338f0eb59a2355c012d1781e191da2fbd6957fcf5"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "plan",
+          53197
+        ],
+        [
+          "narrator",
+          56328
+        ]
+      ]
+    },
+    {
+      "case": "reed-251#18",
+      "messages": [
+        [
+          "extract",
+          "4d7622e360cee6ca242e2a57f37e604ab0b75c6d8f92e5ebc7106c2de92324d7"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "extract",
+          58933
+        ]
+      ]
+    }
+  ],
+  "Wildnis und Population": [
+    {
+      "case": "heron-250#123",
+      "messages": [
+        [
+          "plan",
+          "d7637f95d7c57df172c72c2e5c3a34adb4bb7976e6447caaca9337a1bf5b7a70"
+        ],
+        [
+          "narrator",
+          "03fbd85f37ac5d8687cc8ee7b1ab4ccd0354cd903a2ba885aea865807b081284"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "plan",
+          57547
+        ],
+        [
+          "narrator",
+          55708
+        ]
+      ]
+    },
+    {
+      "case": "heron-250#124",
+      "messages": [
+        [
+          "extract",
+          "06409c0dbe7cefde6d336a9d131997f7b405a24268bbc3e73c50cb982af4049b"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "extract",
+          65595
+        ]
+      ]
+    }
+  ],
+  "Ausr\u00fcstung": [
+    {
+      "case": "rook-250#9",
+      "messages": [
+        [
+          "plan",
+          "a4f8d014b919a67df1a4f49736df3d682db79289139c705503e260229eefcf81"
+        ],
+        [
+          "narrator",
+          "9f4efd36dc28cb73945a82c9bf98c3b31fb20402c37a524b2499e7311cd2a1ee"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "plan",
+          52863
+        ],
+        [
+          "narrator",
+          51428
+        ]
+      ]
+    },
+    {
+      "case": "rook-250#10",
+      "messages": [
+        [
+          "extract",
+          "12a7c7ad7458cd781624f158dbdc98764d3d932fc8609c81aeafb6832ae7fa5d"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "extract",
+          58135
+        ]
+      ]
+    }
+  ],
+  "Lernen": [
+    {
+      "case": "sage-248#105",
+      "messages": [
+        [
+          "plan",
+          "8d71dcfb38bb67af6ab2f0db184c4c6e6a80040e9d05322b146cf9374e54e448"
+        ],
+        [
+          "narrator",
+          "e5d348da7bee3cbf8442a29afccf83a97cc0334587e94edaa180280324b1d6d2"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "plan",
+          56048
+        ],
+        [
+          "narrator",
+          58681
+        ]
+      ]
+    },
+    {
+      "case": "sage-248#106",
+      "messages": [
+        [
+          "extract",
+          "50e2ec2b704d4f8ed71881dc069e0ef60b0ca59d6ad91c90def6fad6b795bb8a"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "extract",
+          63659
+        ]
+      ]
+    }
+  ],
+  "Gildenboard": [
+    {
+      "case": "heron-250#115",
+      "messages": [
+        [
+          "plan",
+          "b101f80459bdce5c0caf4bde48205980b115375940053cdd7213475f6a9d9687"
+        ],
+        [
+          "board",
+          "d20a9ec0ff97567759d0c7345738f649615d3c92f1a1bd4aa358c7056b8b1254"
+        ],
+        [
+          "board",
+          "bdd8166eb80ead0b681660a29ef670a27c8cdf5af6114377c139774218ad65f7"
+        ],
+        [
+          "narrator",
+          "800275f61671f139e604f5f45fe6a9042fbba6b25ec0568ca14ffb32e2d0f022"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "plan",
+          55117
+        ],
+        [
+          "board",
+          11739
+        ],
+        [
+          "board",
+          16418
+        ],
+        [
+          "narrator",
+          61641
+        ]
+      ]
+    },
+    {
+      "case": "heron-250#116",
+      "messages": [
+        [
+          "extract",
+          "ba7e62c11b666c91d1c4e4cb5bf6da78ed2d963875292d8d70d411bc2608a126"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "extract",
+          69433
+        ]
+      ]
+    }
+  ],
+  "Dungeon": [
+    {
+      "case": "aa-234#44",
+      "messages": [
+        [
+          "plan",
+          "97fb83118680f1b9f9cacc36828741bf061e8e9a7adf22ff4f4fd1b13853faed"
+        ],
+        [
+          "narrator",
+          "4ba04ac29638b5f3c07ecf23bf9f62dd42fae630853cc9d11c158c60b2264bcb"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "plan",
+          55326
+        ],
+        [
+          "narrator",
+          53485
+        ]
+      ]
+    },
+    {
+      "case": "aa-234#45",
+      "messages": [
+        [
+          "extract",
+          "7256df9e2376b95958e583eca0e1ff87d3d8d22af2a29a3ee47fff78ede53e25"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "extract",
+          62115
+        ]
+      ]
+    }
+  ],
+  "Party und Kampf": [
+    {
+      "case": "vale-242#31",
+      "messages": [
+        [
+          "plan",
+          "86f57d16be511fdee24f2e35284ee5f4a0d6cd55b371a29660ea4193257b4d8b"
+        ],
+        [
+          "narrator",
+          "c8da72e3365bd9f8d366d40a53df2d5659061fe85c57ac5386f9681fd7737535"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "plan",
+          57118
+        ],
+        [
+          "narrator",
+          55428
+        ]
+      ]
+    },
+    {
+      "case": "vale-242#32",
+      "messages": [
+        [
+          "extract",
+          "d87089fe71a3f5fa4ca4d7f01e3c23bb51b73645084a146cdf7b5dff6b9f3acb"
+        ]
+      ],
+      "json_utf16_lengths": [
+        [
+          "extract",
+          64526
+        ]
+      ]
+    }
+  ]
+}

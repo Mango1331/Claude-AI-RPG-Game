@@ -75,6 +75,9 @@ export async function tradeHudSmoke({page,calls,worldTimings,idle,onReload,out})
     checks.freeDraft=freeText.includes('21 cp') && freeText.endsWith('Only if the bandages are clean.') && calls.length===n;
     await page.fill('#send_textarea','');
     const bought=await turn(buy,true);
+    const sheet = page.locator('#chat details.avereth-hud, #chat details.custom-avereth-hud');
+    checks.persistedSkillOverview = (await sheet.allTextContents()).some(text =>
+        /P[1-5] \(\d+\/\d+ PP\).*Rank F.*Raw Power/.test(text));
     checks.onePurchase=bought.roles.join(',')==='narrator,extract' && bought.s.coin===99
         && bought.s.events.filter(e=>e.t==='transaction.completed').length===1 && bought.s.offers[fixed].status==='accepted'
         && ['Rations','Bandages'].every((name,i)=>Object.values(bought.s.objects).some(o=>o.name===name && o.holder?.entity==='pc' && o.qty===i+2));

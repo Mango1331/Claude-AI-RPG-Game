@@ -60,7 +60,8 @@ test('Warrior creation from the diagnostic run: the System shows the real pool, 
     const rows = Object.fromEntries(characterRows(state, content));
     assert.equal(rows.Resources, 'HP 85/85 (unhurt) · MP 60/60 · STA 100/100 · XP 0/100');
     assert.equal(rows.Equipped, "Simple Traveler's Clothes · Starter Longsword · Starter Heavy Armor");
-    assert.equal(rows.Skills, 'Basic Attack P1 · Heavy Slash P1 · Guard P1');
+    assert.deepEqual(rows.Skills.split('\n').map(line => line.split(' (')[0]), ['Basic Attack P1', 'Heavy Slash P1', 'Guard P1']);
+    assert.match(rows.Skills, /Heavy Slash P1.*Rank F.*STA.*Raw Power/);
     // #equipment, as the player checked it
     gen = send('#equipment');
     assert.match(gen.panels.join('\n'), /Starter Longsword \[F\] — ATK 6[\s\S]*Starter Heavy Armor \[F\] — DEF 6, MDEF 2[\s\S]*Totals from Gear: ATK 6 \| MATK 0 \| DEF \+6 \| MDEF \+2/);

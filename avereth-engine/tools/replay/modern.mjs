@@ -81,11 +81,16 @@ if(record) fs.writeFileSync(reference,JSON.stringify({sha,default_class:'beobach
 else{
     const base=JSON.parse(fs.readFileSync(reference));
     if (!process.argv.includes('--original-reference')) {
-        const reviewed=JSON.parse(fs.readFileSync(path.join(dir,'rank263.json')));
-        assert.equal(createHash('sha256').update(fs.readFileSync(reference)).digest('hex'),reviewed.base);
-        for (const [id, fields] of Object.entries(reviewed.cases)) {
-            assert.ok(base.cases[id],id);
-            Object.assign(base.cases[id],fields);
+        let parent = reference;
+        for (const file of ['rank263.json', 'location264.json']) {
+            const next = path.join(dir,file);
+            const reviewed = JSON.parse(fs.readFileSync(next));
+            assert.equal(createHash('sha256').update(fs.readFileSync(parent)).digest('hex'),reviewed.base);
+            for (const [id, fields] of Object.entries(reviewed.cases)) {
+                assert.ok(base.cases[id],id);
+                Object.assign(base.cases[id],fields);
+            }
+            parent = next;
         }
     }
     const knownChanges=[];

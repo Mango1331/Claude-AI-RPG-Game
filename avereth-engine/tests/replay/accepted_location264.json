@@ -1,0 +1,12 @@
+{
+  "inherits": "accepted_rank263.json",
+  "engine": "4.3.0-c.6.6.264",
+  "cases": {
+    "b17-rogue#177": {
+      "category": "semantic",
+      "reason": "First Glimmerdeep section receipt states that stopping before the crossing keeps Alaric at the gate. All other recorded values equal .263.",
+      "previous": "sha256:19f40d77363142e1b1cb08fbfa5e59d50f6fd337f4f9aca070465e7d0707bfd1",
+      "fingerprint": "sha256:cd0d7896abe0d987e1112d2d2a6aed0d27d628d202a50f520eae42e981b3bfcb"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+# GPT-Erstreview User18 · Zwischenstand
+
+## R1 — Party (bestätigter Produktpfadfehler)
+
+T8 / M15: "Ill take the Cull the Millpond Gnashers. if you want to team up we can". HUD quest.accept + freier Begleittext (hud_free). P: quest.accept, zwei party invite für npc.sera und npc.npcwiry_adventurer, je mit nicht ausdrücklich vereinbartem quest/half. Quest wird aktiv; beide Einladungen clarify "No active membership". Runtime src/v4/runtime.js:452–460 verlangt !actionInput, genau einen Partyschritt, nur go/other als Rest; alle drei Einschränkungen verhindern hier die separate Rekrutierung. commands.js:604–606 leitet an partyDecision weiter; party.js:222–387 hat keine invite-Behandlung, fällt zur Prüfung bestehender Mitgliedschaft durch. Keine legitime Bediengrenze. Native #party invite ID hat eigene Rekrutierung mit NPC-Entscheidung. Freitext-Einzeleinladung ohne HUD kann ebenfalls den separaten Pfad nutzen.
+
+N: Dann zeigt Bereitschaft; Sera diskutiert Dreiteilung/Verteilung noch offen. X meldet offer share:half, nur Dann; World verwirft party_decision "The decision needs words from the identified speaker." Kein gebuchtes Angebot/Mitglied. Speaker-Matcher nutzt volle Namen, während Prosa Dann und Sera nennt; genaue Laufzeitursache separat reproduzieren. Nicht zwei halbe Anteile aus einer Einladung ableiten. Kein bestätigter Entlohnungsvertrag. Gegenreview: freie und HUD-kombinierte Einladungen, zwei Partner, Reihenfolge Quest/Einladung, NPC-Zustimmung, dreiköpfige Standardparty/echte Sonderbedingungen, Save/Reload. Kein zusätzlicher strenger Sprachvalidator.
+
+## R2 — HUD
+
+Party bleibt modaler dialog statt gemeinsamer Disclosure-Zeile. CSS setzt Buttonfarben im Dialog, nicht Dialogfläche selbst; Nutzer berichtet weißes Fenster/Buttons, Screenshot fehlt. action_composer.js:335–339 deaktiviert bei blocked(), generating, Begegnung, pending_combat, draft oder nichtleerem Eingabefeld; Grund nur title. Letzter gespeicherter X-Bericht applied, keine Kampfereignisse, konkrete Browserursache nicht im Export sichtbar. Versionswarnung blockiert nicht (index.js:759–777). Gewünschte Partyzeile mit sichtbaren Kandidaten, Aktionen, Status/Gründen und gemeinsamem CSS. Eingabefeld leeren / speichern / neu öffnen; native Einladungen einzeln als temporärer Ausweg.
+
+## R3 — Board / Weltkontinuität
+
+T3/5/6 Narrator erzählt eine angebliche Mill-road-Ausschreibung (12 Silber für Schafschutz, Marrow's Ford), noch keine offizielle Boardliste. Thread/Rumor und später place.reported gespeichert; fact guild_canon verworfen. T7 Boardprompt enthält Branche, Jagdorte, aktive Jagden, bekannte Dungeons, Rang/Tag und 5 neue Listings, **keine** Dann/Sera-Vorgeschichte. T7 P 4984 ms, Board 109211 ms (56483 + 52728), N 27207 ms, X 6489 ms, Summe 147891 ms. Erster Boardentwurf enthielt zusätzliches habitat.place in vier Listings, Repair fordert vollständige korrigierte JSON-Antwort; zweiter 4 gültige Angebote gebucht (65 cp Gnashers, 150 Serpent, 280 Ghouls, 130 Catacombs). Beide Boardaufrufe unabhängig von der Vorgeschichte langsam. User17 gleicher kurzer Boardinput, P 3225 ms, Board 85188 ms mit einem Call. Keine neue Performance-Suite. Prüfen ob harmlose redundante habitat.place-Angabe bei eindeutiger objective.where ohne Vollrepair entfernt werden kann. Board-Vorbereitung bei bestätigtem Gildenbesuch als Designoption, nicht beschlossen; Kosten/Latenz nicht einfach verschwunden, offizielle Liste vs private Hilfe, keinen ungelesenen Board-Read vortäuschen.
+
+## Sonstiges
+
+T6 X meldet learn who Dann, s Dann, p name, o Alaric; nach korrekter person.named Dann Weaver wird known_name wieder null, falscher Claim erzeugt. T4 ähnlicher falscher Subject beim Clerk korrekt verworfen, echte Namenskenntnis gebucht. Prüfen konkrete Identitätsfolge statt neue pauschale Regel. ACTIVE SCENE im sichtbaren Panel T3 Clerk, T5 Adventurer, T6 Sera; keine Vollübersicht je Turn. Nutzerwunsch .211 Vertrag beim nächsten Patch unverändert als aktuelle Revision markieren. "Herr Brandt" Anrede, kein belegter Vorname.
+
+Befund aus Originalen und statischem Produktcode, keine eigene Runtime-Reproduktion, keine Providerrequests, keine Produktänderung. Originalarchivtransfer noch offen. Der persönliche Run kann fortgesetzt werden.

@@ -1,0 +1,15 @@
+Die Engine .265 zeigt bei der bewusst verwendeten Charakterbeschreibung .211 eine Versionswarnung an. Beim nächsten Patch die bisherige Charakterbeschreibung inhaltlich unverändert als aktuellen Narrator Contract übernehmen und die Versionsprüfung entsprechend anpassen.
+
+vllt muss mir das Party System nochmal erklärt werden, da es nun zwar unten bei den HUDs ist aber immer noch als einzel button statt als aufklappbare zeile was also UI mäßig nicht so rein passt
+
+nur für mich als info: Ist Herr bei Herr Brandt am anfang der Guild Registrierung ein Name oder wie im deutschen das Herr? oder was anderes?
+
+Ich habe in den letzten 2 runs nach Registrierung in der Gilde gesagt "I look at the questboard" anstatt "i go and look at the questboard" wie ich früher immer gemacht habe. ist da ein unterschied in Performance Messung? in meinem kopf spare ich eine Überprüfung weil ich kein "go" mache was ja im Normalfall eine Reise ist. kann aber auch sein das ich es voll unnötig mache.
+
+Die Active Scene Notiz die immer ganz oben kommt wenn jemand vorgestellt wird ist mit Absicht nur bei neuen Vorstellungen oder? der rest ist dann über worldstate hud zu sehen?
+
+Die Questboard Generation hat ewig gedauert. ich nehme an wegen der Vorgeschichte mit den 2 adventurern die über eine quest geredet haben die noch gar nicht generiert it. vllt sollten wir in der arrive in Gilde message die quests schon generieren um solche stories dann besser zu machen da dann leute mit mir über quests reden können die schon existieren. aber vllt klappt das so rum auch nicht ich weiß es nicht technisch und was wir der LLM da mitgeben im prompt.
+
+Die quest über die Dann geredet hat ist nicht im board aber die LLM rettet es mit dem Angebot das wir im Team entweder die nicht existierende quest machen könnten oder eben "millers Lizard" welche tatsächlich generiert wurde. 
+
+Party button ist nicht intuitive ohne Erklärung davor. nach der letzten Nachricht habe ich nun auf Party gedrückt und dann öffnet sich ein extra box mit einladen Buttons die wieder nicht im selben css style ist sondern wieder komplett weiß und hässlich. die Buttons zum einalden sind gesperrt. Also sollty Party auch wieder ein aufklappbare zeile sein und die leute die ich einladen kann dann dort angezeigt. ich brauche nun bitte eine Erklärung wann ich in diesen fällen hätte einladen sollen da es nun nicht geht.

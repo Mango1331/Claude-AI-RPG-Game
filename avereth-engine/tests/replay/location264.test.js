@@ -143,3 +143,32 @@ test('a local stop before crossing and a direct entry from the original roadside
     assert(local.auth.approach && !local.auth.gos.length);
     assert.equal(atGate.scene.at,dungeon);
 });
+
+test('a different wayside shrine can be a real halt, including after a corrected objective receipt',async()=>{
+    const {applyWorld}=await import('../../src/v4/world.js');
+    const {parseExtraction}=await import('../../src/v4/extract.js');
+    const {extractorCatalog}=await import('../../src/v4/catalog.js');
+    const state=host.foldChat(fixture.messages.slice(0,18)).state;
+    const prose='Alaric stopped there to drink. The catacombs were still a good way off.';
+    for (const open of [false,true]) {
+        state.last.outcome.auth.pulse.open=open;
+        const ids=extractorCatalog(state,content);
+        const answer={expected:{1:{arrived:true}},deltas:[{seq:1,type:'arrive',at:estate,evidence:'Alaric stopped there to drink'}]};
+        const check=arrived=>{
+            answer.expected[1].arrived=arrived;
+            return parseExtraction(JSON.stringify(answer),content.deltaVocab,ids,{1:'go'},
+                {sceneRequired:true,state,content,reply:prose,startScene:roadside});
+        };
+        const wrong=check(true);
+        assert(wrong.issues.some(issue=>issue.why.includes('corresponding arrive')));
+        const refused=applyWorld(state,content,answer,{prose});
+        assert.notEqual(refused.state.scene.at,dungeon);
+        assert(!Object.values(refused.state.places).some(p=>p.name===estate.new.name));
+        assert.deepEqual(check(false).issues,[]);
+        const halt=applyWorld(state,content,answer,{prose}).state;
+        assert.equal(halt.places[halt.scene.at].name,estate.new.name);
+        assert.equal(halt.places[halt.scene.at].parent,estate.new.parent);
+        assert.equal(halt.scene.approaching,dungeon);
+        assert(!Object.values(halt.places).some(p=>p.section));
+    }
+});

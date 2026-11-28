@@ -1,0 +1,13 @@
+Party aufklappbare zeile ist schwarz. habe ich wohl falsch kommuniziert da sie zwar nun erkennbarer ist aber dunkler als die Hintergrundfarbe der ST UI und die anderen Klappbaren zeilen. 
+
+bei den Party HUD sind die Targets mit dem engine namen im Dropdown statt den Narrator namen die leichter zu lesen sind. 
+
+warum war bei den lizards der firs strike kein ambush? habe ich awareness übersehen? Die "KI" der NPC muss vllt besser gemacht werden Dann ist sogar auf engaged und trotzdem rennen sie zu mir um mich anzugreifen? das sind Monster und keine intelligenten menschen die wissen zuerst die mages ausschalten. 
+
+die beiden sind 2 Level über mir aber machen den selben oder weniger schaden als ich. wie sind da die Berechnungen?
+
+Die quest share hat geklappt. Narration preise scheinen falsch? als hätte es mein gesamt coin genommen für die Rechnung statt den payout. 
+
+beim auflösen der Party stellen sie sich mit namen wieder vor. haben wir noch nicht was Alaric also ich über NPC weiß?
+
+coin ist auch schon aufgeteilt aber sie erwähnen es schon wieder mit wann immer ich die Mathematik machen will soll ich es auszahlen. 

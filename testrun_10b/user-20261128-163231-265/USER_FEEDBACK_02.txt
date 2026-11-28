@@ -1,0 +1,9 @@
+Party Einladungen haben nun geklappt. leider nur einzeln statt wie beim #assign mit mehreren. war eventuell alos nur der noch nicht fertige weltabgleich ist aber nicht festgestellt. 
+
+die engine ist überfordert mit zu vielen Inputs. ich schreibe sie einzeln nochmal. mal schauen. diesmal nur Konversation und Party split ohne reise go. Der 2. versuch wurde auch abgelehnt. da der share schon equal gespeichert ist unter Party versuche ich es mit REise und Konversation und ohne extra share gerede. Konversation und reise hat geklappt aber Seras "Equal shares. Fair enough." ist nun merkwürdig da ich es nicht erwähnt habe. oder wird das mit der Party befehl mitgegeben? oder weil es im Kontext der letzten 4 Messages ist?
+
+UI der Party ist voll weiß mit grauer Schrift. die Buttons sind richtig schwarz mit weißer Schrift. sollte den ganzen box Hintergrund des Party menüs schwarz machen mit weißer Schrift wie die Haupt UI
+
+Der Party teil ganz untern unterm Worldstate ist noch nicht so schön. entweder da als extra ausklappbar oder standart ausgeklappt aber einklappbar und die partymitglieder in extra zeilen statt alles Infos hintereinander was es weniger schön zum lesen macht.
+
+enemies werden nicht gezeigt in letzter Nachricht. 

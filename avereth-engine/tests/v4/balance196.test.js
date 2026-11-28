@@ -17,7 +17,7 @@ test('196: all supported martial/bow/focus articles use the approved E values an
     for(const b of weapons)for(const [i,q] of qualities.entries())for(const balance of [false,true]){
         const p=profile(b.name,'E',q,balance);families.add(p.family);
         assert.equal(Math.max(p.atk,p.matk),expected[i],`${b.name} ${q}`);
-        assert.equal(p.rank,'E');assert.equal(p.quality,q);assert.equal(p.value_cp,expected[i]*14);
+        assert.equal(p.rank,'E');assert.equal(p.quality,q);assert.equal(p.value_cp,gearRetailPrice(c,p));
         assert.equal(gearRetailPrice(c,p),[120,200,350,650,1200][i],'E guide by quality');
         assert.equal(p.def+p.mdef,0);
         assert.ok(expected[i]>[6,10,14,18,22][i]);

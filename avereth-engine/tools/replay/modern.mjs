@@ -71,6 +71,8 @@ for(const arm of Object.keys(sources)){
         if(r) assert.equal(E.host.inputRecordError(msg,i),null,id);
         await checkEvents(E,before.state,r?.events || [],id);
         const entry={output:hash(output),world:hash(after.state),prompts,unused:Math.max(0,answers.length-calls.length),unexpected};
+        if (process.env.AVERETH_REPLAY_AUDIT)
+            fs.appendFileSync(process.env.AVERETH_REPLAY_AUDIT, JSON.stringify({id, entry, output, events:r?.events || []})+'\n');
         results[id]=entry;
     }
 }

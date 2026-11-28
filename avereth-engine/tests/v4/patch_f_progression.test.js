@@ -326,3 +326,24 @@ test('F progression: P2 display and a real Bolt agree at exactly nine available 
     assert.ok(attack, JSON.stringify(outcomeOf(g))); assert.equal(attack.cost.amount, 9);
     assert.equal(g.state().entities.pc.sheet.mp, 0);
 });
+
+test('Proven board read binds the approved E population to each published outdoor contract', () => {
+    const s = state();
+    s.guild.membership = {...s.guild.membership, rank:'Proven'};
+    const n = boardFor(s,c,[{seq:1,type:'board.read',rank:'Proven'}],{c:true});
+    assert.equal(n?.progression,true);
+    const windows = c.monsters.outdoor.E.windows;
+    const notices = listings().map((l,i) => {
+        const [min_level,max_level] = windows[i];
+        return {...l,rank:'Proven',level:min_level,habitat:{...l.habitat,min_level,max_level}};
+    });
+    const result = parse(s,notices,n);
+    assert.equal(result.listings?.length,5,JSON.stringify(result));
+    const emit = event => applyEvent(s,event);
+    bookBoard(s,c,n,result.listings,emit);
+    for (const q of Object.values(s.quests).filter(q=>q.rank==='Proven' && q.status==='listed')) {
+        assert.ok(s.places[q.hunt.at].population.levels[0]>=15);
+        const enemy=beast(s,emit,q.hunt.at,'mon.'+q.id);
+        assert.ok(enemy.profile.level>=15 && enemy.profile.level<=29);
+    }
+});

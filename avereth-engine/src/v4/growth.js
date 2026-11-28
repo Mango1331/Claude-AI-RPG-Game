@@ -319,6 +319,8 @@ export function learningActivity(s, content, c, minutes, start) {
     if (named?.refuse) return { status: 'refused', reason: 'no material', line: `NOT LEARNING — ${named.refuse}; nothing is booked, no time passes for it.` };
     let material = named;
     if (!material && !c.teacher && !goal && !known && (fresh || (!c.learn && !goals.length))) material = heldManual(s, content, fresh);
+    if (material && c.learn_rank && c.learn_rank !== material.profile.rank)
+        return { status:'refused', reason:'source rank', line:`NOT LEARNING — ${material.object.name} teaches Rank ${material.profile.rank}. The requested technique is Rank ${c.learn_rank}.` };
     if (!goal && !known && !fresh && !c.learn && material) fresh = material.profile.fn;
     if (!goal && !known && !fresh) {
         if (c.learn) return { status: 'refused', reason: 'nothing to learn', line: `NOT LEARNING — "${String(c.learn).slice(0, 40)}" is neither a Skill he knows, nor one of his learning goals, nor a technique that can be learned (${composerFunctions(content).join(', ')}); nothing is booked.` };

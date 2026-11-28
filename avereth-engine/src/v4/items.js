@@ -297,6 +297,8 @@ export function itemProfile(content, { name, kind = 'item', effect = null, teach
  * item like it; a stronger variant of the same kind is worth more. Never a price itself: offers keep their own.
  */
 export function valueOf(content, p) {
+    if (p.kind === 'gear' && p.slot === 'weapon' && p.rank === 'E')
+        return gearRetailPrice(content, p);
     const v = content.gear?.instances?.value || {};
     const f = rankFactor(content, p.rank) ** 2;
     if (p.kind === 'attack') return Math.max(1, Math.round(p.power * (v.attack_cp_per_power ?? 0.6) * (p.area ? v.area_factor ?? 1.5 : 1) * (p.uses ?? 1) * f / rankFactor(content, p.rank)));

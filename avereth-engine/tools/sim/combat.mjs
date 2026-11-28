@@ -18,7 +18,7 @@ export const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../
 export async function load(){return loadContentPack(async n=>JSON.parse(fs.readFileSync(path.join(ROOT,'content',n),'utf8')));}
 const book=(s,events)=>events.forEach(e=>applyEvent(s,e));
 export function character(c,b){
- if(![1,5,10,14,15].includes(b.level))throw Error('supported levels: 1,5,10,14,15');
+ if(!Number.isInteger(b.level) || b.level < 1 || b.level > 29)throw Error('supported F/E levels: 1–29');
  const s=fold(startCampaign(c,{seed:1,ruleset:2}));
  for(const result of [()=>selectClass(s,c,b.class),()=>selectSkills(s,c,b.skills)]){const r=result();if(r.errors)throw Error(r.errors.join(';'));book(s,r.events);}
  const xp=Array.from({length:b.level-1},(_,i)=>(i+1)*c.rules.progression.xp_to_next_per_level).reduce((a,b)=>a+b,0);
@@ -27,7 +27,7 @@ export function character(c,b){
  if(Object.values(weights).some(v=>!Number.isFinite(v)||v<=0))throw Error('positive stat weights required');
  const total=Object.values(weights).reduce((a,b)=>a+b,0),free=sh.free_points;let left=free;
  for(const [i,[stat,w]] of Object.entries(Object.entries(weights))){const n=Number(i)===Object.keys(weights).length-1?left:Math.floor(free*w/total);if(n){const r=assignStat(sh,stat,n,c);if(r.errors)throw Error(r.errors.join(';'));book(s,r.events);left-=n;}}
- if(b.evolution){if(b.level!==15||!['normal','rare'].includes(b.evolution))throw Error('E profiles require level15 and normal/rare');
+ if(b.evolution){if(b.level<15||!['normal','rare'].includes(b.evolution))throw Error('E profiles require E rank and normal/rare');
   if(b.evolution==='rare')book(s,[{t:'career.recorded',d:{source:'sim:synthetic',feats:[{key:'sim:giant',kind:'giant',context:'sim:synthetic',facts:{gap:5}}]}}]);
   book(s,offerClass(s,c,classDrafts(s,c)).events);const option=s.decisions.find(d=>d.kind==='class')?.options.find(o=>o.direction===(b.direction||'offense'));
   if(!option)throw Error('requested class direction not offered');const r=acceptClass(s,c,option.id);if(r.refuse)throw Error(r.refuse);book(s,r.events);

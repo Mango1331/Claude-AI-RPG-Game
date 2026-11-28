@@ -1,0 +1,82 @@
+[
+  {
+    "case": 1,
+    "source": "testrun_10b/user-20261128-051828-263/originals/chat.jsonl",
+    "count": 15,
+    "prefix": "U17.jsonl",
+    "fullSourceSha256": "562259c8b1bf8c71e787ff443fcdac96d3bded1dded5176e5c11651f1a75353c",
+    "input": "I set out for the Old Crown Catacombs."
+  },
+  {
+    "case": 2,
+    "source": "testrun_10b/user-20261128-051828-263/originals/chat.jsonl",
+    "count": 7,
+    "prefix": "U17.jsonl",
+    "fullSourceSha256": "562259c8b1bf8c71e787ff443fcdac96d3bded1dded5176e5c11651f1a75353c",
+    "input": "I walk across the hall to the notice board to read the fresh listings."
+  },
+  {
+    "case": 3,
+    "source": "testrun_10b/user-20261126-085419-218/originals/chat.jsonl",
+    "count": 111,
+    "prefix": "U15.jsonl",
+    "fullSourceSha256": "a0f915366c61b6578e77a71233e9c753dac939e52d6f9900273ba6c7765505e3",
+    "input": "I walk up to the man at Hargun & Sons and ask what he pays for wolf fangs."
+  },
+  {
+    "case": 4,
+    "source": "testrun_10b/user-20261128-051828-263/originals/chat.jsonl",
+    "count": 7,
+    "prefix": "U17.jsonl",
+    "fullSourceSha256": "562259c8b1bf8c71e787ff443fcdac96d3bded1dded5176e5c11651f1a75353c",
+    "input": "I watch the woman in mail on the corner bench for a moment."
+  },
+  {
+    "case": 5,
+    "source": "testrun_10b/openrouter-20261128-ortsidentitaet-264/Ford/chat.jsonl.gz",
+    "count": 19,
+    "prefix": "Ford.jsonl",
+    "fullSourceSha256": "6204e6898fd5927ec5365c3d3ad07cd35a8c21cd874191c3bb48238a0765ff75",
+    "input": "I walk up to the chapel door to look at the worn stonework from outside."
+  },
+  {
+    "case": 6,
+    "source": "testrun_10b/openrouter-20261128-ortsidentitaet-264/Ford/chat.jsonl.gz",
+    "count": 19,
+    "prefix": "Ford.jsonl",
+    "fullSourceSha256": "6204e6898fd5927ec5365c3d3ad07cd35a8c21cd874191c3bb48238a0765ff75",
+    "input": "I stay outside the crypt and listen for anything moving down there."
+  },
+  {
+    "case": 7,
+    "source": "testrun_10b/openrouter-20261128-ortsidentitaet-264/Bank/chat.jsonl.gz",
+    "count": 23,
+    "prefix": "Bank.jsonl",
+    "fullSourceSha256": "9d6c7bae00522d1e5f96eb8cfd127fd6cd02c1317d6f02acb3202d168fcc236d",
+    "input": "I head along the ford road towards Alderwatch, looking back at the little shrine as I pass."
+  },
+  {
+    "case": 8,
+    "source": "testrun_10b/user-20261126-085419-218/originals/chat.jsonl",
+    "count": 73,
+    "prefix": "U15.jsonl",
+    "fullSourceSha256": "a0f915366c61b6578e77a71233e9c753dac939e52d6f9900273ba6c7765505e3",
+    "input": "How much is supper for two if we just have the stew and bread?"
+  },
+  {
+    "case": 9,
+    "source": "testrun_10b/openrouter-20261128-ortsidentitaet-264/Ford/chat.jsonl.gz",
+    "count": 21,
+    "prefix": "Ford.jsonl",
+    "fullSourceSha256": "6204e6898fd5927ec5365c3d3ad07cd35a8c21cd874191c3bb48238a0765ff75",
+    "input": "I watch the two skeletons to see how they move."
+  },
+  {
+    "case": 10,
+    "source": "testrun_10b/user-20261128-051828-263/originals/chat.jsonl",
+    "count": 9,
+    "prefix": "U17.jsonl",
+    "fullSourceSha256": "562259c8b1bf8c71e787ff443fcdac96d3bded1dded5176e5c11651f1a75353c",
+    "input": "What kinds of contracts do novices usually start with?"
+  }
+]

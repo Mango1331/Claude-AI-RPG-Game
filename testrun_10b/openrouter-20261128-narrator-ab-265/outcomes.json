@@ -1,0 +1,1443 @@
+[
+  {
+    "arm": "ACase01",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.waystone_by_the_alders_on_the_west_road",
+    "elapsed_game_minutes": 60,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "dungeon.established": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "place.created": 1,
+      "time.advanced": 1,
+      "entity.updated": 1,
+      "scene.moved": 1,
+      "delta.rejected": 3,
+      "object.created": 2,
+      "thread.set": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ACase02",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. READS the Novice board — BOARD (these listings now become canonical because Alaric actually reads them; System cards display the official catalogue once this read is confirmed. Tell the reading briefly, atmosphere and NPC reactions; do not reproduce the catalogue or repeat every title, objective, reward and risk line. Discussing an individual contract or answering requested details is allowed. Invent no other official contract; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\nREFERENCE ONLY — authoritative contract data, not a prose catalogue:\n**Cull 4 Ridge Wolves on the Westman's Walk** (4) · 4 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Drover's Cooperative of Alderwatch · reward: 80 cp · Kill 4 ridge wolves at Westman's Walk, the wooded ridge road northwest of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Hunt the Mire Serpent at Blackman's Ford** (1) · 1 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Ferryman Odred, Blackman's Ford crossing · reward: 60 cp · Kill 1 great mire serpent at Blackman's Ford, the river crossing south of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Thin the Bowman's Hollow Goblins** (6) · 6 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Warden-Captain Elsbeth, Alderwatch wall garrison · reward: 150 cp · Kill 6 Bowman's Hollow goblins at Bowman's Hollow, the overgrown ravine beside the old orchard road. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Secure Old Crown Catacombs, Level 1** — Clear Old Crown Catacombs, level 1 — client: Temple wardens of Alderwatch · reward: 90 cp · Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\nStored objectives and any verification examples are continuity memory only."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "offer.created": 1,
+      "place.created": 3,
+      "quest.created": 4,
+      "board.refreshed": 1,
+      "board.shown": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "scene.tactical": 1,
+      "fact.asserted": 1,
+      "quest.detailed": 1,
+      "memory.recorded": 3,
+      "knowledge.gained": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ACase03",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.ashbridge.ashbridge_market_district",
+    "to": "loc.ashbridge.ashbridge_market_district",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "delta.rejected": 4,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ACase04",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "scene.tactical": 1,
+      "fact.asserted": 2,
+      "scene.awareness": 1,
+      "fact.ended": 1,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ACase05",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. LOCAL APPROACH — the chapel door. Carry out this movement within the scene to the extent possible. Describe his standpoint and what he can perceive from it. Passage, attacks and mechanical cover are separate."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "fact.asserted": 3,
+      "feature.set": 1,
+      "scene.focus": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ACase06",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 20,
+    "actions": [
+      "1. SEARCHES listening for anything moving below in the crypt for a while. SEARCH CHECK (PER 5 vs 6): 45.45% (d100 76) → FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "check.recorded": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ACase07",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.wayside_shrine_at_the_stream_crossing",
+    "to": "loc.clay_bank_narrows_on_the_ford_road",
+    "elapsed_game_minutes": 180,
+    "actions": [
+      "1. GOES — to Alderwatch (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "intent.set": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "place.created": 1,
+      "time.advanced": 1,
+      "scene.moved": 1,
+      "entity.created": 3,
+      "scene.entered": 3,
+      "scene.tactical": 3,
+      "fact.asserted": 6,
+      "entity.updated": 3,
+      "scene.awareness": 2,
+      "thread.set": 1,
+      "dungeon.booked": 1,
+      "knowledge.gained": 3,
+      "memory.recorded": 4,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ACase08",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.ashbridge.the_copper_kettle",
+    "to": "loc.ashbridge.the_copper_kettle",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "offer.closed": 1,
+      "offer.created": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ACase09",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "outcome.recorded": 1,
+      "delta.rejected": 1,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ACase10",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. READS the Novice board — BOARD (these listings now become canonical because Alaric actually reads them; System cards display the official catalogue once this read is confirmed. Tell the reading briefly, atmosphere and NPC reactions; do not reproduce the catalogue or repeat every title, objective, reward and risk line. Discussing an individual contract or answering requested details is allowed. Invent no other official contract; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\nREFERENCE ONLY — authoritative contract data, not a prose catalogue:\n**Cull the Feral Cat Prowling the Fishmongers' Quay** (1) · 1 kills total · reported individuals L1–1 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Alderwatch fishmongers' guild · reward: 30 cp · Kill 1 feral cat at fishmongers' quay, Alderwatch riverfront. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Centipedes in the Tanning Ditches** (3) · 3 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Willow Dens tanners' yard · reward: 120 cp · Kill 3 giant marsh centipede at tanning ditches of the Willow Dens yard. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Drowned Ford Serpent** (1) · 1 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Ford ferry-keeper of the Valedorn road · reward: 180 cp · Kill 1 Drowned Ford serpent at the Drowned Ford on the old Valedorn road. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Clear Old Crown Catacombs Level 1** — Clear Old Crown Catacombs, level 1 — client: Temple wardens of Alderwatch · reward: 150 cp · Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\nStored objectives and any verification examples are continuity memory only."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "offer.created": 1,
+      "place.created": 3,
+      "quest.created": 4,
+      "board.refreshed": 1,
+      "board.shown": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "delta.rejected": 2,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ARepeat01",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 19,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Follow the established way to the chosen place or its actual obstruction. Leave any further movement to Alaric."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "entity.updated": 2,
+      "scene.moved": 1,
+      "time.advanced": 2,
+      "fact.asserted": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ARepeat02",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.roadside_west_of_alderwatch",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "scene.moved": 1,
+      "place.updated": 1,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "scene.tactical": 1,
+      "fact.asserted": 3,
+      "quest.detailed": 1,
+      "delta.rejected": 3,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ARepeat03",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alder_stand_on_the_west_road",
+    "elapsed_game_minutes": 60,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "dungeon.established": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "place.created": 1,
+      "entity.updated": 1,
+      "scene.moved": 1,
+      "object.created": 2,
+      "delta.rejected": 1,
+      "time.advanced": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "ARepeat04",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 2,
+    "actions": [
+      "1. LOCAL APPROACH — the entrance of the catacombs. Carry out this movement within the scene to the extent possible. Describe his standpoint and what he can perceive from it. Passage, attacks and mechanical cover are separate."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 1,
+      "thread.set": 1,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "fact.asserted": 1,
+      "scene.awareness": 1,
+      "dungeon.booked": 1,
+      "scene.focus": 1,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "place.created": 2,
+      "place.updated": 2,
+      "fact.asserted": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 2,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.chandlers_shop_on_dyers_lane",
+    "elapsed_game_minutes": 15,
+    "actions": [
+      "1. GOES — to the provisions seller on Dyer's Lane (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "entity.updated": 1,
+      "scene.moved": 1,
+      "place.updated": 1,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "scene.tactical": 1,
+      "fact.asserted": 1,
+      "delta.rejected": 1,
+      "offer.created": 1,
+      "time.advanced": 1,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 3,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.chandlers_shop_on_dyers_lane",
+    "to": "loc.alderwatch.chandlers_shop_on_dyers_lane",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "delta.rejected": 1,
+      "offer.created": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 4,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.chandlers_shop_on_dyers_lane",
+    "to": "realm.valedorn_crown",
+    "elapsed_game_minutes": 60,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "dungeon.established": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 1,
+      "entity.updated": 1,
+      "scene.moved": 2,
+      "delta.rejected": 2,
+      "thread.set": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 5,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "realm.valedorn_crown",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 90,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 1,
+      "scene.moved": 1,
+      "place.updated": 1,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "scene.tactical": 1,
+      "fact.asserted": 3,
+      "scene.position": 1,
+      "scene.awareness": 1,
+      "dungeon.booked": 1,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 6,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 20,
+    "actions": [
+      "1. SEARCHES signs that someone has been here recently for a while. SEARCH CHECK (PER 5 vs 6): 45.45% (d100 76) → FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "check.recorded": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 1,
+      "fact.asserted": 2,
+      "claim.created": 1,
+      "knowledge.gained": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 7,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. LOCAL APPROACH — the entrance of the catacombs. Carry out this movement within the scene to the extent possible. Describe his standpoint and what he can perceive from it. Passage, attacks and mechanical cover are separate."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "fact.asserted": 1,
+      "scene.focus": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 8,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 15,
+    "actions": [
+      "1. GOES — on into part 1 of level 1 of Old Crown Catacombs (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level). Respect a stated stop outside. If he crosses, end the walk in this section. Leave the next movement and any answer to Alaric."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "dungeon.ahead": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "place.created": 1,
+      "link.set": 1,
+      "entity.updated": 9,
+      "scene.moved": 1,
+      "place.updated": 1,
+      "dungeon.part": 1,
+      "fact.asserted": 1,
+      "entity.created": 2,
+      "scene.entered": 2,
+      "dungeon.slot": 1,
+      "delta.rejected": 2,
+      "time.advanced": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 9,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 20,
+    "actions": [
+      "1. SEARCHES the nearest wall in the light from the entrance for a while. SEARCH CHECK (PER 5 vs 6): 45.45% (d100 73) → FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "check.recorded": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 1,
+      "scene.position": 2,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "AStory",
+    "n": 10,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 2,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 1,
+      "delta.rejected": 2,
+      "scene.position": 2,
+      "fact.asserted": 4,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase01",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 60,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "dungeon.established": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "thread.set": 1,
+      "time.advanced": 1,
+      "entity.updated": 1,
+      "scene.moved": 1,
+      "place.updated": 1,
+      "fact.asserted": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase02",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. READS the Novice board — BOARD (these listings now become canonical because Alaric actually reads them; System cards display the official catalogue once this read is confirmed. Tell the reading briefly, atmosphere and NPC reactions; do not reproduce the catalogue or repeat every title, objective, reward and risk line. Discussing an individual contract or answering requested details is allowed. Invent no other official contract; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\nREFERENCE ONLY — authoritative contract data, not a prose catalogue:\n**Cull 4 Ridge Wolves on the Westman's Walk** (4) · 4 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Drover's Cooperative of Alderwatch · reward: 80 cp · Kill 4 ridge wolves at Westman's Walk, the wooded ridge road northwest of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Hunt the Mire Serpent at Blackman's Ford** (1) · 1 kills total · reported individuals L1–3 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Ferryman Odred, Blackman's Ford crossing · reward: 60 cp · Kill 1 great mire serpent at Blackman's Ford, the river crossing south of Alderwatch. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Thin the Bowman's Hollow Goblins** (6) · 6 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Warden-Captain Elsbeth, Alderwatch wall garrison · reward: 150 cp · Kill 6 Bowman's Hollow goblins at Bowman's Hollow, the overgrown ravine beside the old orchard road. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Secure Old Crown Catacombs, Level 1** — Clear Old Crown Catacombs, level 1 — client: Temple wardens of Alderwatch · reward: 90 cp · Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\nStored objectives and any verification examples are continuity memory only."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "offer.created": 1,
+      "place.created": 3,
+      "quest.created": 4,
+      "board.refreshed": 1,
+      "board.shown": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase03",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.ashbridge.ashbridge_market_district",
+    "to": "loc.ashbridge.ashbridge_market_district",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "delta.rejected": 6,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase04",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "delta.rejected": 1,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "fact.asserted": 1,
+      "scene.awareness": 1,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase05",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. LOCAL APPROACH — the chapel door. Carry out this movement within the scene to the extent possible. Describe his standpoint and what he can perceive from it. Passage, attacks and mechanical cover are separate."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "fact.asserted": 4,
+      "thread.set": 1,
+      "scene.focus": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase06",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 10,
+    "actions": [
+      "1. SEARCHES listening for anything moving below in the crypt for a while. SEARCH CHECK (PER 5 vs 6): 45.45% (d100 76) → FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "check.recorded": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase07",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.wayside_shrine_at_the_stream_crossing",
+    "to": "realm.valedorn_crown",
+    "elapsed_game_minutes": 90,
+    "actions": [
+      "1. GOES — to Alderwatch (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "intent.set": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 1,
+      "scene.moved": 2,
+      "delta.rejected": 12,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase08",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.ashbridge.the_copper_kettle",
+    "to": "loc.ashbridge.the_copper_kettle",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "offer.closed": 1,
+      "offer.created": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase09",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "outcome.recorded": 1,
+      "fact.asserted": 3,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BCase10",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. READS the Novice board — BOARD (these listings now become canonical because Alaric actually reads them; System cards display the official catalogue once this read is confirmed. Tell the reading briefly, atmosphere and NPC reactions; do not reproduce the catalogue or repeat every title, objective, reward and risk line. Discussing an individual contract or answering requested details is allowed. Invent no other official contract; these official listings have JUST become available: do not claim, withdraw or retroactively remove any of them during this first display):\nREFERENCE ONLY — authoritative contract data, not a prose catalogue:\n**Cull the Feral Cat Prowling the Fishmongers' Quay** (1) · 1 kills total · reported individuals L1–1 · kills are a total contract goal, not encounter group size; groups may be dangerous — client: Alderwatch fishmongers' guild · reward: 30 cp · Kill 1 feral cat at fishmongers' quay, Alderwatch riverfront. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Centipedes in the Tanning Ditches** (3) · 3 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Willow Dens tanners' yard · reward: 120 cp · Kill 3 giant marsh centipede at tanning ditches of the Willow Dens yard. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Cull the Drowned Ford Serpent** (1) · 1 kills total · reported individuals L4–7 · kills are a total contract goal, not encounter group size; groups may be dangerous · reported minimum exceeds your level 1 — client: Ford ferry-keeper of the Valedorn road · reward: 180 cp · Kill 1 Drowned Ford serpent at the Drowned Ford on the old Valedorn road. Only engine-recorded kills of this population count. Return to the Guild to claim payment.\n**Clear Old Crown Catacombs Level 1** — Clear Old Crown Catacombs, level 1 — client: Temple wardens of Alderwatch · reward: 150 cp · Clear level 1 of Old Crown Catacombs. Risk: groups and stronger foes; a matching rank does not guarantee a safe solo expedition.\nStored objectives and any verification examples are continuity memory only."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "offer.created": 1,
+      "place.created": 3,
+      "quest.created": 4,
+      "board.refreshed": 1,
+      "board.shown": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "fact.asserted": 2,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BRepeat01",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 15,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Follow the established way to the chosen place or its actual obstruction. Leave any further movement to Alaric."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "entity.updated": 2,
+      "scene.moved": 1,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "scene.tactical": 1,
+      "fact.asserted": 1,
+      "quest.detailed": 1,
+      "time.advanced": 1,
+      "dungeon.booked": 1,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BRepeat02",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.roadside_west_of_alderwatch",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "scene.moved": 1,
+      "place.updated": 1,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "scene.tactical": 1,
+      "fact.asserted": 1,
+      "quest.detailed": 1,
+      "delta.rejected": 3,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BRepeat03",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.roadside_culvert_on_the_west_road",
+    "elapsed_game_minutes": 60,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "dungeon.established": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "place.created": 1,
+      "entity.updated": 1,
+      "scene.moved": 1,
+      "delta.rejected": 1,
+      "thread.set": 1,
+      "time.advanced": 1,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BRepeat04",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. LOCAL APPROACH — the entrance of the catacombs. Carry out this movement within the scene to the extent possible. Describe his standpoint and what he can perceive from it. Passage, attacks and mechanical cover are separate."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "delta.rejected": 7,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 1,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "place.created": 2,
+      "place.updated": 2,
+      "delta.rejected": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 2,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.market_row.megs_supply",
+    "elapsed_game_minutes": 15,
+    "actions": [
+      "1. GOES — to Meg's Supply (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "intent.set": 2,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "time.advanced": 2,
+      "entity.updated": 1,
+      "scene.moved": 1,
+      "place.updated": 2,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "scene.tactical": 1,
+      "fact.asserted": 1,
+      "delta.rejected": 1,
+      "offer.created": 1,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 3,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.market_row.megs_supply",
+    "to": "loc.alderwatch.market_row.megs_supply",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "memory.recorded": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 4,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.alderwatch.market_row.megs_supply",
+    "to": "loc.old_crown_catacombs",
+    "elapsed_game_minutes": 60,
+    "actions": [
+      "1. GOES — to Old Crown Catacombs (the story decides whether and where he arrives). Carry the way forward in this reply until he arrives, something acts on him, or a real choice of way appears; a sound, a shadow or a track without consequence is passed in a clause, never a stop."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "dungeon.established": 1,
+      "cmd.resolved": 1,
+      "pulse.rolled": 1,
+      "outcome.recorded": 1,
+      "place.created": 1,
+      "entity.updated": 2,
+      "scene.moved": 2,
+      "entity.created": 1,
+      "scene.entered": 1,
+      "scene.tactical": 1,
+      "fact.asserted": 3,
+      "quest.detailed": 1,
+      "knowledge.gained": 1,
+      "memory.recorded": 2,
+      "time.advanced": 2,
+      "place.updated": 1,
+      "dungeon.booked": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 5,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 50,
+    "actions": [
+      "1. GOES — on into part 1 of level 1 of Old Crown Catacombs (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level). Respect a stated stop outside. If he crosses, end the walk in this section. Leave the next movement and any answer to Alaric."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "dungeon.ahead": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "place.created": 2,
+      "time.advanced": 2,
+      "scene.moved": 2,
+      "entity.created": 4,
+      "scene.entered": 4,
+      "scene.tactical": 1,
+      "fact.asserted": 3,
+      "knowledge.gained": 3,
+      "quest.detailed": 1,
+      "link.set": 1,
+      "memory.recorded": 3,
+      "entity.updated": 12,
+      "place.updated": 1,
+      "dungeon.part": 1,
+      "delta.rejected": 2,
+      "dungeon.slot": 1,
+      "dungeon.booked": 1,
+      "pulse.outcome": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 6,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 15,
+    "actions": [
+      "1. SEARCHES signs that someone has been here recently for a while. SEARCH CHECK (PER 5 vs 6): 45.45% (d100 76) → FAILURE — he finds nothing new this way: say so plainly (no false lead, nothing he wrongly believes, no interchangeable hint); what is there stays as it is, and another place, method or tool may still find it."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "check.recorded": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "fact.asserted": 1,
+      "scene.position": 1,
+      "memory.recorded": 2,
+      "time.advanced": 1,
+      "dungeon.booked": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 7,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. LOCAL APPROACH — the entrance of the catacombs. Carry out this movement within the scene to the extent possible. Describe his standpoint and what he can perceive from it. Passage, attacks and mechanical cover are separate."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "delta.rejected": 4,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 8,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s2",
+    "elapsed_game_minutes": 15,
+    "actions": [
+      "1. GOES — on into part 2 of level 1 of Old Crown Catacombs (the engine's next part: the story names and shapes it; it tells no other room, passage, stair or level). Stop in this section. Leave the next movement and any answer to Alaric."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "dungeon.ahead": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "place.created": 1,
+      "link.set": 1,
+      "time.advanced": 2,
+      "entity.updated": 10,
+      "scene.moved": 1,
+      "place.updated": 1,
+      "dungeon.part": 1,
+      "entity.created": 2,
+      "scene.entered": 2,
+      "dungeon.slot": 1,
+      "delta.rejected": 3,
+      "dungeon.booked": 1,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 9,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s2",
+    "to": "loc.old_crown_catacombs.l1_s2",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "1. DOES — \"I study the nearest wall in the light from the entrance.\": his own action; tell it as it happens. It books nothing: no HP, MP, STA, stats or Stat Points, Skills, coin or possessions change by it."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "cmd.resolved": 1,
+      "outcome.recorded": 1,
+      "fact.asserted": 3,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  },
+  {
+    "arm": "BStory",
+    "n": 10,
+    "pc_cash_change": 0,
+    "pc_inventory_changed": false,
+    "pc_equipment_changed": false,
+    "pc_skill_changed": false,
+    "pc_class_changed": false,
+    "from": "loc.old_crown_catacombs.l1_s2",
+    "to": "loc.old_crown_catacombs.l1_s2",
+    "elapsed_game_minutes": 0,
+    "actions": [
+      "NOTHING TO BOOK — Alaric decides nothing the engine resolves in this message; no journey to another place was booked. He ends this reply at WHERE. Narrate conversation, movement within this scene and the world's response."
+    ],
+    "events": {
+      "turn.begun": 1,
+      "cmd.interpreted": 1,
+      "outcome.recorded": 1,
+      "scene.awareness": 2,
+      "thread.set": 1,
+      "memory.recorded": 1,
+      "extract.applied": 1
+    }
+  }
+]

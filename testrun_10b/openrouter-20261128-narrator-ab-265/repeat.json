@@ -1,0 +1,32 @@
+[
+  {
+    "case": "R1",
+    "source": "BStory/chat-6.jsonl (prefix of archived final chat)",
+    "count": 27,
+    "prefix": "repeat01.jsonl",
+    "input": "I walk to the entrance of the catacombs and listen for a moment."
+  },
+  {
+    "case": "R2",
+    "source": "testrun_10b/user-20261128-051828-263/originals/chat.jsonl",
+    "count": 17,
+    "prefix": "U17.jsonl",
+    "input": "I continue along the road to the Old Crown Catacombs."
+  },
+  {
+    "case": "R3",
+    "source": "testrun_10b/user-20261128-051828-263/originals/chat.jsonl",
+    "count": 15,
+    "prefix": "U17.jsonl",
+    "fullSourceSha256": "562259c8b1bf8c71e787ff443fcdac96d3bded1dded5176e5c11651f1a75353c",
+    "input": "I set out for the Old Crown Catacombs."
+  },
+  {
+    "case": "R4",
+    "source": "BStory/chat-6.jsonl (prefix of archived final chat)",
+    "count": 27,
+    "prefix": "repeat01.jsonl",
+    "input": "I walk to the entrance of the catacombs and listen for a moment.",
+    "planner_source": "BStory turn 7, physical 50"
+  }
+]

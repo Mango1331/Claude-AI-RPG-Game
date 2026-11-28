@@ -1,0 +1,23 @@
+{
+  "route": {
+    "tag": "wafer/us",
+    "provider_name": "Wafer",
+    "context_length": 1048576,
+    "max_completion_tokens": 943718,
+    "pricing": {
+      "prompt": "0.000000042",
+      "completion": "0.000000184",
+      "input_cache_read": "0.000000041",
+      "discount": 0
+    }
+  },
+  "hardBudgetUSD": "0.25",
+  "upperBoundPerRequest": "context_length * 0.000000045 + max_tokens * 0.00000019",
+  "max_price_per_million": {
+    "prompt": 0.045,
+    "completion": 0.19
+  },
+  "allow_fallbacks": false,
+  "sampling_readback": "profile.json",
+  "pair_control": "identical helper response reused only within each case and only against exactly matched request body; all physical narrative and extractor outputs fresh"
+}

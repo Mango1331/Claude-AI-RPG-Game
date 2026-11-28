@@ -1,0 +1,2524 @@
+[
+  {
+    "arm": "ACase01",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.waystone_by_the_alders_on_the_west_road",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "feature",
+          "feature": "flattened-grass wheel-rut detour toward the alders",
+          "kind": "obstacle",
+          "hidden": null,
+          "status": null,
+          "trigger": null,
+          "on": null,
+          "stat": "PER",
+          "difficulty": "easy",
+          "harm": null
+        },
+        "rule": "schema",
+        "reason": "$.deltas[2] (feature): : missing required \"name\""
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 6,
+          "type": "fact",
+          "s": {
+            "new": {
+              "name": "Waystone by the alders on the west road",
+              "kind": "site",
+              "parent": "realm.valedorn_crown"
+            }
+          },
+          "p": "signs",
+          "o": "days-old brown blood smear, no body, no trail out; torn strap and scattered tools"
+        },
+        "rule": "schema",
+        "reason": "$.deltas[5] (fact): .s: expected string, got object"
+      },
+      {
+        "item": {
+          "seq": 8,
+          "type": "place",
+          "place": {
+            "new": {
+              "name": "Ruined chapel tower over the western hill fold",
+              "kind": "site",
+              "parent": "realm.valedorn_crown"
+            }
+          },
+          "by": null,
+          "how": "seen",
+          "where": "a bowshot farther on from the waystone, over the entrance to the Old Crown Catacombs",
+          "false": null
+        },
+        "rule": "schema",
+        "reason": "$.deltas[7]: unknown type \"place\""
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 42346,
+    "outputs": 1273,
+    "usd": "0.001987868",
+    "elapsed_ms": 14688,
+    "provider_ms": 12528,
+    "host": {
+      "id": 16,
+      "committed_at_ms": 24521.199999999255,
+      "persisted_at_ms": 24593.599999997765,
+      "extraction_validation_wait_ms": 5001,
+      "save_readback_ms": 72,
+      "total_ms": 5074,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ACase02",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 27629,
+    "outputs": 859,
+    "usd": "0.001306058",
+    "elapsed_ms": 7331,
+    "provider_ms": 5834,
+    "host": {
+      "id": 8,
+      "committed_at_ms": 16862.800000000745,
+      "persisted_at_ms": 16911.400000002235,
+      "extraction_validation_wait_ms": 3059,
+      "save_readback_ms": 49,
+      "total_ms": 3107,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ACase03",
+    "turn": 1,
+    "from": "loc.ashbridge.ashbridge_market_district",
+    "to": "loc.ashbridge.ashbridge_market_district",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 1,
+          "type": "arrive",
+          "at": "loc.ashbridge.ashbridge_market_district.hargun_sons_hides_fangs_parts_bought_fair",
+          "with": null,
+          "forced_by": null
+        },
+        "rule": "no_go",
+        "reason": "Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "person.new",
+          "ref": "npc.hargun_merchant",
+          "name": null,
+          "role": "merchant",
+          "desc": [
+            "low-fronted hide-and-parts shop keeper",
+            "wiped palms, works a scale at the counter"
+          ],
+          "armed": null,
+          "present": true,
+          "relevant": true,
+          "threat": false,
+          "at": null,
+          "band": "ENGAGED",
+          "distinct_from": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "bid",
+          "buyer": "npc.hargun_merchant",
+          "lines": [
+            {
+              "object": "obj.loot.reedflat_wolf.fang.f",
+              "qty": 20
+            },
+            {
+              "object": "obj.loot.reedflat_wolf.pelt.f",
+              "qty": 10
+            }
+          ],
+          "price_cp": 0,
+          "said": "Clean, uncracked fangs, I pay two copper each, or a fresh fang with the root still whole, three. Twenty fangs, say, that's forty to sixty copper, depending what I find when I count them. Pelts I do by condition — summer hides are thin and the reed mud chews them, so two to four copper a pelt if they're properly skinned, and not a copper more if there's holes.",
+          "phase": "conditional",
+          "condition": "the fangs must be counted and the pelts' condition assessed before the price is fixed",
+          "pricing": {
+            "basis": "unknown",
+            "quote": null,
+            "currency_quote": null
+          }
+        },
+        "rule": "schema",
+        "reason": "$.deltas[2] (bid): .pricing: matches none of anyOf $.deltas[2].pricing: basis unknown permits only basis; remove forbidden fields [\"quote\",\"currency_quote\"]. Keep {\"basis\":\"unknown\"}; do not invent a total or binding commitment. Preserve independent valid lines."
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "fact",
+          "s": "npc.hargun_merchant",
+          "p": "trades fangs to charm-cutters",
+          "o": "wolf fangs go to the charm-cutters' cheap bracelet trade; boar tusks and marsh cat claws fetch more up in Blackgate"
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 41462,
+    "outputs": 1025,
+    "usd": "0.001917460",
+    "elapsed_ms": 14045,
+    "provider_ms": 6911,
+    "host": {
+      "id": 112,
+      "committed_at_ms": 25314.60000000149,
+      "persisted_at_ms": 25745.300000000745,
+      "extraction_validation_wait_ms": 3691,
+      "save_readback_ms": 431,
+      "total_ms": 4122,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ACase04",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 25025,
+    "outputs": 896,
+    "usd": "0.001203306",
+    "elapsed_ms": 8073,
+    "provider_ms": 6520,
+    "host": {
+      "id": 8,
+      "committed_at_ms": 18067.099999997765,
+      "persisted_at_ms": 18113.300000000745,
+      "extraction_validation_wait_ms": 3209,
+      "save_readback_ms": 46,
+      "total_ms": 3256,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ACase05",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 39627,
+    "outputs": 859,
+    "usd": "0.001790774",
+    "elapsed_ms": 9211,
+    "provider_ms": 7001,
+    "host": {
+      "id": 20,
+      "committed_at_ms": 19433.10000000149,
+      "persisted_at_ms": 19545,
+      "extraction_validation_wait_ms": 2653,
+      "save_readback_ms": 112,
+      "total_ms": 2765,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ACase06",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 26037,
+    "outputs": 417,
+    "usd": "0.001149546",
+    "elapsed_ms": 13343,
+    "provider_ms": 11062,
+    "host": {
+      "id": 20,
+      "committed_at_ms": 23373.300000000745,
+      "persisted_at_ms": 23454.800000000745,
+      "extraction_validation_wait_ms": 8403,
+      "save_readback_ms": 82,
+      "total_ms": 8484,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ACase07",
+    "turn": 1,
+    "from": "loc.wayside_shrine_at_the_stream_crossing",
+    "to": "loc.clay_bank_narrows_on_the_ford_road",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40395,
+    "outputs": 1898,
+    "usd": "0.002021118",
+    "elapsed_ms": 16341,
+    "provider_ms": 13981,
+    "host": {
+      "id": 24,
+      "committed_at_ms": 26367.800000000745,
+      "persisted_at_ms": 26503.199999999255,
+      "extraction_validation_wait_ms": 9131,
+      "save_readback_ms": 135,
+      "total_ms": 9266,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ACase08",
+    "turn": 1,
+    "from": "loc.ashbridge.the_copper_kettle",
+    "to": "loc.ashbridge.the_copper_kettle",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 25968,
+    "outputs": 786,
+    "usd": "0.001222864",
+    "elapsed_ms": 12613,
+    "provider_ms": 8103,
+    "host": {
+      "id": 74,
+      "committed_at_ms": 23629.10000000149,
+      "persisted_at_ms": 23845.60000000149,
+      "extraction_validation_wait_ms": 5439,
+      "save_readback_ms": 217,
+      "total_ms": 5655,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ACase09",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 1,
+          "type": "fact",
+          "s": "mon.old_crown_catacombs_c1_l1_e1",
+          "p": "senses",
+          "o": "track prey by sound, warmth and breath, not sight; both eyeless"
+        },
+        "rule": "group_fact",
+        "reason": "fact subject mon.old_crown_catacombs_c1_l1_e1 is not a known entity"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40367,
+    "outputs": 530,
+    "usd": "0.001761318",
+    "elapsed_ms": 7516,
+    "provider_ms": 4946,
+    "host": {
+      "id": 22,
+      "committed_at_ms": 17688.5,
+      "persisted_at_ms": 17797.599999997765,
+      "extraction_validation_wait_ms": 1394,
+      "save_readback_ms": 109,
+      "total_ms": 1503,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ACase10",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "fact",
+          "s": "quest.clear_old_crown_catacombs_level_1",
+          "p": "standing_request",
+          "o": "temple wardens of Alderwatch pay to keep the upper galleries cleared of restless bones; burial galleries lie an hour west of Alderwatch"
+        },
+        "rule": "engine_owned_fact",
+        "reason": "a known Guild contract keeps payout and formal status/completion in the engine domain; use quest.detail/quest.progress/quest.ready for story progress instead of overriding that state with a free fact"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 1,
+          "type": "fact",
+          "s": "npc.alderwatch.clerk",
+          "p": "advice",
+          "o": "culls and deliveries are novice work; centipedes and serpent are posted above fresh-register rank; catacombs level one suits a full rank-F party, not a solo fool"
+        },
+        "rule": "entity_fact",
+        "reason": "fact subject npc.alderwatch.clerk is not a known entity"
+      }
+    ],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 27917,
+    "outputs": 902,
+    "usd": "0.001325874",
+    "elapsed_ms": 12740,
+    "provider_ms": 10882,
+    "host": {
+      "id": 10,
+      "committed_at_ms": 22327.199999999255,
+      "persisted_at_ms": 22381.699999999255,
+      "extraction_validation_wait_ms": 6286,
+      "save_readback_ms": 55,
+      "total_ms": 6341,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ARepeat01",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": true,
+    "rejected": [],
+    "physical": {
+      "narrator": 1,
+      "extractor": 2
+    },
+    "inputs": 41961,
+    "outputs": 1217,
+    "usd": "0.001950642",
+    "elapsed_ms": 10608,
+    "provider_ms": 7942,
+    "host": {
+      "id": 28,
+      "committed_at_ms": 20993.199999999255,
+      "persisted_at_ms": 21135.199999999255,
+      "extraction_validation_wait_ms": 5125,
+      "save_readback_ms": 142,
+      "total_ms": 5267,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ARepeat02",
+    "turn": 1,
+    "from": "loc.roadside_west_of_alderwatch",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 6,
+          "type": "arrive",
+          "at": "loc.old_crown_catacombs.l1_s1",
+          "evidence": "His boots found the first flagstone of level one",
+          "with": [],
+          "forced_by": null
+        },
+        "rule": "place",
+        "reason": "unknown place loc.old_crown_catacombs.l1_s1"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 7,
+          "type": "creature.new",
+          "ref": "old_crown_catacombs_c1_l1_e1",
+          "species": "risen bones",
+          "across": "two shapes unfolding from the floor where they had lain like rubble",
+          "anchor": "skeleton",
+          "desc": [
+            "a broken sword held in a fist of yellowed bone",
+            "eye-sockets lit from within by a dull ember-glow"
+          ],
+          "count": 2,
+          "present": true,
+          "band": "ENGAGED",
+          "stronger": null,
+          "threat": null,
+          "population": "independent",
+          "life_stage": "adult",
+          "armed": null,
+          "cluster": null,
+          "more": null
+        },
+        "rule": "scene_context",
+        "reason": "ambiguous local scene after an unconfirmed arrival"
+      },
+      {
+        "item": {
+          "seq": 1,
+          "type": "expected"
+        },
+        "rule": "arrival_evidence",
+        "reason": "reported arrival has no corresponding arrive delta; movement was not booked"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 39998,
+    "outputs": 1869,
+    "usd": "0.001999108",
+    "elapsed_ms": 15108,
+    "provider_ms": 12997,
+    "host": {
+      "id": 18,
+      "committed_at_ms": 25280.599999997765,
+      "persisted_at_ms": 25395.5,
+      "extraction_validation_wait_ms": 6053,
+      "save_readback_ms": 115,
+      "total_ms": 6168,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ARepeat03",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alder_stand_on_the_west_road",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "fact",
+          "s": {
+            "new": {
+              "name": "Alder stand on the west road",
+              "kind": "wilderness",
+              "parent": "realm.valedorn_crown"
+            }
+          },
+          "p": "notable_find",
+          "o": "abandoned cart, half-swallowed by bramble, cargo long rotted away"
+        },
+        "rule": "schema",
+        "reason": "$.deltas[3] (fact): .s: expected string, got object"
+      }
+    ],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 28060,
+    "outputs": 1087,
+    "usd": "0.001363552",
+    "elapsed_ms": 36247,
+    "provider_ms": 34298,
+    "host": {
+      "id": 16,
+      "committed_at_ms": 46357.800000000745,
+      "persisted_at_ms": 46469,
+      "extraction_validation_wait_ms": 3760,
+      "save_readback_ms": 111,
+      "total_ms": 3871,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "ARepeat04",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 26660,
+    "outputs": 977,
+    "usd": "0.001278304",
+    "elapsed_ms": 8571,
+    "provider_ms": 5846,
+    "host": {
+      "id": 28,
+      "committed_at_ms": 18640.10000000149,
+      "persisted_at_ms": 18753.20000000298,
+      "extraction_validation_wait_ms": 3243,
+      "save_readback_ms": 113,
+      "total_ms": 3356,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 42806,
+    "outputs": 736,
+    "usd": "0.001933276",
+    "elapsed_ms": 9470,
+    "provider_ms": 7661,
+    "host": {
+      "id": 16,
+      "committed_at_ms": 19557.800000000745,
+      "persisted_at_ms": 19668.199999999255,
+      "extraction_validation_wait_ms": 3205,
+      "save_readback_ms": 110,
+      "total_ms": 3315,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 2,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.chandlers_shop_on_dyers_lane",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "offer",
+          "seller": "npc.chandler_woman",
+          "lines": [
+            {
+              "what": "large road bundle (bread, meat, cheese, dried fruit)",
+              "kind": "goods",
+              "service": null,
+              "qty": 1,
+              "price_cp": 4,
+              "said": "four the large",
+              "effect": null,
+              "teaches": null,
+              "equipment": false,
+              "base": null,
+              "quality": null,
+              "phase": "firm",
+              "condition": null,
+              "pricing": {
+                "basis": "total",
+                "quote": "four the large",
+                "currency_quote": null
+              }
+            }
+          ]
+        },
+        "rule": "offer",
+        "reason": "a price the reply does not name"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 41407,
+    "outputs": 984,
+    "usd": "0.001920150",
+    "elapsed_ms": 10913,
+    "provider_ms": 9073,
+    "host": {
+      "id": 18,
+      "committed_at_ms": 30882.60000000149,
+      "persisted_at_ms": 30954.699999999255,
+      "extraction_validation_wait_ms": 4294,
+      "save_readback_ms": 72,
+      "total_ms": 4366,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 3,
+    "from": "loc.alderwatch.chandlers_shop_on_dyers_lane",
+    "to": "loc.alderwatch.chandlers_shop_on_dyers_lane",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 1,
+          "type": "offer",
+          "seller": "npc.npcchandler_woman",
+          "lines": [
+            {
+              "what": "large road bundle (bread, meat, cheese, dried fruit)",
+              "kind": "goods",
+              "service": null,
+              "qty": 1,
+              "price_cp": 4,
+              "said": "Large does nearer two days, that's four",
+              "effect": null,
+              "teaches": null,
+              "equipment": false,
+              "base": null,
+              "quality": null,
+              "phase": "firm",
+              "condition": null,
+              "pricing": {
+                "basis": "total",
+                "quote": "large for four",
+                "currency_quote": null
+              }
+            }
+          ]
+        },
+        "rule": "offer",
+        "reason": "a price the reply does not name"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 39632,
+    "outputs": 528,
+    "usd": "0.001761696",
+    "elapsed_ms": 10992,
+    "provider_ms": 8754,
+    "host": {
+      "id": 20,
+      "committed_at_ms": 42069.89999999851,
+      "persisted_at_ms": 42163.800000000745,
+      "extraction_validation_wait_ms": 3714,
+      "save_readback_ms": 94,
+      "total_ms": 3808,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 4,
+    "from": "loc.alderwatch.chandlers_shop_on_dyers_lane",
+    "to": "realm.valedorn_crown",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "person.new",
+          "ref": "npc.pilgrim_woman",
+          "name": null,
+          "role": "pilgrim",
+          "desc": [
+            "woman on a milestone, straw hat across her knees",
+            "sun-colored cloak gone gray at the edges, dust on her hem"
+          ],
+          "armed": null,
+          "present": true,
+          "relevant": true,
+          "threat": false,
+          "at": {
+            "new": {
+              "name": "Roadside rise by the millstream path",
+              "kind": "site",
+              "parent": "realm.valedorn_crown"
+            }
+          },
+          "band": "SHORT",
+          "distinct_from": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "fact",
+          "s": "npc.pilgrim_woman",
+          "p": "voice",
+          "o": "raspy, road-worn speech"
+        },
+        "rule": "entity_fact",
+        "reason": "fact subject npc.pilgrim_woman is not a known entity"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40073,
+    "outputs": 879,
+    "usd": "0.001820098",
+    "elapsed_ms": 12816,
+    "provider_ms": 10614,
+    "host": {
+      "id": 22,
+      "committed_at_ms": 55585.199999999255,
+      "persisted_at_ms": 55688.5,
+      "extraction_validation_wait_ms": 3769,
+      "save_readback_ms": 103,
+      "total_ms": 3873,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 5,
+    "from": "realm.valedorn_crown",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 39801,
+    "outputs": 1058,
+    "usd": "0.001841610",
+    "elapsed_ms": 14791,
+    "provider_ms": 12731,
+    "host": {
+      "id": 24,
+      "committed_at_ms": 70940.60000000149,
+      "persisted_at_ms": 71078.10000000149,
+      "extraction_validation_wait_ms": 3203,
+      "save_readback_ms": 138,
+      "total_ms": 3340,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 6,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 39892,
+    "outputs": 820,
+    "usd": "0.001801640",
+    "elapsed_ms": 11321,
+    "provider_ms": 9044,
+    "host": {
+      "id": 26,
+      "committed_at_ms": 82543.39999999851,
+      "persisted_at_ms": 82644.60000000149,
+      "extraction_validation_wait_ms": 5386,
+      "save_readback_ms": 101,
+      "total_ms": 5488,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 7,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": true,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 2
+    },
+    "inputs": 54640,
+    "outputs": 638,
+    "usd": "0.002373168",
+    "elapsed_ms": 11299,
+    "provider_ms": 8708,
+    "host": {
+      "id": 28,
+      "committed_at_ms": 94116.60000000149,
+      "persisted_at_ms": 94242.39999999851,
+      "extraction_validation_wait_ms": 3155,
+      "save_readback_ms": 126,
+      "total_ms": 3281,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 8,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "aware",
+          "who": "group risen bones",
+          "level": "aware",
+          "evidence": "They had noticed him. They were coming on",
+          "scope": null
+        },
+        "rule": "world_rule",
+        "reason": "aware: unknown person (introduce new people via \"new\")"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 5,
+          "type": "hostile",
+          "by": [
+            "group risen bones"
+          ],
+          "scope": "all",
+          "evidence": "They had noticed him. They were coming on — slow, uneven, but coming."
+        },
+        "rule": "world_rule",
+        "reason": "combat.by \"group risen bones\" names no attacker the game can tell apart: introduce each attacker as its own \"new\" entry (one per individual creature or person) and name their refs in \"combat\""
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40125,
+    "outputs": 813,
+    "usd": "0.001810138",
+    "elapsed_ms": 9769,
+    "provider_ms": 7307,
+    "host": {
+      "id": 30,
+      "committed_at_ms": 104623.5,
+      "persisted_at_ms": 104826.5,
+      "extraction_validation_wait_ms": 2442,
+      "save_readback_ms": 203,
+      "total_ms": 2645,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 9,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40060,
+    "outputs": 965,
+    "usd": "0.001835376",
+    "elapsed_ms": 12223,
+    "provider_ms": 9610,
+    "host": {
+      "id": 32,
+      "committed_at_ms": 117408.60000000149,
+      "persisted_at_ms": 117539.5,
+      "extraction_validation_wait_ms": 3492,
+      "save_readback_ms": 131,
+      "total_ms": 3623,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "AStory",
+    "turn": 10,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "aware",
+          "who": "mon.old_crown_catacombs_c1_l1_e1_1",
+          "evidence": "came on, showing no interest in stopping",
+          "scope": null
+        },
+        "rule": "schema",
+        "reason": "$.deltas[1] (aware): : missing required \"level\""
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "aware",
+          "who": "mon.old_crown_catacombs_c1_l1_e1_2",
+          "evidence": "swayed a little from side to side as it walked, coming on",
+          "scope": null
+        },
+        "rule": "schema",
+        "reason": "$.deltas[2] (aware): : missing required \"level\""
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 39961,
+    "outputs": 993,
+    "usd": "0.001829458",
+    "elapsed_ms": 10782,
+    "provider_ms": 7604,
+    "host": {
+      "id": 34,
+      "committed_at_ms": 128245.60000000149,
+      "persisted_at_ms": 128378.39999999851,
+      "extraction_validation_wait_ms": 3677,
+      "save_readback_ms": 133,
+      "total_ms": 3810,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase01",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 28090,
+    "outputs": 1289,
+    "usd": "0.001402364",
+    "elapsed_ms": 13580,
+    "provider_ms": 11902,
+    "host": {
+      "id": 16,
+      "committed_at_ms": 23599.800000000745,
+      "persisted_at_ms": 23709.800000000745,
+      "extraction_validation_wait_ms": 8816,
+      "save_readback_ms": 110,
+      "total_ms": 8926,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase02",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "board": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 43180,
+    "outputs": 1603,
+    "usd": "0.002083808",
+    "elapsed_ms": 12685,
+    "provider_ms": 10948,
+    "host": {
+      "id": 8,
+      "committed_at_ms": 22395.89999999851,
+      "persisted_at_ms": 22443.5,
+      "extraction_validation_wait_ms": 1427,
+      "save_readback_ms": 48,
+      "total_ms": 1475,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase03",
+    "turn": 1,
+    "from": "loc.ashbridge.ashbridge_market_district",
+    "to": "loc.ashbridge.ashbridge_market_district",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 1,
+          "type": "arrive",
+          "at": "loc.ashbridge.ashbridge_market_district.hargun_sons_hides_fangs_parts_bought_fair",
+          "evidence": "I walk up to the man at Hargun & Sons",
+          "forced_by": null,
+          "with": null
+        },
+        "rule": "no_go",
+        "reason": "Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "person.new",
+          "ref": "npc.hargun_broker",
+          "name": null,
+          "role": "merchant",
+          "desc": [
+            "heavy man behind the counter, wipes the scale with a rag",
+            "forearms rough as cobble, appraises customers closely"
+          ],
+          "armed": null,
+          "present": true,
+          "relevant": true,
+          "threat": false,
+          "at": "loc.ashbridge.ashbridge_market_district.hargun_sons_hides_fangs_parts_bought_fair",
+          "band": "ENGAGED",
+          "distinct_from": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "bid",
+          "buyer": "npc.hargun_broker",
+          "lines": [
+            {
+              "object": "obj.loot.reedflat_wolf.fang.f",
+              "qty": 20
+            }
+          ],
+          "price_cp": 10,
+          "said": "Fangs, if they're clean, that's a silver for the twenty at two copper a tooth",
+          "phase": "conditional",
+          "condition": "the fangs must be clean, whole, and priced on the counter",
+          "pricing": {
+            "basis": "total",
+            "quote": "a silver for the twenty",
+            "currency_quote": null
+          }
+        },
+        "rule": "scene_context",
+        "reason": "ambiguous local scene after an unconfirmed arrival"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "bid",
+          "buyer": "npc.hargun_broker",
+          "lines": [
+            {
+              "object": "obj.loot.reedflat_wolf.pelt.f",
+              "qty": 1
+            }
+          ],
+          "price_cp": 200,
+          "said": "Pelts in summer I pay two silver the hide at best",
+          "phase": "conditional",
+          "condition": "he will price what Alaric shows him on the counter; summer hides at best two silver",
+          "pricing": {
+            "basis": "total",
+            "quote": "two silver the hide",
+            "currency_quote": null
+          }
+        },
+        "rule": "scene_context",
+        "reason": "ambiguous local scene after an unconfirmed arrival"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 5,
+          "type": "fact",
+          "s": "npc.hargun_broker",
+          "p": "pricing terms",
+          "o": "reedflat summer fangs 2 copper a tooth, 5 if clean-pulled; big dog wolf 4; odd skulls by talk"
+        },
+        "rule": "scene_context",
+        "reason": "ambiguous local scene after an unconfirmed arrival"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 6,
+          "type": "fact",
+          "s": "npc.hargun_broker",
+          "p": "noticed",
+          "o": "read Alaric as reedflat-seasoned: bloodstiff sleeve, staff, flat pouch; guessed ten pelts and twenty fangs"
+        },
+        "rule": "scene_context",
+        "reason": "ambiguous local scene after an unconfirmed arrival"
+      }
+    ],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 27186,
+    "outputs": 1795,
+    "usd": "0.001459740",
+    "elapsed_ms": 17212,
+    "provider_ms": 10931,
+    "host": {
+      "id": 112,
+      "committed_at_ms": 28935.89999999851,
+      "persisted_at_ms": 29495.60000000149,
+      "extraction_validation_wait_ms": 8149,
+      "save_readback_ms": 560,
+      "total_ms": 8709,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase04",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "fact",
+          "s": "loc.alderwatch.guild_hall",
+          "p": "registration_fee",
+          "o": "two silver"
+        },
+        "rule": "guild_canon",
+        "reason": "the Guild's fees and payouts are the engine's canon, not a fact of the story"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 37812,
+    "outputs": 675,
+    "usd": "0.001687536",
+    "elapsed_ms": 7282,
+    "provider_ms": 5714,
+    "host": {
+      "id": 8,
+      "committed_at_ms": 17033.79999999702,
+      "persisted_at_ms": 17075.29999999702,
+      "extraction_validation_wait_ms": 2460,
+      "save_readback_ms": 42,
+      "total_ms": 2501,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase05",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 26073,
+    "outputs": 1079,
+    "usd": "0.001274274",
+    "elapsed_ms": 8088,
+    "provider_ms": 5885,
+    "host": {
+      "id": 20,
+      "committed_at_ms": 18216.400000002235,
+      "persisted_at_ms": 18290.199999999255,
+      "extraction_validation_wait_ms": 3759,
+      "save_readback_ms": 74,
+      "total_ms": 3833,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase06",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 39640,
+    "outputs": 424,
+    "usd": "0.001710000",
+    "elapsed_ms": 13115,
+    "provider_ms": 11175,
+    "host": {
+      "id": 20,
+      "committed_at_ms": 23405.60000000149,
+      "persisted_at_ms": 23503.400000002235,
+      "extraction_validation_wait_ms": 8328,
+      "save_readback_ms": 98,
+      "total_ms": 8426,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase07",
+    "turn": 1,
+    "from": "loc.wayside_shrine_at_the_stream_crossing",
+    "to": "realm.valedorn_crown",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "person.new",
+          "ref": "roadman_big_leader",
+          "name": null,
+          "role": "bandit",
+          "desc": [
+            "big man in a leather front-jerkin, scar down one forearm, wood-axe over his shoulder"
+          ],
+          "armed": "wood-axe",
+          "present": true,
+          "relevant": true,
+          "threat": true,
+          "at": "loc.roadside_west_of_alderwatch",
+          "band": "SHORT",
+          "distinct_from": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "person.new",
+          "ref": "roadman_thin_spear",
+          "name": null,
+          "role": "bandit",
+          "desc": [
+            "thin young one holding a short spear-point down like a walking staff"
+          ],
+          "armed": "short spear",
+          "present": true,
+          "relevant": true,
+          "threat": true,
+          "at": "loc.roadside_west_of_alderwatch",
+          "band": "SHORT",
+          "distinct_from": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "person.new",
+          "ref": "roadwoman_bow",
+          "name": null,
+          "role": "bandit",
+          "desc": [
+            "older woman on a fallen stone, hunting bow across her knees with the string hanging loose"
+          ],
+          "armed": "hunting bow",
+          "present": true,
+          "relevant": true,
+          "threat": true,
+          "at": "loc.roadside_west_of_alderwatch",
+          "band": "SHORT",
+          "distinct_from": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 5,
+          "type": "person.new",
+          "ref": "roadboy_sling",
+          "name": null,
+          "role": "bandit",
+          "desc": [
+            "boy or small man hiding in the hedge about fifteen feet up the slope, with a sling"
+          ],
+          "armed": "sling",
+          "present": true,
+          "relevant": true,
+          "threat": true,
+          "at": "loc.roadside_west_of_alderwatch",
+          "band": "SHORT",
+          "distinct_from": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 6,
+          "type": "aware",
+          "who": "roadman_big_leader",
+          "level": "aware",
+          "evidence": "he called out to the traveller from ten paces off",
+          "scope": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 7,
+          "type": "aware",
+          "who": "roadboy_sling",
+          "level": "aware",
+          "evidence": "only gave himself away when a branch moved, watching from the hedge",
+          "scope": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 8,
+          "type": "position",
+          "who": "roadwoman_bow",
+          "band": "SHORT",
+          "cover": "partial",
+          "evidence": "sitting on a fallen stone at the verge",
+          "cluster": null,
+          "scope": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 9,
+          "type": "position",
+          "who": "roadboy_sling",
+          "band": "SHORT",
+          "cover": "partial",
+          "evidence": "in the hedge itself, higher up the slope, maybe fifteen feet up",
+          "cluster": null,
+          "scope": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 10,
+          "type": "fact",
+          "s": "roadman_big_leader",
+          "p": "demands",
+          "o": "toll of two silver to pass the broken stretch of road"
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 11,
+          "type": "fact",
+          "s": "roadman_big_leader",
+          "p": "occupation",
+          "o": "toll-taking robber on the road"
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 12,
+          "type": "thread",
+          "id": null,
+          "text": "Four road robbers bar the ford road in a dip: a big man demanding two silver toll, backed by a spearman, a bowwoman on a stone and a slinger hidden in the hedge; the only way through lies between the three at the narrowing.",
+          "kind": "threat",
+          "status": "open",
+          "who": [
+            "roadman_big_leader",
+            "roadman_thin_spear",
+            "roadwoman_bow",
+            "roadboy_sling",
+            "pc"
+          ],
+          "resolution": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 13,
+          "type": "feature",
+          "feature": "wrecked cart in the dip",
+          "name": "overturned cart with a wheel off, aged weeks",
+          "kind": "obstacle",
+          "hidden": null,
+          "status": null,
+          "trigger": null,
+          "on": null,
+          "stat": null,
+          "difficulty": null,
+          "harm": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      }
+    ],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 26825,
+    "outputs": 1720,
+    "usd": "0.001430458",
+    "elapsed_ms": 12967,
+    "provider_ms": 10385,
+    "host": {
+      "id": 24,
+      "committed_at_ms": 22790.699999999255,
+      "persisted_at_ms": 22889.699999999255,
+      "extraction_validation_wait_ms": 6505,
+      "save_readback_ms": 99,
+      "total_ms": 6604,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase08",
+    "turn": 1,
+    "from": "loc.ashbridge.the_copper_kettle",
+    "to": "loc.ashbridge.the_copper_kettle",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 39727,
+    "outputs": 319,
+    "usd": "0.001702590",
+    "elapsed_ms": 8929,
+    "provider_ms": 3970,
+    "host": {
+      "id": 74,
+      "committed_at_ms": 19788.900000002235,
+      "persisted_at_ms": 20064.5,
+      "extraction_validation_wait_ms": 1774,
+      "save_readback_ms": 276,
+      "total_ms": 2050,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase09",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 26499,
+    "outputs": 646,
+    "usd": "0.001212494",
+    "elapsed_ms": 8245,
+    "provider_ms": 5862,
+    "host": {
+      "id": 22,
+      "committed_at_ms": 18249.10000000149,
+      "persisted_at_ms": 18365,
+      "extraction_validation_wait_ms": 2239,
+      "save_readback_ms": 116,
+      "total_ms": 2355,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BCase10",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "board": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 43391,
+    "outputs": 2194,
+    "usd": "0.002201158",
+    "elapsed_ms": 16379,
+    "provider_ms": 14680,
+    "host": {
+      "id": 10,
+      "committed_at_ms": 26448.60000000149,
+      "persisted_at_ms": 26521.20000000298,
+      "extraction_validation_wait_ms": 3507,
+      "save_readback_ms": 73,
+      "total_ms": 3579,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BRepeat01",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": true,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 2
+    },
+    "inputs": 56182,
+    "outputs": 1656,
+    "usd": "0.002615644",
+    "elapsed_ms": 15423,
+    "provider_ms": 12737,
+    "host": {
+      "id": 28,
+      "committed_at_ms": 25744.300000000745,
+      "persisted_at_ms": 26049.10000000149,
+      "extraction_validation_wait_ms": 8730,
+      "save_readback_ms": 305,
+      "total_ms": 9035,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BRepeat02",
+    "turn": 1,
+    "from": "loc.roadside_west_of_alderwatch",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 5,
+          "type": "passage",
+          "from": "loc.old_crown_catacombs",
+          "to": {
+            "new": {
+              "name": "Old Crown Catacombs level 1, first section",
+              "kind": "interior",
+              "parent": null
+            }
+          },
+          "name": "oak door banded in iron, standing ajar",
+          "hidden": null,
+          "one_way": null,
+          "dir": "down",
+          "feature": "west steps down from the crypt"
+        },
+        "rule": "dungeon_way",
+        "reason": "the engine keeps the ways of Old Crown Catacombs: he goes on, back, down or out along its parts, never by a way the story tells"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 6,
+          "type": "creature.new",
+          "ref": "old_crown_catacombs_c1_l1_e1",
+          "species": "risen bones",
+          "across": "They stood in the corridor a dozen paces ahead",
+          "anchor": "skeleton",
+          "desc": [
+            "yellowed and cracked frame in the shape of a soldier or labourer, hung together by old gristle",
+            "one carried a rusted hand-axe clutched in a fleshless fist"
+          ],
+          "count": 2,
+          "present": true,
+          "band": "SHORT",
+          "cluster": null,
+          "stronger": null,
+          "threat": null,
+          "population": "independent",
+          "life_stage": "adult",
+          "armed": null,
+          "more": null
+        },
+        "rule": "dungeon_sight",
+        "reason": "A threshold sighting needs a view of identifiable individuals of the entrance encounter and their actual distance."
+      },
+      {
+        "item": {
+          "seq": 1,
+          "type": "expected"
+        },
+        "rule": "arrival_evidence",
+        "reason": "reported arrival has no corresponding arrive delta; movement was not booked"
+      }
+    ],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 26533,
+    "outputs": 1644,
+    "usd": "0.001404466",
+    "elapsed_ms": 12001,
+    "provider_ms": 10078,
+    "host": {
+      "id": 18,
+      "committed_at_ms": 22714.5,
+      "persisted_at_ms": 22821,
+      "extraction_validation_wait_ms": 5389,
+      "save_readback_ms": 107,
+      "total_ms": 5495,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BRepeat03",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.roadside_culvert_on_the_west_road",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "fact",
+          "s": {
+            "new": {
+              "name": "Roadside Culvert on the West Road",
+              "kind": "site",
+              "parent": "realm.valedorn_crown"
+            }
+          },
+          "p": "sign",
+          "o": "dead dog with cleanly cut leash; boot prints leading out of the culvert toward the chapel"
+        },
+        "rule": "schema",
+        "reason": "$.deltas[1] (fact): .s: expected string, got object"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 42454,
+    "outputs": 997,
+    "usd": "0.001937268",
+    "elapsed_ms": 9670,
+    "provider_ms": 7631,
+    "host": {
+      "id": 16,
+      "committed_at_ms": 19426,
+      "persisted_at_ms": 19494.199999999255,
+      "extraction_validation_wait_ms": 3668,
+      "save_readback_ms": 68,
+      "total_ms": 3736,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BRepeat04",
+    "turn": 1,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "arrive",
+          "evidence": "at the top the stair set him down at the chapel gable, grey daylight and wind replacing the dark behind him",
+          "at": "loc.old_crown_chapel_yard",
+          "with": [],
+          "forced_by": null
+        },
+        "rule": "no_go",
+        "reason": "Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 1,
+          "type": "person.new",
+          "ref": "npc.elder_warden",
+          "name": null,
+          "role": "warden",
+          "desc": [
+            "elder temple warden at the gate",
+            "settles a prayer cord with a thumb"
+          ],
+          "armed": null,
+          "present": true,
+          "relevant": true,
+          "threat": false,
+          "at": "loc.old_crown_chapel_yard",
+          "band": "SHORT",
+          "distinct_from": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "person.new",
+          "ref": "npc.younger_warden",
+          "name": null,
+          "role": "warden",
+          "desc": [
+            "younger temple warden with beads on a cord",
+            "stands a few steps off by the raw brown grave, head bent as if listening"
+          ],
+          "armed": null,
+          "present": true,
+          "relevant": true,
+          "threat": false,
+          "at": "loc.old_crown_chapel_yard",
+          "band": "SHORT",
+          "distinct_from": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "aware",
+          "who": "npc.elder_warden",
+          "level": "aware",
+          "evidence": "The elder warden gave him a glance from the gate, one eyebrow asking a question",
+          "scope": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 5,
+          "type": "fact",
+          "s": "npc.elder_warden",
+          "p": "knowledge",
+          "o": "two risen bones in the upper gallery; they come at closeness or noise; Guild steel puts the upper ones down easy"
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 6,
+          "type": "quest.detail",
+          "quest": "quest.clear_the_old_crown_catacombs_level_1",
+          "note": "Elder warden: the upper gallery has been waking slow this week; the two risen bones stand and come at you when close or when they hear noise; Guild steel puts the upper ones down easy; the deeper quiet concerns the wardens",
+          "schedule": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 7,
+          "type": "thread",
+          "id": null,
+          "text": "Faint bone-on-stone clatter breathed up from the stair below — the risen bones shifting down in the dark gallery",
+          "kind": "sign",
+          "status": "open",
+          "recall_at": "loc.old_crown_catacombs",
+          "who": null,
+          "resolution": null
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      }
+    ],
+    "physical": {
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 26778,
+    "outputs": 1433,
+    "usd": "0.001364860",
+    "elapsed_ms": 12777,
+    "provider_ms": 10138,
+    "host": {
+      "id": 28,
+      "committed_at_ms": 22974.199999999255,
+      "persisted_at_ms": 23108.300000000745,
+      "extraction_validation_wait_ms": 6452,
+      "save_readback_ms": 134,
+      "total_ms": 6586,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 1,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.guild_hall",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "fact",
+          "s": "npc.giver",
+          "p": "advice",
+          "o": "recommends Meg's Supply rations for the old chapel road"
+        },
+        "rule": "entity_fact",
+        "reason": "fact subject npc.giver is not a known entity"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 42809,
+    "outputs": 578,
+    "usd": "0.001877514",
+    "elapsed_ms": 19287,
+    "provider_ms": 17261,
+    "host": {
+      "id": 16,
+      "committed_at_ms": 28910.89999999851,
+      "persisted_at_ms": 28981.099999997765,
+      "extraction_validation_wait_ms": 2971,
+      "save_readback_ms": 70,
+      "total_ms": 3041,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 2,
+    "from": "loc.alderwatch.guild_hall",
+    "to": "loc.alderwatch.market_row.megs_supply",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "offer",
+          "seller": "npc.meg_shopkeeper",
+          "lines": [
+            {
+              "what": "half travel ration bundle",
+              "kind": "goods",
+              "service": null,
+              "qty": 1,
+              "price_cp": 2,
+              "said": "Half bundle, two",
+              "effect": null,
+              "teaches": null,
+              "equipment": null,
+              "base": null,
+              "quality": null,
+              "phase": "firm",
+              "condition": null,
+              "pricing": {
+                "basis": "total",
+                "quote": "Half bundle, two",
+                "currency_quote": null
+              }
+            }
+          ]
+        },
+        "rule": "offer",
+        "reason": "a price the reply does not name"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 41635,
+    "outputs": 1231,
+    "usd": "0.001950278",
+    "elapsed_ms": 10166,
+    "provider_ms": 8144,
+    "host": {
+      "id": 18,
+      "committed_at_ms": 39364.89999999851,
+      "persisted_at_ms": 39438.89999999851,
+      "extraction_validation_wait_ms": 4017,
+      "save_readback_ms": 74,
+      "total_ms": 4091,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 3,
+    "from": "loc.alderwatch.market_row.megs_supply",
+    "to": "loc.alderwatch.market_row.megs_supply",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 39598,
+    "outputs": 275,
+    "usd": "0.001689012",
+    "elapsed_ms": 7368,
+    "provider_ms": 5186,
+    "host": {
+      "id": 20,
+      "committed_at_ms": 46943.89999999851,
+      "persisted_at_ms": 47045.89999999851,
+      "extraction_validation_wait_ms": 1460,
+      "save_readback_ms": 102,
+      "total_ms": 1562,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 4,
+    "from": "loc.alderwatch.market_row.megs_supply",
+    "to": "loc.old_crown_catacombs",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40136,
+    "outputs": 1540,
+    "usd": "0.001944368",
+    "elapsed_ms": 14588,
+    "provider_ms": 12416,
+    "host": {
+      "id": 22,
+      "committed_at_ms": 62182.39999999851,
+      "persisted_at_ms": 62321.099999997765,
+      "extraction_validation_wait_ms": 8134,
+      "save_readback_ms": 139,
+      "total_ms": 8273,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 5,
+    "from": "loc.old_crown_catacombs",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 9,
+          "type": "leave",
+          "who": "npc.warden_elder"
+        },
+        "rule": "world_rule",
+        "reason": "leave: entity not present"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 10,
+          "type": "leave",
+          "who": "npc.warden_young"
+        },
+        "rule": "world_rule",
+        "reason": "leave: entity not present"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40537,
+    "outputs": 1969,
+    "usd": "0.002040146",
+    "elapsed_ms": 17398,
+    "provider_ms": 15239,
+    "host": {
+      "id": 24,
+      "committed_at_ms": 80068.5,
+      "persisted_at_ms": 80256.19999999925,
+      "extraction_validation_wait_ms": 7663,
+      "save_readback_ms": 188,
+      "total_ms": 7851,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 6,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40852,
+    "outputs": 595,
+    "usd": "0.001800560",
+    "elapsed_ms": 12330,
+    "provider_ms": 9774,
+    "host": {
+      "id": 26,
+      "committed_at_ms": 92808,
+      "persisted_at_ms": 92916.89999999851,
+      "extraction_validation_wait_ms": 6292,
+      "save_readback_ms": 109,
+      "total_ms": 6401,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 7,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s1",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 2,
+          "type": "arrive",
+          "at": "loc.old_crown_chapel_yard",
+          "with": [],
+          "forced_by": null
+        },
+        "rule": "no_go",
+        "reason": "Alaric arrives somewhere only after his own travel/roaming action or an explicit external involuntary cause"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 1,
+          "type": "time",
+          "during": "travel",
+          "evidence": "walked back the way he had come, up the spiral stair, past the wardens' post, out through the gate and onto the grass",
+          "minutes": 3
+        },
+        "rule": "time_authority",
+        "reason": "No chosen activity or established event accounts for this elapsed time."
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 3,
+          "type": "fact",
+          "s": "loc.old_crown_chapel_yard",
+          "p": "sounds",
+          "o": "faint bone-on-stone clacking and a skitter rising from the stairwell below; whatever moves below has not come to the foot of the stairs"
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "fact",
+          "s": "loc.old_crown_chapel_yard",
+          "p": "smell",
+          "o": "a sweetness gone wrong, fainter up in the yard"
+        },
+        "rule": "scene_context",
+        "reason": "the narrative setting is not the location reached at this step"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40548,
+    "outputs": 849,
+    "usd": "0.001834528",
+    "elapsed_ms": 10657,
+    "provider_ms": 8012,
+    "host": {
+      "id": 28,
+      "committed_at_ms": 104153,
+      "persisted_at_ms": 104268,
+      "extraction_validation_wait_ms": 2597,
+      "save_readback_ms": 115,
+      "total_ms": 2712,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 8,
+    "from": "loc.old_crown_catacombs.l1_s1",
+    "to": "loc.old_crown_catacombs.l1_s2",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [
+      {
+        "item": {
+          "scene": null,
+          "seq": 4,
+          "type": "creature.new",
+          "ref": "mon.old_crown_catacombs_c1_l1_e2_2",
+          "species": "restless skeleton",
+          "anchor": "skeleton",
+          "desc": [
+            "stood motionless among the pillars, head turned toward him"
+          ],
+          "count": 1,
+          "present": true,
+          "band": "MEDIUM",
+          "stronger": null,
+          "threat": null,
+          "population": "independent",
+          "life_stage": "adult",
+          "armed": null,
+          "cluster": null,
+          "more": null
+        },
+        "rule": "dungeon_foe",
+        "reason": "only the engine adds the foes of Old Crown Catacombs: restless skeleton is no encounter of this level"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 5,
+          "type": "position",
+          "who": "mon.old_crown_catacombs_c1_l1_e2_2",
+          "band": "MEDIUM",
+          "cover": "partial",
+          "evidence": "circling wide along the pillars' shadow line",
+          "cluster": null,
+          "scope": null
+        },
+        "rule": "creature_continuity",
+        "reason": "dependent claim about a creature this reply could not book"
+      },
+      {
+        "item": {
+          "scene": null,
+          "seq": 6,
+          "type": "hostile",
+          "by": [
+            "mon.old_crown_catacombs_c1_l1_e2_1",
+            "mon.old_crown_catacombs_c1_l1_e2_2"
+          ],
+          "scope": "all",
+          "evidence": "Both began to move at once, the first in stiff short strides across the chamber floor, the second circling wide along the pillars' shadow line"
+        },
+        "rule": "creature_continuity",
+        "reason": "dependent claim about a creature this reply could not book"
+      }
+    ],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40898,
+    "outputs": 1343,
+    "usd": "0.001940124",
+    "elapsed_ms": 12188,
+    "provider_ms": 9609,
+    "host": {
+      "id": 30,
+      "committed_at_ms": 116915.09999999776,
+      "persisted_at_ms": 117053.89999999851,
+      "extraction_validation_wait_ms": 4997,
+      "save_readback_ms": 139,
+      "total_ms": 5136,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 9,
+    "from": "loc.old_crown_catacombs.l1_s2",
+    "to": "loc.old_crown_catacombs.l1_s2",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40373,
+    "outputs": 954,
+    "usd": "0.001839586",
+    "elapsed_ms": 10113,
+    "provider_ms": 7471,
+    "host": {
+      "id": 32,
+      "committed_at_ms": 127545.69999999925,
+      "persisted_at_ms": 127675.69999999925,
+      "extraction_validation_wait_ms": 1967,
+      "save_readback_ms": 130,
+      "total_ms": 2097,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  },
+  {
+    "arm": "BStory",
+    "turn": 10,
+    "from": "loc.old_crown_catacombs.l1_s2",
+    "to": "loc.old_crown_catacombs.l1_s2",
+    "status": "applied",
+    "repaired": false,
+    "rejected": [],
+    "physical": {
+      "planner": 1,
+      "narrator": 1,
+      "extractor": 1
+    },
+    "inputs": 40382,
+    "outputs": 650,
+    "usd": "0.001784028",
+    "elapsed_ms": 9257,
+    "provider_ms": 6572,
+    "host": {
+      "id": 34,
+      "committed_at_ms": 137581,
+      "persisted_at_ms": 137868.3999999985,
+      "extraction_validation_wait_ms": 2842,
+      "save_readback_ms": 287,
+      "total_ms": 3130,
+      "record_changed": true,
+      "persisted": true,
+      "extraction_status": "applied"
+    }
+  }
+]

@@ -994,7 +994,10 @@ export function applyWorld(state, content, answer, { msg = null, prose = '', chr
         }
         if (kind === 'npc' && created.length) {
             armedFact(created[0], d.armed);
-            if (d.individual_rank === 'E' && rulesetOf(s) >= 2) materialise(s, content, dice, emit, created[0]);
+            if (d.individual_rank === 'E' && rulesetOf(s) >= 2) {
+                grant('npc.signature');
+                materialise(s, content, dice, emit, created[0]);
+            }
         }
         if (kind === 'npc' && pulse?.open && pulse.kind === 'danger' && d.present !== false && rulesetOf(s) >= 2) {
             const area = encounterArea(s,s.scene.at);

@@ -347,3 +347,35 @@ test('Proven board read binds the approved E population to each published outdoo
         assert.ok(enemy.profile.level>=15 && enemy.profile.level<=29);
     }
 });
+
+test('an exceptional adult beside its F pack has its own fixed profile and no population credit',()=>{
+    const {s,quests}=booked(),q=quests[1],at=q.hunt.at;
+    s.scene.at=at;
+    s.last.outcome={c:true,auth:{c:true,timeCap:0},expected_keys:{}};
+    const wolf={type:'creature.new',species:'feral wolf',anchor:'wolf',desc:['feral wolf'],present:true,band:'SHORT',more:true,scene:at,life_stage:'adult'};
+    const deltas=[{...wolf,seq:1,ref:'mire pack',population:at,count:2},{...wolf,seq:2,ref:'wandering alpha',individual_rank:'E',population:'independent',count:1,desc:['massive solitary scarred wolf']}];
+    const r=applyWorld(s,c,{scene:at,expected:{},deltas},{msg:80});
+    const ids=r.events.filter(e=>e.t==='entity.created').map(e=>e.d.entity.id);
+    assert.equal(ids.length,3,JSON.stringify(r.record?.rejected));
+    for(const id of ids) materialise(r.state,c,Dice.from(r.state),e=>applyEvent(r.state,e),id);
+    assert.deepEqual(ids.slice(0,2).map(id=>r.state.entities[id].population_at),[at,at]);
+    const alpha=r.state.entities[ids[2]];
+    assert.ok(!alpha.population_at && alpha.profile.level>=15 && alpha.profile.level<=29,JSON.stringify(alpha));
+    assert.ok(ids.slice(0,2).every(id=>r.state.entities[id].profile.level<=7));
+});
+test('a retired merchant with established E experience keeps profession, fixed sheet and trained skill across PC levels',()=>{
+    const make=level=>{
+        const s=state();s.entities.pc.sheet.level=level;
+        s.last.outcome={c:true,auth:{c:true,timeCap:0},expected_keys:{}};
+        const d={seq:1,type:'person.new',ref:'retired smith',role:'smith',name:'Rovan',desc:['retired veteran archer'],present:true,relevant:true,threat:false,band:'SHORT',individual_rank:'E'};
+        const r=applyWorld(s,c,{scene:s.scene.at,expected:{},deltas:[d]},{msg:99});
+        const ev=r.events.find(e=>e.t==='entity.created' && e.d.entity.kind==='npc');
+        assert.ok(ev,JSON.stringify(r.record?.rejected));
+        return {s:r.state,n:r.state.entities[ev.d.entity.id]};
+    };
+    const {s,n}=make(1);
+    assert.deepEqual(make(25).n.sheet,n.sheet);
+    assert.ok(n.sheet.level>=15 && n.sheet.level<=29);
+    assert.equal(n.sheet.template,'experienced_adventurer');
+    assert.ok(Object.keys(n.sheet.skills).some(id=>s.skill_defs[id]?.rank==='E'),JSON.stringify(n.sheet.skills));
+});

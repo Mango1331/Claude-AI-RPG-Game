@@ -222,7 +222,7 @@ export const DELTA_WRITES = {
     // Patch 2: and reaches a goal of his there (player.goal: the place his own goal leads to)
     // Patch 8: and counts a new part of a Living Dungeon toward its level (dungeons)
     arrive: { writes: ['features', 'pc.location', 'scene', 'entities', 'places', 'quests', 'trade', 'knowledge', 'facts', 'memory', 'objects'], gates: { party:'conditional', 'pc.vitals': 'conditional', dungeons: 'dungeon.part', intents: 'player.goal', 'quest.status': 'conditional', 'pc.coin': 'conditional', 'pc.progress': 'conditional', 'pc.inventory': 'conditional', 'guild.standing': 'conditional', 'guild.board': 'conditional' } },
-    'person.new': { writes: ['entities', 'scene', 'facts', 'places', 'knowledge'] },
+    'person.new': { writes: ['entities', 'scene', 'facts', 'places', 'knowledge'], gates: { skills: 'npc.signature' } },
     'person.named': { writes: ['entities'] },
     // Patch 8: a creature of the encounter the engine placed ahead is that slot's individual (dungeons)
     'creature.new': { writes: ['entities', 'scene', 'facts'], gates: { combat: 'envelope.fight', dungeons: 'dungeon.slot' } },

@@ -8,9 +8,11 @@ import { className } from './v4/class_growth.js';
 // A view, never a second state: renderHud(state) is a pure function of the fold. It is shown through SillyTavern's
 // extra.display_text (like the System block above the reply) and never enters a prompt, which quotes the plain
 // message text. It shows only what the player may know: no NPC attitudes, agendas, secrets or hidden numbers.
-import { deriveCharacter, weaponAttackOf } from './derived.js';
+import { promotionPp } from './skills.js';
+import { effectsNow } from './proficiency_display.js';
+import { deriveCharacter, rawPowerText, weaponAttackOf } from './derived.js';
 import { rulesetOf, skillOf } from './content.js';
-import { skillCostAmount, statsText, passivesOf, passiveSlots, QUALITY_TEXT } from './passives.js';
+import { effectiveStats, passiveTotals, skillCostAmount, statsText, passivesOf, passiveSlots, QUALITY_TEXT } from './passives.js';
 import { passiveOffers } from './v4/passive_growth.js';
 import { currentThreads, threadHere, LOCAL_KINDS } from './threads.js';
 import { goalLines } from './v4/intents.js';
@@ -89,7 +91,23 @@ export function characterRows(state, content, {showFreePoints=false} = {}) {
     const dv = deriveCharacter(s, content);
     const cls = s.class ? className(s, content) : 'no Class yet';
     const per = content.rules.progression.xp_to_next_per_level;
-    const skills = Object.entries(s.skills).map(([id, v]) => `${skillOf(content, id, state)?.name || id} P${v.prof}`);
+    const stats = effectiveStats(s, content);
+    const mods = passiveTotals(s, content).cost;
+    const skills = Object.entries(s.skills).map(([id, known]) => {
+        const sk = skillOf(content, id, state);
+        if (!sk) return id;
+        const cost = skillCostOf(sk, known, content, mods, true);
+        const pp = known.prof >= 5 ? 'max' : `${known.pp || 0}/${promotionPp(content, sk, state)} PP`;
+        const effects = effectsNow(content, sk, stats, known.prof, rulesetOf(state));
+        const bits = [`${sk.name} P${known.prof} (${pp})`, `Rank ${sk.rank || '—'}`,
+            cost ? `${cost.amount} ${cost.resource.toUpperCase()}` : 'free'];
+        if (sk.ammo) bits.push(`${sk.ammo.qty} ${content.items.get(sk.ammo.item)?.name || sk.ammo.item} with bow`);
+        if (sk.range) bits.push([sk.range.band, sk.range.area].filter(Boolean).join(' '));
+        if (sk.attack) bits.push(`Raw Power ${rawPowerText(sk, stats, dv)}`);
+        const effect = effects.join(', ') || effectShort(sk) || sk.effect_text;
+        if (effect && !/^none[.]?$/i.test(effect)) bits.push(effect);
+        return bits.join(' · ');
+    });
     const weapon = weaponAttackOf(s, content, rulesetOf(state)); // Patch 9A: his weapon's own attack, no learned Skill
     if (weapon) skills.push(`${weapon.skill.name} (weapon)`);
     const equip = Object.values(s.equipment || {}).map((r) => (typeof r === 'string' ? content.items.get(r)?.name || r : r.name));
@@ -104,7 +122,7 @@ export function characterRows(state, content, {showFreePoints=false} = {}) {
         ['Resources', `HP ${s.hp}/${dv.maxHp} (${condition(s.hp, dv.maxHp)}) · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · XP ${s.xp}/${s.level * per}`],
         ['Stats', `${statsText(s, content, ' · ')}${s.free_points || showFreePoints ? ` · Free Stat Points ${s.free_points ?? 0}` : ''}`],
         ['Combat', `ATK ${dv.atk} · MATK ${dv.matk} · DEF ${dv.def} · MDEF ${dv.mdef} · Initiative ${dv.init}`],
-        ['Skills', list(skills)],
+        ['Skills', skills.join('\n') || '—'],
         // Patch 9C-2c: his Passive slots, and a development offered to him (not his yet)
         ...(rulesetOf(state) >= 2 && (passivesOf(s).length || passiveOffers(state).length)
             ? [['Passives', `${passivesOf(s).length}/${passiveSlots(content)}${passivesOf(s).length ? ` · ${passivesOf(s).map((p) => `${p.name}${p.quality ? ` (${QUALITY_TEXT[p.quality]})` : ''}`).join(' · ')}` : ''}${passiveOffers(state).length ? ` · offered: ${passiveOffers(state).map((d) => d.passive.name).join(', ')} (#passives)` : ''}`]] : []),
@@ -185,7 +203,7 @@ export function worldRows(state, content) {
 }
 
 function panel(title, summary, rows, open, extra = '') {
-    const body = rows.map(([k, v]) => `<b>${esc(k)}</b>: ${esc(v)}`).join('<br>');
+    const body = rows.map(([k, v]) => `<b>${esc(k)}</b>: ${esc(v).replaceAll('\n', '<br>')}`).join('<br>');
     return `<details class="avereth-hud"${open ? ' open' : ''}><summary>${esc(title)} — ${esc(summary)}</summary><div class="avereth-hud-body">${body}${extra}</div></details>`;
 }
 

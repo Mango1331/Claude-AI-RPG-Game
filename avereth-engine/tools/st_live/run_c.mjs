@@ -364,6 +364,9 @@ try {
     await send('Mage');
     await send('Flame Lance + Arcane Wave');
     const afterCreation = calls.filter((c) => c.purpose === 'plan').length;
+    const skillOverview = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('#chat .avereth-hud-body')).some(row =>
+            /Flame Lance P1.*PP.*Rank F.*MP.*Raw Power/.test(row.textContent)));
     const startStatsFive = await page.evaluate(async () => {
         const { foldChat } = await import('/scripts/extensions/third-party/avereth-engine/src/host.js');
         const s = foldChat(SillyTavern.getContext().chat).state.entities.pc.sheet;
@@ -596,7 +599,7 @@ try {
         stealthProbeMode = false;
     }
     const costChecks=process.env.AVERETH_SMOKE_HOST_COST === '1' ? await hostCostSmoke({page,out:HERE,calls}) : null;
-    result = { partyChecks, tradeChecks, campChecks, costChecks, prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
+    result = { skillOverview, partyChecks, tradeChecks, campChecks, costChecks, prefixChecks, streamingChecks, nativeWorldChecks, user05Checks, actionReviewChecks, capacity:{peakUnits,activeUnits}, actionHudChecks, actionHostChecks, bossloot193Checks, toggle, greeting, afterCreation, startStatsFive, steps, status, delayedRecoverySave, failsoft, financeChecks, saveRecoveryChecks, fetchChecks, stealthChecks, uiChecks, continuityChecks, board159Checks, qol160Checks, ui161Checks, pulse162Checks, pulse164Checks, pulse167Checks, npc169Checks, npc172Checks, pilot01Checks };
 } catch (error) {
     const screen = await page.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(-8000),
         chat: window.SillyTavern?.getContext?.()?.chat?.map(m => ({ user: m.is_user, system: m.is_system, text: m.mes?.slice(0, 120) })) })).catch(() => null);
@@ -621,7 +624,7 @@ const plans = normalCalls.filter((c) => c.purpose === 'plan');
 const narr = normalCalls.filter((c) => c.purpose === 'narrator');
 const engineOf = (c) => String(c?.messages?.find((m) => String(m.content).startsWith('[AVERETH ENGINE'))?.content || '');
 const narratorFor = (key) => narr.filter((c) => c.lastUser.includes(TURNS.find((t) => t.key === key).player));
-const checks = { capacityAtMostFour:result.capacity.peakUnits<=4,
+const checks = { skillOverview:result.skillOverview, capacityAtMostFour:result.capacity.peakUnits<=4,
     ...(extractor261 ? {
         rootAudit: S('burrow').look.next?.extraction?.llm?.[0].discarded_root?.join() === 'memory',
         emptyReportRecovered: sentEmptyExtraction && S('alias').look.next?.extraction?.status === 'applied' &&

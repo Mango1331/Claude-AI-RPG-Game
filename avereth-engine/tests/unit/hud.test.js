@@ -22,7 +22,8 @@ test('Character HUD: every value comes from the state and changes the moment the
     assert.equal(c.Resources, 'HP 80/80 (unhurt) · MP 60/60 · STA 100/100 · XP 0/100');
     assert.equal(c.Stats, 'STR 5 · VIT 5 · AGI 6 · INT 5 · PER 6 · WIL 5');
     assert.equal(c.Combat, 'ATK 6 · MATK 0 · DEF 3 · MDEF 4 · Initiative 9');
-    assert.equal(c.Skills, 'Basic Attack P1 · Aimed Shot P1 · Power Shot P1');
+    assert.match(c.Skills, /Basic Attack P1.*Rank F.*5 STA/);
+    assert.match(c.Skills, /Power Shot P1.*PP.*Rank F.*12 STA.*Standard Arrow with bow.*Raw Power/);
     assert.equal(c.Equipped, "Simple Traveler's Clothes · Starter Shortbow · Starter Light Armor · Starter Quiver");
     assert.equal(c.Carried, 'Small Pouch · Standard Arrow ×20');
     assert.equal(c.Coin, '5 Silver');

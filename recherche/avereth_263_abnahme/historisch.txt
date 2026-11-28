@@ -1,0 +1,15 @@
+> avereth-engine@4.3.0-c.6.6.263 replay:check
+> node tools/replay/replay.mjs --check tests/replay/baseline.json.gz --accepted tests/replay/accepted_rank263.json
+
+engine 4.3.0-c.6.6.263 at <checkout>/avereth-engine · 124.1 s
+b16-rogue-sale: player 41 (board 1, forge 0, control 5, planner failed 0) · reply 35 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 498 events, 0 fold errors, 0 validation problems · vs original build 31 same / 45 different
+b17-mage: player 106 (board 3, forge 0, control 14, planner failed 0) · reply 90 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 1436 events, 0 fold errors, 0 validation problems · vs original build 61 same / 135 different
+b17-rogue: player 140 (board 3, forge 0, control 13, planner failed 0) · reply 122 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 1914 events, 0 fold errors, 0 validation problems · vs original build 91 same / 171 different
+b17-warrior: player 168 (board 7, forge 1, control 14, planner failed 3) · reply 141 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 2206 events, 0 fold errors, 0 validation problems · vs original build 102 same / 207 different
+b18-mage: player 22 (board 1, forge 0, control 4, planner failed 0) · reply 17 (extraction failed 1, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 283 events, 0 fold errors, 0 validation problems · vs original build 16 same / 23 different
+b18-rogue: player 200 (board 1, forge 0, control 10, planner failed 4) · reply 181 (extraction failed 1, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 2278 events, 0 fold errors, 0 validation problems · vs original build 137 same / 244 different
+b18-warrior: player 200 (board 3, forge 1, control 16, planner failed 0) · reply 173 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 2229 events, 0 fold errors, 0 validation problems · vs original build 171 same / 202 different
+b19-mage: player 94 (board 2, forge 0, control 8, planner failed 0) · reply 74 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 1115 events, 0 fold errors, 0 validation problems · vs original build 56 same / 112 different
+b19-rogue: player 32 (board 1, forge 0, control 3, planner failed 0) · reply 29 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 456 events, 0 fold errors, 0 validation problems · vs original build 21 same / 40 different
+b19-warrior: player 200 (board 3, forge 1, control 13, planner failed 0) · reply 170 (extraction failed 0, empty 0) · skipped {"campaign start":1} · replay errors 0 · fold 2352 events, 0 fold errors, 0 validation problems · vs original build 142 same / 228 different
+baseline b8d2af4b76cd0bc52ac178b8c500e5733878ecee (4.3.0-c.6.6.126): 2235 cases compared, 1392 differing, 1392 of them accepted with their exact output, 0 not accepted, 0 accepted but equal

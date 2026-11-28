@@ -1,0 +1,7 @@
+> avereth-engine@4.3.0-c.6.6.263 smoke:st:isolated
+> node tools/st_live/isolated.mjs --mode trade_hud
+
+[st-isolated] smoke trade_hud: node tools/st_live/run_c.mjs (1 switches) → /workspace/avereth-setup/st-sandbox/out/2026-11-28T03-06-55-275Z/trade_hud
+[st-isolated] trade_hud: OK 44/44 – /workspace/avereth-setup/st-sandbox/out/2026-11-28T03-06-55-275Z/trade_hud/run.log
+[st-isolated] report: /workspace/avereth-setup/st-sandbox/out/2026-11-28T03-06-55-275Z/report.json (and report.md)
+[st-isolated] ST SMOKE ISOLATED: OK (trade_hud 44/44)

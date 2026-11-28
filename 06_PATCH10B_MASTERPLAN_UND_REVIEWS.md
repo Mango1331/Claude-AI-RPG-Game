@@ -4,6 +4,7 @@ Nur **abgeschlossene Entwicklungs-/Forschungsetappen** werden hier aufgenommen; 
 
 | Etappe | Fachlicher Abschluss und Gegenreview | Originale / Abnahmen |
 |---|---|---|
+| **.263 · E-Rank** | [Entscheidungen](recherche/AVERETH_263_E_RANK_FACHENTSCHEIDUNGEN.md) · [Produkt und Abnahme](recherche/AVERETH_263_E_RANK_IMPLEMENTIERUNG_ABNAHME.md) | [Originale](testrun_10b/openrouter-20261128-e-rank-263/README.md) |
 | **.262 · Rangfähiges Fundament** | [Abnahme und E-Entscheidungsbedarf](recherche/AVERETH_262_RANGFAEHIGES_FUNDAMENT_ABNAHME.md) | [Originale des natürlichen Vergleichs](testrun_10b/openrouter-20261128-fundament-262/) |
 | **.261 · Restpaket nach Claim + State** | [Extractor-Recovery und Teilübernahme](recherche/AVERETH_261_EXTRACTOR_RECOVERY_ABNAHME.md) | [Abnahme der Validierungsvereinfachung auf .260](recherche/AVERETH_252_VALIDIERUNGSVEREINFACHUNG_ABNAHME.md) |
 | **.251 · Validierungsarchitektur: Analyse und Plan** | [Diskussionsgrundlage](recherche/AVERETH_251_VALIDIERUNGSARCHITEKTUR_DISKUSSION_2026-11-27.md) · [Claude-Analyse Stand 2](recherche/AVERETH_251_CLAUDE_VALIDIERUNGSARCHITEKTUR_ANALYSE_UND_PLAN.md) · [GPT-Gegenreview](recherche/AVERETH_251_GPT_GEGENREVIEW_CLAUDE_VALIDIERUNGSARCHITEKTUR.md) · [Codex-Auftrag](recherche/AVERETH_252_CODEX_AUFTRAG_VALIDIERUNGSVEREINFACHUNG.md) | [Offline-Proben und Zählung](recherche/claude_251_analyse/) |

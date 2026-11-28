@@ -1,0 +1,34 @@
+{
+  "head": "928172b9bbaae3d133bad7097100dc2127334b8e",
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "st": "1.19.0",
+  "count": 9,
+  "costUSD": "0.006198608",
+  "redactions": {
+    "st.log.gz": "local sandbox paths"
+  },
+  "sha256": {
+    "parent-check.json.gz": "aca187f6b7d382b52de2067512232ae199bc3df1d34895650109305b485b0ef5",
+    "chat-0.jsonl.gz": "a0cda022eab091c228da25c896e0433e508ef3324bf8765f55c2b0eb7ea8dbd4",
+    "world-0.json.gz": "af204443dd17ff55f4d5085201df70ebef24456a4e960d44580259495ce612e1",
+    "actions.jsonl.gz": "b7a51ed8d6d5c369bda7a319bc3dec5d6a8f850ab296d88f582d68608e31dc98",
+    "chat.jsonl.gz": "54bdf90a044c60c4cfbd0a831c80aba6c9971bca1a6b399f0f3b5d7fbb90b62e",
+    "events.json.gz": "3b591a1a35b2dd900a8cf6d9ed177705b340deff7df9f93b08070bef08bfc281",
+    "turns.jsonl.gz": "b6d81bb187fabd4f0c370ba252dc0cdff4baafa6b72bf50c1edaa094ef49d56d",
+    "profile.json.gz": "a8874c7255610c2ebe2813743faa67fece1e16cd417ccfe389f374804b7b0d94",
+    "visible.json.gz": "d3900ee77e4372a42707b58db737126264f10406c022d21070ff91e551ef200f",
+    "st.log.gz": "944bdf851027257085f1bc92598419292ecd86e8224ff7d6bf1fe845f48706fb",
+    "last-verified-world.json.gz": "d89eca43609d1802fd3288120905e4f15f663f30eb04fc203b1089d60d01ecd8",
+    "requests.jsonl.gz": "f089f07d4e4af949c9f4c06dced4fb14ba61fd087ce27735b0cf16f09856c07c",
+    "raw-143.gz": "66eecc4b27c7303183bb1f57e12042798722f640c8cd8454c7832d40aa38165c",
+    "raw-144.gz": "21ead0bb454d73c8594fbbdcaee0d0e655d04ca7475cddceca41fbd04d494fda",
+    "raw-145.gz": "58ae2861914747f7f84162069c78c47895d672943d513ff10725074136fe801c",
+    "raw-146.gz": "a62e6cd9a13df67cf962c09b0e70743df2a485810c85a3887f7c97ebea683eaa",
+    "raw-147.gz": "ed9eb5cd73587a82f5773554a58d6a872067d3c6699cbd209b827eec271636d3",
+    "raw-148.gz": "938a452a7cc4fafc70d8f974adce4c7e783da3ce8300082d12f3ef709df353c2",
+    "raw-149.gz": "937e84fce1978179ace850af1d4be601b0feb0e4784cac9779cfbadda2ed5d64",
+    "raw-150.gz": "4cabe8e78c7ab6b1aca95016fdc70a967c87ce4478b452adbb2fc90737f05cde",
+    "raw-151.gz": "ea0765b92e9bbaeb47c3ab4717ee1c80f4c188aa05e355c91d29cb0e6ca7f795"
+  }
+}

@@ -1,0 +1,7 @@
+> avereth-engine@4.3.0-c.6.6.263 smoke:st:isolated
+> node tools/st_live/isolated.mjs --mode board_slot
+
+[st-isolated] smoke board_slot: node tools/st_live/run_c.mjs (1 switches) → /workspace/avereth-setup/st-sandbox/out/2026-11-28T03-08-43-174Z/board_slot
+[st-isolated] board_slot: OK 57/57 – /workspace/avereth-setup/st-sandbox/out/2026-11-28T03-08-43-174Z/board_slot/run.log
+[st-isolated] report: /workspace/avereth-setup/st-sandbox/out/2026-11-28T03-08-43-174Z/report.json (and report.md)
+[st-isolated] ST SMOKE ISOLATED: OK (board_slot 57/57)

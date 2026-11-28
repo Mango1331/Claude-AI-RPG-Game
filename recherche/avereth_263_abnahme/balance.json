@@ -1,0 +1,1272 @@
+{
+ "rows": [
+  {
+   "cls": "warrior",
+   "level": 5,
+   "kind": "single",
+   "band": "ENGAGED",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 95,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 5,
+   "kind": "group",
+   "band": "ENGAGED",
+   "party": true,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 87,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 5,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 86,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 10,
+   "kind": "single",
+   "band": "ENGAGED",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 95,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 10,
+   "kind": "group",
+   "band": "ENGAGED",
+   "party": true,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 87,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 10,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 92,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 14,
+   "kind": "single",
+   "band": "ENGAGED",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 93,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 14,
+   "kind": "group",
+   "band": "ENGAGED",
+   "party": true,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 86,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 14,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 86,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 15,
+   "kind": "single",
+   "band": "ENGAGED",
+   "party": false,
+   "quality": [
+    "normal",
+    "offense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 94,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 15,
+   "kind": "group",
+   "band": "ENGAGED",
+   "party": true,
+   "quality": [
+    "normal",
+    "offense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 85,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 15,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "rare",
+    "defense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 91,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 20,
+   "kind": "single",
+   "band": "ENGAGED",
+   "party": false,
+   "quality": [
+    "normal",
+    "offense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 20,
+   "kind": "group",
+   "band": "ENGAGED",
+   "party": true,
+   "quality": [
+    "normal",
+    "offense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 88,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 20,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "rare",
+    "defense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 95,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 24,
+   "kind": "single",
+   "band": "ENGAGED",
+   "party": false,
+   "quality": [
+    "normal",
+    "offense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 24,
+   "kind": "group",
+   "band": "ENGAGED",
+   "party": true,
+   "quality": [
+    "normal",
+    "offense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 87,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 24,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "rare",
+    "defense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 95,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 29,
+   "kind": "single",
+   "band": "ENGAGED",
+   "party": false,
+   "quality": [
+    "normal",
+    "offense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 97,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 29,
+   "kind": "group",
+   "band": "ENGAGED",
+   "party": true,
+   "quality": [
+    "normal",
+    "offense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 86,
+   "aborted": 0
+  },
+  {
+   "cls": "warrior",
+   "level": 29,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "rare",
+    "defense"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 94,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 5,
+   "kind": "single",
+   "band": "MEDIUM",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 5,
+   "kind": "group",
+   "band": "MEDIUM",
+   "party": true,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 97,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 5,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 10,
+   "kind": "single",
+   "band": "MEDIUM",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 10,
+   "kind": "group",
+   "band": "MEDIUM",
+   "party": true,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 10,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 14,
+   "kind": "single",
+   "band": "MEDIUM",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 14,
+   "kind": "group",
+   "band": "MEDIUM",
+   "party": true,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 14,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 15,
+   "kind": "single",
+   "band": "MEDIUM",
+   "party": false,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 15,
+   "kind": "group",
+   "band": "MEDIUM",
+   "party": true,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 15,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 20,
+   "kind": "single",
+   "band": "MEDIUM",
+   "party": false,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 20,
+   "kind": "group",
+   "band": "MEDIUM",
+   "party": true,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 20,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 24,
+   "kind": "single",
+   "band": "MEDIUM",
+   "party": false,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 24,
+   "kind": "group",
+   "band": "MEDIUM",
+   "party": true,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 24,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 29,
+   "kind": "single",
+   "band": "MEDIUM",
+   "party": false,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 29,
+   "kind": "group",
+   "band": "MEDIUM",
+   "party": true,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "mage",
+   "level": 29,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "normal",
+    "arcane"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 5,
+   "kind": "single",
+   "band": "SHORT",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 5,
+   "kind": "group",
+   "band": "SHORT",
+   "party": true,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 84,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 5,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 90,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 10,
+   "kind": "single",
+   "band": "SHORT",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 98,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 10,
+   "kind": "group",
+   "band": "SHORT",
+   "party": true,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 82,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 10,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 90,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 14,
+   "kind": "single",
+   "band": "SHORT",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 93,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 14,
+   "kind": "group",
+   "band": "SHORT",
+   "party": true,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 81,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 14,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": null,
+   "n": 5,
+   "win": 100,
+   "hp": 89,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 15,
+   "kind": "single",
+   "band": "SHORT",
+   "party": false,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 15,
+   "kind": "group",
+   "band": "SHORT",
+   "party": true,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 82,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 15,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 89,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 20,
+   "kind": "single",
+   "band": "SHORT",
+   "party": false,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 20,
+   "kind": "group",
+   "band": "SHORT",
+   "party": true,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 84,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 20,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 90,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 24,
+   "kind": "single",
+   "band": "SHORT",
+   "party": false,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 24,
+   "kind": "group",
+   "band": "SHORT",
+   "party": true,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 83,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 24,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 90,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 29,
+   "kind": "single",
+   "band": "SHORT",
+   "party": false,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 100,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 29,
+   "kind": "group",
+   "band": "SHORT",
+   "party": true,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 83,
+   "aborted": 0
+  },
+  {
+   "cls": "rogue",
+   "level": 29,
+   "kind": "elite",
+   "band": "LONG",
+   "party": false,
+   "quality": [
+    "normal",
+    "precision"
+   ],
+   "n": 5,
+   "win": 100,
+   "hp": 90,
+   "aborted": 0
+  }
+ ],
+ "dungeon": [
+  {
+   "name": "Mossback Warrens",
+   "floor": "2",
+   "steps": [
+    {
+     "anchor": "goblin",
+     "type": "normal",
+     "level": 17,
+     "count": 3
+    },
+    {
+     "anchor": "goblin_shaman",
+     "type": "boss",
+     "level": 22,
+     "count": 1
+    }
+   ],
+   "ally": null,
+   "restHours": 0,
+   "n": 5,
+   "full": 0,
+   "aborted": 0
+  },
+  {
+   "name": "Mossback Warrens",
+   "floor": "2",
+   "steps": [
+    {
+     "anchor": "goblin",
+     "type": "normal",
+     "level": 17,
+     "count": 3
+    },
+    {
+     "anchor": "goblin_shaman",
+     "type": "boss",
+     "level": 22,
+     "count": 1
+    }
+   ],
+   "ally": "warrior",
+   "restHours": 0,
+   "n": 5,
+   "full": 100,
+   "aborted": 0
+  },
+  {
+   "name": "Mossback Warrens",
+   "floor": "2",
+   "steps": [
+    {
+     "anchor": "goblin",
+     "type": "normal",
+     "level": 17,
+     "count": 3
+    },
+    {
+     "anchor": "goblin_shaman",
+     "type": "boss",
+     "level": 22,
+     "count": 1
+    }
+   ],
+   "ally": null,
+   "restHours": 1,
+   "n": 5,
+   "full": 100,
+   "aborted": 0
+  },
+  {
+   "name": "Mossback Warrens",
+   "floor": "2",
+   "steps": [
+    {
+     "anchor": "goblin",
+     "type": "normal",
+     "level": 17,
+     "count": 3
+    },
+    {
+     "anchor": "goblin_shaman",
+     "type": "boss",
+     "level": 22,
+     "count": 1
+    }
+   ],
+   "ally": "warrior",
+   "restHours": 1,
+   "n": 5,
+   "full": 100,
+   "aborted": 0
+  },
+  {
+   "name": "Old Crown Catacombs",
+   "floor": "2",
+   "steps": [
+    {
+     "anchor": "ghoul",
+     "type": "normal",
+     "level": 17,
+     "count": 2
+    },
+    {
+     "anchor": "ghoul",
+     "type": "boss",
+     "level": 22,
+     "count": 1
+    }
+   ],
+   "ally": null,
+   "restHours": 0,
+   "n": 5,
+   "full": 100,
+   "aborted": 0
+  },
+  {
+   "name": "Old Crown Catacombs",
+   "floor": "2",
+   "steps": [
+    {
+     "anchor": "ghoul",
+     "type": "normal",
+     "level": 17,
+     "count": 2
+    },
+    {
+     "anchor": "ghoul",
+     "type": "boss",
+     "level": 22,
+     "count": 1
+    }
+   ],
+   "ally": "warrior",
+   "restHours": 0,
+   "n": 5,
+   "full": 100,
+   "aborted": 0
+  },
+  {
+   "name": "Old Crown Catacombs",
+   "floor": "2",
+   "steps": [
+    {
+     "anchor": "ghoul",
+     "type": "normal",
+     "level": 17,
+     "count": 2
+    },
+    {
+     "anchor": "ghoul",
+     "type": "boss",
+     "level": 22,
+     "count": 1
+    }
+   ],
+   "ally": null,
+   "restHours": 1,
+   "n": 5,
+   "full": 100,
+   "aborted": 0
+  },
+  {
+   "name": "Old Crown Catacombs",
+   "floor": "2",
+   "steps": [
+    {
+     "anchor": "ghoul",
+     "type": "normal",
+     "level": 17,
+     "count": 2
+    },
+    {
+     "anchor": "ghoul",
+     "type": "boss",
+     "level": 22,
+     "count": 1
+    }
+   ],
+   "ally": "warrior",
+   "restHours": 1,
+   "n": 5,
+   "full": 100,
+   "aborted": 0
+  }
+ ],
+ "resource": [
+  {
+   "cls": "warrior",
+   "rank": "F",
+   "prof": 1,
+   "skill": "Heavy Slash",
+   "cost": 6,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 100.7,
+   "damagePerPoint": 16.783333333333335,
+   "usesFromFull": 16
+  },
+  {
+   "cls": "warrior",
+   "rank": "F",
+   "prof": 3,
+   "skill": "Heavy Slash",
+   "cost": 5,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 104.65,
+   "damagePerPoint": 20.93,
+   "usesFromFull": 20
+  },
+  {
+   "cls": "warrior",
+   "rank": "F",
+   "prof": 5,
+   "skill": "Heavy Slash",
+   "cost": 5,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 109.95,
+   "damagePerPoint": 21.99,
+   "usesFromFull": 20
+  },
+  {
+   "cls": "warrior",
+   "rank": "E",
+   "prof": 1,
+   "skill": "Ascendant Heavy Slash",
+   "cost": 6,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 104.65,
+   "damagePerPoint": 17.441666666666666,
+   "usesFromFull": 16
+  },
+  {
+   "cls": "warrior",
+   "rank": "E",
+   "prof": 3,
+   "skill": "Ascendant Heavy Slash",
+   "cost": 5,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 107.55,
+   "damagePerPoint": 21.51,
+   "usesFromFull": 20
+  },
+  {
+   "cls": "warrior",
+   "rank": "E",
+   "prof": 5,
+   "skill": "Ascendant Heavy Slash",
+   "cost": 5,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 22,
+   "usesFromFull": 20
+  },
+  {
+   "cls": "rogue",
+   "rank": "F",
+   "prof": 1,
+   "skill": "Piercing Thrust",
+   "cost": 8,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 108.1,
+   "damagePerPoint": 13.5125,
+   "usesFromFull": 12
+  },
+  {
+   "cls": "rogue",
+   "rank": "F",
+   "prof": 3,
+   "skill": "Piercing Thrust",
+   "cost": 7,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 109.6,
+   "damagePerPoint": 15.657142857142857,
+   "usesFromFull": 14
+  },
+  {
+   "cls": "rogue",
+   "rank": "F",
+   "prof": 5,
+   "skill": "Piercing Thrust",
+   "cost": 7,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 15.714285714285714,
+   "usesFromFull": 14
+  },
+  {
+   "cls": "rogue",
+   "rank": "E",
+   "prof": 1,
+   "skill": "Ascendant Piercing Thrust",
+   "cost": 8,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 109.45,
+   "damagePerPoint": 13.68125,
+   "usesFromFull": 12
+  },
+  {
+   "cls": "rogue",
+   "rank": "E",
+   "prof": 3,
+   "skill": "Ascendant Piercing Thrust",
+   "cost": 7,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 15.714285714285714,
+   "usesFromFull": 14
+  },
+  {
+   "cls": "rogue",
+   "rank": "E",
+   "prof": 5,
+   "skill": "Ascendant Piercing Thrust",
+   "cost": 7,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 15.714285714285714,
+   "usesFromFull": 14
+  },
+  {
+   "cls": "mage",
+   "rank": "F",
+   "prof": 1,
+   "skill": "Flame Lance",
+   "cost": 15,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 7.333333333333333,
+   "usesFromFull": 30
+  },
+  {
+   "cls": "mage",
+   "rank": "F",
+   "prof": 3,
+   "skill": "Flame Lance",
+   "cost": 14,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 7.857142857142857,
+   "usesFromFull": 32
+  },
+  {
+   "cls": "mage",
+   "rank": "F",
+   "prof": 5,
+   "skill": "Flame Lance",
+   "cost": 13,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 8.461538461538462,
+   "usesFromFull": 34
+  },
+  {
+   "cls": "mage",
+   "rank": "E",
+   "prof": 1,
+   "skill": "Ascendant Flame Lance",
+   "cost": 15,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 7.333333333333333,
+   "usesFromFull": 30
+  },
+  {
+   "cls": "mage",
+   "rank": "E",
+   "prof": 3,
+   "skill": "Ascendant Flame Lance",
+   "cost": 14,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 7.857142857142857,
+   "usesFromFull": 32
+  },
+  {
+   "cls": "mage",
+   "rank": "E",
+   "prof": 5,
+   "skill": "Ascendant Flame Lance",
+   "cost": 13,
+   "hits": 20,
+   "n": 20,
+   "meanDamage": 110,
+   "damagePerPoint": 8.461538461538462,
+   "usesFromFull": 34
+  }
+ ]
+}

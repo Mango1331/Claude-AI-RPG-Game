@@ -1,12 +1,12 @@
 # Avereth Engine – aktueller Projektstand
 
-**Stand 28.11.2026.** Der Kandidat .262 ist technisch abgenommen und für den unabhängigen GPT-Diffreview vorbereitet. Die E-Rank-Fachentscheidungen stehen aus.
+**Stand 28.11.2026.** .263 ist der E-Rank-Kandidat für den unabhängigen GPT-Diffreview. Fachentscheidungen, mechanische Abnahme und natürliche Modellläufe liegen vor.
 
 ## Aktuelle Referenzen
 
 | Zweck | Verifizierte Referenz |
 |---|---|
-| Aktiver Entwicklungs-/Testbranch | experiment/211-openrouter-helper-single-runner · [c665c59a](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c665c59a313746e165a00a5f147c1aaeff7c0452) · Build 4.3.0-c.6.6.262 |
+| Aktiver Entwicklungs-/Testbranch | experiment/211-openrouter-helper-single-runner · [928172b9](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/928172b9bbaae3d133bad7097100dc2127334b8e) · 4.3.0-c.6.6.263 |
 | Fester Kontinuitätsvergleich | `experiment/211-scene-continuity` · [`c2ddc780`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/c2ddc780d4c57b219f9cd7a1d134efceca7e459d) |
 | Eingefrorenes Produkt `.200` | `claude/c-planner-prototype-2026-10-02-gpt-c666` · [`0cd14806`](https://github.com/Mango1331/Claude-AI-RPG-Game/commit/0cd14806cd0c7fe2ab0d54b8463c486ee572714b) |
 
@@ -16,6 +16,7 @@
 
 | Etappe | Ergebnis | Maßgebliche Quelle |
 |---|---|---|
+| **.263 · E-Rank** | Gemeinsame F/E-Welt, Proven-Jagden, persönliche Rangquellen, gebuchte Entwicklung und HUD. | [Fachentscheidungen](recherche/AVERETH_263_E_RANK_FACHENTSCHEIDUNGEN.md) · [Abnahme](recherche/AVERETH_263_E_RANK_IMPLEMENTIERUNG_ABNAHME.md) |
 | **.262 · Rangfähiges Fundament** | Modernes Originalkorpus, F-neutrale Rangparameter, Skillübersicht und gepaarte natürliche Modellabnahme. | [Fachbericht und Installation](recherche/AVERETH_262_RANGFAEHIGES_FUNDAMENT_ABNAHME.md) |
 | **.261 · Extractor** | Technische Recovery, Typ-Aliase und Teilübernahme bei zusätzlichen Root-Feldern. | [Abnahme und Installation](recherche/AVERETH_261_EXTRACTOR_RECOVERY_ABNAHME.md) |
 | **.252–.260 · Claim + State** | Vereinfachte Validierung und geprüfte mechanische Schutzgrenzen. P7 wurde zurückgestellt. | [Fachbericht und Replay-Einzelbewertung](recherche/AVERETH_252_VALIDIERUNGSVEREINFACHUNG_ABNAHME.md) |
@@ -24,8 +25,8 @@
 
 ## Nächste Schritte
 
-1. GPT prüft den [vollständigen Diff von .261 zu .262](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/4b637c981459e1e5ff9f4bd480bc071723fe5bce...c665c59a313746e165a00a5f147c1aaeff7c0452). Die unabhängige GO-Empfehlung für die Validierungsvereinfachung bis .261 ist dokumentierter Ausgangspunkt.
-2. Nutzer, GPT und Claude entscheiden über die E-Rank-Entwicklung anhand der [Progressionsmessungen](recherche/abnahme_262/progression.json) und [Gestaltungsfragen](recherche/AVERETH_261_E_BIS_S_SPIELDESIGN_BALANCE_WELT_FACHGRUNDLAGE_GPT.md). Die [Claude-Analyse zu Balance und Weltmodell](recherche/AVERETH_261_E_BIS_S_BALANCE_WELTMODELL_CLAUDE.md) liefert Simulationen, eine Entscheidungsvorlage und einen Vorschlag für die erste E-Unternehmung. Die [Vertiefung nach GPT-Gegenreview R1–R9](recherche/AVERETH_262_CLAUDE_E_BALANCE_VERTIEFUNG_UND_ENTSCHEIDUNGSVORLAGE.md) korrigiert die Party-XP-Rechnung, prüft entwickelte Builds und schließt mit einer kompakten Entscheidungsvorlage und dem ersten E-Paket.
+1. GPT prüft den [Produktdiff .262 bis .263](https://github.com/Mango1331/Claude-AI-RPG-Game/compare/c665c59a313746e165a00a5f147c1aaeff7c0452...928172b9bbaae3d133bad7097100dc2127334b8e).
+2. Nutzer und GPT bewerten die [Messungen und Modellbeobachtungen](recherche/AVERETH_263_E_RANK_IMPLEMENTIERUNG_ABNAHME.md).
 3. Der Nutzer entscheidet über den nächsten persönlichen Spieltest. Für neue Originale gilt der [Usertest-Ablauf](01_ARBEITSWEISE_GPT_CODEX.md#persönliche-usertests--verbindlicher-ablauf).
 
 ## Arbeitsaufteilung

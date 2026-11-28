@@ -1,0 +1,40 @@
+{
+  "head": "9cc039b6599217cafab2e54851117757839ecd3e",
+  "model": "z-ai/glm-5.3-flash",
+  "provider": "wafer/us",
+  "st": "1.19.0",
+  "count": 15,
+  "costUSD": "0.010187968",
+  "redactions": {
+    "st.log.gz": "local sandbox paths"
+  },
+  "sha256": {
+    "parent-check.json.gz": "7bbc0c418f3361ab290c6ceeebc2349720f4829e7963cd922440d2177470c7f3",
+    "chat-0.jsonl.gz": "bcafda41c7633cdf0069a967d9ba913c89fa4b42af4e91b9e01061ce1c86a69b",
+    "world-0.json.gz": "fcd99a2738bcfc98ddba23e74033dc7a9e1a40db284501a026d1b0615148d5a9",
+    "actions.jsonl.gz": "e01a435057fb0f61c2b81d74e27c7410ac21d530728e79c930d9308b70c3054f",
+    "chat.jsonl.gz": "480dfc863a1a2f9b1ff5f9875420ff965caf4f3ecba4848cfa11044d31903069",
+    "events.json.gz": "0c3401aca7e38ab34f19a3307e067135a4d656ffb43b9563d645e2172bba34da",
+    "turns.jsonl.gz": "75ee40308e86899fde71969ea8c60cda813067a33e11aa821c6f3e929b304e0e",
+    "profile.json.gz": "7504f6dbbd89911f2b5468b418de73d0498332bd064a661d9257f3d2eb9bf91a",
+    "visible.json.gz": "0c2a098b506106953a667fe2724bdec4f4d01220c16d6dd9a9a17f4774064039",
+    "st.log.gz": "52320c145916b2959f598c9495eba832309438269a139abd2c4f59bdd1db1e91",
+    "last-verified-world.json.gz": "af204443dd17ff55f4d5085201df70ebef24456a4e960d44580259495ce612e1",
+    "requests.jsonl.gz": "6544badf5e205173522488e12bbcdd783baba30a5a6b81bed79377a3c6d04e23",
+    "raw-66.gz": "dbe0155e68e700c30b61c2e5a9e30c4d303d130abb52d43bcdcd2669d5594105",
+    "raw-67.gz": "3bdca88f2fa7fe5753728e9653962cfbcabbd5019a3b48ae8de3314a31039943",
+    "raw-68.gz": "47b282e0a8a751895ddc1c9c025885cefcc6b160e8c674cbb4f84a5b3cf8fa52",
+    "raw-69.gz": "530a7bb63aad9d36f7cdbb763723ed31b46945436eeb81fe9c0a9db6ad6965af",
+    "raw-70.gz": "311e91dbe3ebf81286d8ce4d35062864fbc02ee33050c14441a55d293363ec5e",
+    "raw-71.gz": "ab18f8901abe97c076b54a3a670e96892a3377076da76fbac4248d4a8b31e928",
+    "raw-72.gz": "afebe27ba75dabcc6c58110d05da8a85137dcad84c1e68c3e3ad6901d11a5dbb",
+    "raw-73.gz": "ee2dc9255188bd0c47eb9c831f365780b9585587873db5b2c4efaa9c95a3790d",
+    "raw-74.gz": "4b63a5b2894c7790cc5c3f188ddf1ffb692f6df1d2c2e4db517fdae50a5b9f55",
+    "raw-75.gz": "8ea02c49c92b682b3d7a1882779a4bb2b7bdd9c8377d91dc0751a0f9a5cf4fb2",
+    "raw-76.gz": "99ea7deea06d2af2d7081293c66d2979c4a86081bed5c5334e8783964b6c39ef",
+    "raw-77.gz": "bfb030d24310fa3e30b9f00fe603026ce31b13598b693e7cc2ac1d1e68cce1df",
+    "raw-78.gz": "a1bb57ab62dbbbff713e4376381d33d87c1ce41c10518f7e4cc9b0bdb544139f",
+    "raw-79.gz": "a9955ac55449889deb0daf72fa0d4a69fc702001ab9122591fc2c8ecdd98a1a5",
+    "raw-80.gz": "3f8e70873e3c15fd37442516f25f8a82e469bc76e56419e8181a007624b03e03"
+  }
+}

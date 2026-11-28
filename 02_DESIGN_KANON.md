@@ -2,6 +2,10 @@
 
 Der Kanon dokumentiert die Spielregeln des eingefrorenen Produkts `.200` und kennzeichnet spätere bestätigte Regeln mit ihrem Entwicklungsstand. **[VERBINDLICH]** kennzeichnet geltende Regeln, **[GEPLANT]** beschlossene spätere Änderungen und **[OFFEN]** unentschiedene Optionen. Für den persönlichen Test dokumentieren die Fachpläne die Änderungen seit dieser Produktfassung, darunter die gelockerten globalen Questboardquoten. [Aktueller Projektstand](03_AKTUELLER_PROJEKTSTAND.md) · [Fachquellen](06_PATCH10B_MASTERPLAN_UND_REVIEWS.md) · [Ältere Kanonfassung](https://github.com/Mango1331/Claude-AI-RPG-Game/blob/292a4372654f027fb579bf8e338ff9d25d981da7/02_DESIGN_KANON.md)
 
+## Gemischte Rangwelt ab Entwicklungskandidat .263
+
+F und E koexistieren. Gefahr folgt Lebensraum, Population, Individuum und Dungeonabschnitt. Ein Gegenstand oder eine Lernquelle besitzt seinen eigenen Rang. Proven-Jagden, E-Techniken und freiwillige Rank-Evolution sind Teil der bestehenden Fortschrittspfade. Werte, Freigaben und langfristige Grenzen stehen im [Fachentscheidungsstand E-Rank](recherche/AVERETH_263_E_RANK_FACHENTSCHEIDUNGEN.md).
+
 ## Szene, Wahrnehmung und Erinnerung ab Entwicklungskandidat .221
 
 - **Lokale Bewegung.** In einer zusammenhängenden Szene kann Alaric einen anderen Standpunkt erreichen. Beobachter und Beobachtetes dürfen sich an verschiedenen Orten befinden. Eine bedeutsame Reise, ein tatsächlicher Eintritt oder ein Abschnittswechsel bindet weiterhin an den gebuchten Weg. Detection, Reichweite, Deckung, Kampf und individuelle Anwesenheit folgen der Engine.

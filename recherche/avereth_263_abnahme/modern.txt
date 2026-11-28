@@ -1,0 +1,12 @@
+> avereth-engine@4.3.0-c.6.6.263 replay:modern
+> node tools/replay/modern.mjs
+
+Known-error cases changed (review required): []
+Changed cases: []
+Cases 298 incomplete physical paths [
+  'aa-234#43',
+  'ai-235#15',
+  'ember-241#15',
+  'rook-250#7',
+  'rook-250#15'
+] unused recorded follow-ups 30

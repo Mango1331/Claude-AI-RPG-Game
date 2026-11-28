@@ -1,0 +1,48 @@
+{
+  "build": "4.3.0-c.6.6.265",
+  "product_reference": "9dde24a5337e2b43dd4e2d58db45a19d4e7baa89",
+  "seed": 1242180955,
+  "narrator_card": ".211",
+  "files": [
+    {
+      "original_name": "Avereth Engine Test v4 - 2026-11-28@16h32m31s415ms (3).jsonl",
+      "path": "originals/chat.jsonl.gz",
+      "bytes": 42022,
+      "sha256": "92439928c7b211c84bf2814cc1f19088c30746e25a94b733b844343392b1e9a0",
+      "uncompressed_bytes": 475814,
+      "uncompressed_sha256": "4f40aa45e447ee63ebccc4a46147e1670ddfcc485ceb586eb3e1c203ed21170c",
+      "original_sha256": "4f40aa45e447ee63ebccc4a46147e1670ddfcc485ceb586eb3e1c203ed21170c"
+    },
+    {
+      "original_name": "avereth-events-[_Avereth Engine Test v4.png_,_Avereth Engine Test v4 - 2026-11-28@16h32m31s415ms_] (3).json",
+      "path": "originals/avereth-events.json.gz",
+      "bytes": 15947,
+      "sha256": "060ac7fb2e98dbc6d99b03eb5a333402d488de160faa6c599277ead4d435bfb2",
+      "uncompressed_bytes": 112950,
+      "uncompressed_sha256": "d238f4fd185fd7bd02cc1d3077b3288b967c442d91992accd8f4df0f0c644426",
+      "original_sha256": "d238f4fd185fd7bd02cc1d3077b3288b967c442d91992accd8f4df0f0c644426"
+    },
+    {
+      "original_name": "ST_2026-11-28_16-31-23(2).txt",
+      "path": "originals/st-log.txt.gz",
+      "bytes": 856157,
+      "sha256": "8655f54cfcd7c46bde7021bb3c0de623e9d6856e5047bda4190f80fed765b099",
+      "uncompressed_bytes": 4275502,
+      "uncompressed_sha256": "693add9ef6d0e8cd597daadf645638fdd159285cc556cb092e55d74465f512bb",
+      "redaction": "one local path: Windows user name replaced by <redacted> (UTF-16LE, BOM kept, +10 bytes)",
+      "private_original_bytes": 4275492,
+      "private_original_sha256": "de51e98e5dbf4cbfc89cef21db2939b9d5ddd87c8b8d19c9ffa587053dd8e1b2",
+      "contains_earlier_logs_as_byte_prefix": {
+        "ST_2026-11-28_16-31-23.txt": {
+          "bytes": 2334670,
+          "sha256": "871fe39cf5eabcbdb9e344630ce7ec6ad751ee996ac49a8911b9224807f1afea"
+        },
+        "ST_2026-11-28_16-31-23(1).txt": {
+          "bytes": 3517992,
+          "sha256": "2f45e94b030f98e763d04d9468e4590673cd2469993fc5338e41fb8ed37b8043"
+        }
+      }
+    }
+  ],
+  "not_archived_separately": "Intermediate chat/event exports (uploads 1 and 2) are not byte prefixes of the final exports; their hashes stay in SOURCE_MANIFEST.md and SOURCE_MANIFEST_02.md. The final exports contain all their messages and records."
+}

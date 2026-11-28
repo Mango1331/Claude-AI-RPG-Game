@@ -1,0 +1,19 @@
+--- a265/avereth-engine/src/v4/turn.js.orig	2026-11-28 18:46:54.077349488 +0000
++++ a265/avereth-engine/src/v4/turn.js	2026-11-28 18:46:54.088707523 +0000
+@@ -82,6 +82,16 @@
+     const steps = freeLook ? [{seq:1, type:'activity', kind:'search', quote:input, what:input}] : commands;
+     const ctx = resolveCommands(s, content, steps, emit, { msg, dice, board, c, dropped, text, skipPulse });
+     if (c) syncEvents(s, content, emit);
++    // ANALYSIS (U18_FIX=1, not product): an unbookable tactical request or party offer stays conversation; it never
++    // blocks the rest of the message, and the narrator is told it is no arrangement
++    if (process.env.U18_FIX === '1') for (const r of ctx.resolutions) {
++        const step = steps.find((x) => x.seq === r.seq);
++        if (r.status !== 'clarify' || step?.type !== 'party' || !['coordinate', 'offer'].includes(step.act)) continue;
++        r.status = 'talk';
++        const i = ctx.actions.findIndex((a) => a.startsWith(`${r.seq}. CLARIFY`));
++        const line = `${r.seq}. TALK — "${String(step.quote || '').slice(0, 80)}": said as conversation; not a binding party arrangement. Companions answer for themselves; nothing mechanical changes.`;
++        if (i >= 0) ctx.actions[i] = line; else ctx.actions.push(line);
++    }
+     const clarify = ctx.resolutions.find((r) => r.status === 'clarify');
+     // Patch 3 (live 18.10.2026: "I settle on the ring of stones for my camp this night and go looking for animals to
+     // hunt": the camp's length was a question, and the hunt was lost with it): a question about one step stops that

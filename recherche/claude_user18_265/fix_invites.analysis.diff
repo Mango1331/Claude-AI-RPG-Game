@@ -1,0 +1,32 @@
+--- a265/avereth-engine/src/v4/runtime.js.orig	2026-11-28 18:44:54.928539310 +0000
++++ a265/avereth-engine/src/v4/runtime.js	2026-11-28 18:44:54.945430015 +0000
+@@ -448,10 +448,28 @@
+     if (!actionInput) pl.commands = splitPartyDeparture(before, msg.mes, pl.commands);
+     const guarded = guardCommands(msg.mes, pl.commands.filter(c=>!hud?.bound.includes(c.seq)), guardContext(before, content, catalog));
+     if(hud)guarded.kept=[...guarded.kept,...pl.commands.filter(c=>hud.bound.includes(c.seq))].sort((a,b)=>a.seq-b.seq);
++    let organisation;
+     const partySteps = guarded.kept.filter(c=>c.type==='party');
++    // ANALYSIS (U18_FIX=1, not product): every free-text invitation (also beside a HUD step and other commands)
++    // goes through the recruitment path in order; each NPC decides on its own (one helper call each)
++    if (process.env.U18_FIX === '1' && !guarded.dropped.length) {
++        const invites = partySteps.filter(c=>c.act==='invite' && c.needs==null && !hud?.bound.includes(c.seq) &&
++            (!before.party?.members[c.who] || before.party.members[c.who].mode==='left'));
++        if (invites.length && (invites.length > 1 || actionInput)) {
++            let organised = before; const events = []; const panels = [];
++            for (const c of invites) {
++                const local = await partyControl(organised,content,{act:'invite',ref:c.who,source:msg.mes,revision:actionPrefix(chat,u),proposal:null},
++                    messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}));
++                organised = clone(organised); for (const e of local.events) applyEvent(organised,e);
++                events.push(...local.events); panels.push(...(local.command?.panels || []));
++            }
++            before = organised;
++            guarded.kept = guarded.kept.filter(c=>!invites.includes(c));
++            organisation = {events, command:{panels,llm:null}};
++        }
++    }
+     const pc = !actionInput && !guarded.dropped.length && partySteps.length===1 && partySteps[0];
+     const rest = guarded.kept.filter(c=>c!==pc);
+-    let organisation;
+ 
+     const recruitment=pc?.type==='party' && (pc.act==='invite' || pc.act==='offer' && !pc.agreement &&
+         (!before.party?.members[pc.who] || before.party.members[pc.who].mode==='left'));

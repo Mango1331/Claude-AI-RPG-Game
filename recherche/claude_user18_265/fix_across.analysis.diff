@@ -1,0 +1,14 @@
+--- src/v4/world.js.orig	2026-11-28 18:34:51.988855444 +0000
++++ src/v4/world.js	2026-11-28 18:34:52.002843117 +0000
+@@ -1521,7 +1521,10 @@
+                 break;
+             }
+             case 'creature.new': {
+-                if (d.across == null) {
++                // ANALYSIS (U18_FIX=1, not product): `across` selects the threshold path only where a Living Dungeon
++                // threshold exists (inside it, at its gate, or a reserved threshold slot while approaching it)
++                const thresholdHere = livingOf(s, trueDungeonOf(s, s.scene.at)) || thresholdSlot(s);
++                if (d.across == null || (process.env.U18_FIX === '1' && !thresholdHere)) {
+                     if (d.ref && d.ref === thresholdSlot(s)?.ref) {
+                         reject(d, 'dungeon_sight', 'The reserved encounter needs a witnessed sighting before entry.');
+                         blockCreature(d);

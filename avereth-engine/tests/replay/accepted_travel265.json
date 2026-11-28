@@ -1,0 +1,12 @@
+{
+  "inherits": "accepted_location264.json",
+  "engine": "4.3.0-c.6.6.265",
+  "cases": {
+    "b17-rogue#177": {
+      "category": "semantic",
+      "reason": "At the first Glimmerdeep section the GO and DUNGEON AHEAD texts now describe one conditional encounter. Every other field matches .264.",
+      "previous": "sha256:cd0d7896abe0d987e1112d2d2a6aed0d27d628d202a50f520eae42e981b3bfcb",
+      "fingerprint": "sha256:20f94e582d7e792976e562c89467bba89b6348ba328c23be8f637cb77b747c07"
+    }
+  }
+}

@@ -56,7 +56,7 @@ test('patch 8 (1): Old Crown Catacombs from gate to boss: level 1 by its encount
     const first = await delve(g, 'First Burial Gallery');
     s = g.state();
     assert.ok(first.slot, 'an encounter placed ahead');
-    assert.match(linesOf(g), /DUNGEON AHEAD \(the engine's\) — going on into a part of level 1/);
+    assert.match(linesOf(g), /DUNGEON AHEAD \(the engine's\) — inside level 1:.*If the journey reaches this section/);
     const ids = s.dungeons[CATA].run.floors[1].slots[0].entities;
     assert.equal(ids.length, first.slot.count);
     for (const [i, id] of ids.entries()) {
@@ -352,7 +352,8 @@ test('patch 8 (9): delving on: every GO into a new part is told where it ends (a
     for (let i = 0; i < 6; i++) {
         const r = await delve(g, `Passage ${i + 1}`);
         const lines = linesOf(g);
-        assert.match(lines, /Stop in this section/, 'the way is carried to the assigned section');
+        assert.match(lines, i===0 ? /If he crosses, end the walk in this section/ : /Stop in this section/,
+            'the first encounter is conditional on crossing, later delves end in their assigned section');
         assert.doesNotMatch(lines, /real choice of way|a room, a find, a fork/);
         assert.match(lines, /DUNGEON AHEAD \(the engine's\)/);
         if (r.slot) { quiet = 0; await fightAll(g); } else { quiet += 1; most = Math.max(most, quiet); }

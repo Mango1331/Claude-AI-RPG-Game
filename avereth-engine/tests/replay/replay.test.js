@@ -71,7 +71,7 @@ const ACCEPTED186 = JSON.parse(fs.readFileSync(new URL('./accepted_monster186_vs
 const ACCEPTED187 = JSON.parse(fs.readFileSync(new URL('./accepted_travel187_vs_126.json', import.meta.url), 'utf8'));
 // .190 location architecture: the running list of the stages (place book, movement step, dungeon sections, movement kinds)
 const ACCEPTED = JSON.parse(fs.readFileSync(new URL('./accepted_stat195_vs_126.json', import.meta.url), 'utf8'));
-const CURRENT = readAccepted(new URL('./accepted_location264.json', import.meta.url).pathname);
+const CURRENT = readAccepted(new URL('./accepted_travel265.json', import.meta.url).pathname);
 const F144 = ['finance 144 payment card', 'finance 144 contract fields', 'finance 144 acceptance hint', 'finance 144 price open', 'finance 144 unit limit', 'finance 144 acceptance', 'finance 144 own coin'];
 const SUB = { ...baseline, runs: Object.fromEntries(QUICK.map((l) => [l, baseline.runs[l]])) };
 let quick = null; // the four quick runs, replayed once for this file

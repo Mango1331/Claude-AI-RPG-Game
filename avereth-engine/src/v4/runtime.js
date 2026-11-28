@@ -912,7 +912,8 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         }
         const isC = campaignPath(chat, settings.legacyPlanner ?? settings.planner) === 'c';
         const management = /^#party\s+(invite|tactic|wait|follow|remove|disband|accept|pay)(?:\s+(.+))?$/i.exec(msg.mes.trim());
-        const native = management && !actionInput && before.mode==='story' && isC && rulesetOf(before)>=2
+        const partyMode = before.mode==='story' || (before.mode==='combat' && management?.[1].toLowerCase()==='tactic');
+        const native = management && !actionInput && partyMode && isC && rulesetOf(before)>=2
             ? await nativePartyControl(before,content,{act:management[1].toLowerCase(),ref:management[2]?.trim(),source:msg.mes,revision:actionPrefix(chat,u)},
                 messages=>ask(llm,messages,'party_decision',{maxTokens:200,temperature:0.3}),current)
             : !actionInput && ir.intent?.kind === 'command' && before.mode === 'story' && isC && rulesetOf(before) >= 2

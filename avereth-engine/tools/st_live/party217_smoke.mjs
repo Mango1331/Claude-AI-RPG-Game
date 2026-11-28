@@ -106,6 +106,10 @@ export async function partySmoke({page,calls,send,idle,out,onReload}) {
         await tacticsPanel.locator('select').first().selectOption('npc.ossen protect pc');
         await tacticsPanel.getByRole('button',{name:'Fragen und eigenen Zug abwarten'}).click();await idle();
         const coordinated=await snap();
+        measure('confirmed combat HUD tactic',b);
+        const outcome=coordinated.events.findLast(e=>e.t==='outcome.recorded')?.d.outcome;
+        measures.at(-1).tactic={priority:coordinated.state.party.members[who].priority,answer:outcome?.party_answer,
+            records:outcome?.records?.map(({actor,kind})=>({actor,kind}))};
         checks.battleTactic=coordinated.state.party.members[who].priority?.target==='pc' &&
             calls.slice(b).map(c=>c.purpose).join('/')==='party_decision/narrator/extract' &&
             coordinated.events.some(e=>e.t==='outcome.recorded' && e.d.outcome.party_answer && e.d.outcome.records.some(r=>r.actor==='pc' && r.kind==='hold'));

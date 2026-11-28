@@ -231,7 +231,7 @@ export const LEARNING_RULES = [
     'Learning and training (story commands):',
     '- Only when he trains, studies or takes a lesson NOW is it activity train or study with learn: a KNOWN SKILLS id he practises, a LEARNING id he goes on with, or the kind of a new technique he is taught (strike, bolt, guard, ward, mend). teacher: the PRESENT person who teaches him in this message, else null. tags and aspects: only those his words or the lesson name, else null. minutes or until as he says them.',
     '- Asking to be taught, a wish ("I\'d like to learn …", "teach me someday"), a question about a technique, a price or a plan for later is no command: words, the story lets the other answer.',
-    '- Studying a manual or primer he holds (OBJECTS: manual · … teaches …) for a time is activity study with material: its id, and learn: the technique it teaches or the LEARNING id he goes on with. Only looking at it or reading its title is no study.',
+    '- For instruction in an explicitly identified E technique use learn_rank:E. A manual or stone already carries its own rank. Studying a manual or primer he holds (OBJECTS: manual · … teaches …) for a time is activity study with material: its id, and learn: the technique it teaches or the LEARNING id he goes on with. Only looking at it or reading its title is no study.',
     '- Activating a Skill Stone he holds (OBJECTS: Skill Stone · … holds …) now is use with its id; wanting to, asking about it or examining it is no command.',
     '- Training a lasting quality of himself NOW, not a technique (conditioning his body, sharpening his mind or senses, hardening his will, building strength or agility), is activity train or study with learn: the core stat it builds (STR strength, VIT toughness, AGI agility, INT mind, PER senses, WIL will), or the LEARNING id he goes on with.',
     '- CLASS CHOICE lists alternative evolved Classes offered by the engine. "I choose <offered name> as my class" is development.accept with that OPTION id (e.g. class.e.offense), never the group id dec.class.e or an invented dec.class.e.offense. Never choose for him. development.decline on its group or option postpones the same choice; it does not discard or reroll it. Questions and wishes book nothing.',
@@ -597,6 +597,7 @@ export function parsePlan(answer, vocab, ctx, message) {
             const craftUnits = type === 'activity' && c.kind === 'craft' ? c.qty : undefined;
             if (craftUnits !== undefined) delete c.qty;
             const bad = validate({ commands: [c] }, schema);
+            if (c.learn_rank === null) delete c.learn_rank;
             if (craftUnits != null) {
                 if (Number.isSafeInteger(craftUnits) && craftUnits > 0 && typeof c.material === 'string') c.qty = craftUnits;
                 else errors.push(`${at}: craft qty needs a positive whole number and a material object ID`);

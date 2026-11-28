@@ -32,7 +32,7 @@ import {
 import { negotiationReaction, playerTurn } from '../engine.js';
 import { recordLine, loreKeys } from '../context.js';
 import { extractReport } from '../delta.js';
-import { renderHud, boardView } from '../hud.js';
+import { renderHud, boardView, targetChoices } from '../hud.js';
 import { worldPanel } from '../display.js';
 import { applyEvent } from '../state.js';
 import { hash32, clone, swapWords, stripTrackerBlocks } from '../util.js';
@@ -549,7 +549,7 @@ async function executeMappedTurn(chat,content,{u,before,m,guarded={dropped:[]},i
             applyEvent(t.state, recorded);
         }
         const growth = await withGrowth(t, content, llm, previous);
-        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, ...(ownPhaseRefused ? {own_phase_refused:true} : {}), ...growth, events: [...(crowd && t.events.length ? crowd.events : []), ...growth.events], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
+        return { v: RECORD_V4, input_hash: inputHash, route: 'v3', ir: irRec, plan, interp, ...(ownPhaseRefused ? {own_phase_refused:true} : {}), ...growth, ...(m.intent.kind === 'ambiguous_target' ? {target_question:m.intent.candidates} : {}), events: [...(crowd && t.events.length ? crowd.events : []), ...growth.events], command: t.command ? { panels: t.command.panels, llm: t.command.llm } : null };
     }
     const need = boardFor(before, content, m.commands, { c: true });
     const board = need ? await generateBoard(llm, before, content, need) : null;
@@ -974,7 +974,7 @@ export async function prepareGenerationAsync(chat, content, { type = 'normal', s
         setRec(msg, r);
         const updateHud = r.events.some(e => ['stat.assigned','item.equipped','resource.changed','time.advanced','party.member','party.agreement'].includes(e.t));
         return { action: 'panels', panels: r.command.panels, index: u, dirty: true,
-            ...(updateHud ? {hud:renderHud(foldChat(chat).state,content,settings.hud,{showFreePoints:true})} : {}) };
+            ...(r.target_question?.length ? {hud:targetChoices(foldChat(chat).state,content,r.target_question,u)} : updateHud ? {hud:renderHud(foldChat(chat).state,content,settings.hud,{showFreePoints:true})} : {}) };
     }
     const { state, errors, failures, context } = turnBlock(chat, u, content, settings);
     // .127: a reused record (swipe, regenerate, continue) is narrated only from a whole state as well

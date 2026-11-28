@@ -316,7 +316,7 @@ export function declineSkill(s, content, ref) {
 export function skillOfferLines(state, content) {
     const sheet = state.entities?.pc?.sheet;
     if (!sheet) return [];
-    const lines = skillOffers(state).map((d) => `POSSIBLE SKILL — ${developmentText(d.skill)}${d.replaces ? ` · it would replace ${d.replaces_name} (his Proficiency kept; ${d.replaces_name} his no longer)` : ' · a new Skill beside his others'} · not his yet: accept or decline it (${d.id})`);
+    const lines = skillOffers(state).map((d) => `POSSIBLE SKILL — ${developmentText(d.skill)}${d.replaces ? ` · it would replace ${d.replaces_name} (his Proficiency kept; ${d.replaces_name} his no longer) · previously ${developmentText(skillOf(content,d.replaces,state))} · P${sheet.skills[d.replaces]?.prof || 1} kept, 0 PP` : ' · a new Skill beside his others'} · not his yet: accept or decline it (${d.id})`);
     for (const h of sheet.skill_history || []) lines.push(`- evolved: ${h.name || skillOf(content, h.id, state)?.name || h.id} → ${skillOf(content, h.evolved_to, state)?.name || h.evolved_to}`);
     return lines;
 }

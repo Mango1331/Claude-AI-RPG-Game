@@ -1,3 +1,5 @@
+import { skillDetails } from './commands.js';
+import { skillOfferLines } from './v4/skill_growth.js';
 import { partyView } from './party.js';
 import { questVisible } from './content.js';
 import { className } from './v4/class_growth.js';
@@ -23,7 +25,7 @@ import { bandIndex, formatClock, itemLabel, normText, roundHalfUp } from './util
 import { sceneHandle } from './v4/scene_handles.js';
 import { dungeonOf, trueDungeonOf, dungeonText, exitsFrom, exitText } from './v4/dungeon.js';
 import { groundAccess } from './v4/features.js';
-import { hallOf, settlementOf } from './v4/domain.js';
+import { hallOf, settlementOf, lineage } from './v4/domain.js';
 import { hudRows as livingRows, floorAt } from './v4/living.js';
 import { goalText } from './v4/guild.js';
 
@@ -142,6 +144,14 @@ export function worldRows(state, content) {
         ['Time', formatClock(state.clock.minute)],
         ['Location', `${location.full}${status !== 'exists' && status !== 'alive' ? ` (${String(status).toUpperCase()})` : ''}`],
     ];
+    const local = lineage(state, state.scene.at).map(id => state.places[id]);
+    const area = local.find(place => place.encounter_levels);
+    if (area) rows.push(['Known danger', `${area.name}: L${area.encounter_levels.join('–')}`]);
+    for (const p of local.filter(place => place.population)) {
+        const seen = state.scene.present.filter(id => state.entities[id]?.population_at === p.id && statusOf(state, id) !== 'dead');
+        const contract = Object.values(state.quests).some(q => questVisible(state,q) && q.hunt?.at === p.id);
+        if (seen.length || contract) rows.push(['Known population', `${p.population.species}${contract ? ' · L'+p.population.levels.join('–') : ''}${seen.length ? ' · visible '+seen.length : ''}`]);
+    }
     const weather = truth(state, state.scene.location, 'weather')[0];
     if (weather) rows.push(['Weather', weather.o]);
     // Patch 7: in a dungeon, the ways from here he knows (never a hidden one); the whole of it is #map
@@ -306,6 +316,12 @@ ${defenses ? `<div class="avereth-combat-meta"><strong>Defense</strong> · ${def
  * The HUD shown under a reply: the Character panel and the World panel. mode: 'closed' (folded, the summary line
  * shows the essentials), 'open', or 'off' (''). Empty before the campaign has a character.
  */
+export function targetChoices(state, content, candidates, sourceIndex) {
+    return '<div class="avereth-target-choices">' + candidates.filter(id => state.scene.present.includes(id) && statusOf(state,id) !== 'dead').map(id =>
+        `<button type="button" data-avereth-target-choice="${esc(id).replaceAll('"','&quot;')}" data-source="${sourceIndex}">${esc(sceneHandle(state,content,id))}</button>`
+    ).join(' ') + '</div>';
+}
+
 export function renderHud(state, content, mode = 'closed', options = {}) {
     if (mode === 'off' || !state.meta?.started || !state.entities.pc?.sheet) return '';
     const crew = partyView(state,content,true);
@@ -318,9 +334,14 @@ export function renderHud(state, content, mode = 'closed', options = {}) {
     const location = locationLabels(state, content);
     const others = state.scene.present.filter((id) => id !== 'pc' && state.entities[id] && statusOf(state, id) !== 'dead').length;
     const charSummary = `L${s.level} ${cls} · HP ${s.hp}/${dv.maxHp} · MP ${s.mp}/${dv.maxMp} · STA ${s.sta}/${dv.maxSta} · ${formatCoin(s.coin_cp, content)}`;
+    const rows = characterRows(state, content, options);
+    const previews = rows.find(([label]) => label === 'Skills')[1].split('\n');
     const worldSummary = `${formatClock(state.clock.minute).split(' (')[0]} · ${location.brief}${dungeonLevel(state) ? ` · ${dungeonLevel(state)}` : ''}${others ? ` · ${others} present` : ''}`;
     return [
-        panel(state.entities.pc.name || 'Alaric', charSummary, characterRows(state, content, options), open),
+        panel(state.entities.pc.name || 'Alaric', charSummary, rows.filter(([label]) => label !== 'Skills'), open,
+            '<div><b>Skills</b>' + Object.keys(s.skills).map((id, index) =>
+                `<details class="avereth-skill-detail"><summary>${esc(previews[index])}</summary><pre>${esc(skillDetails(state,content,id))}</pre></details>`
+            ).join('') + previews.slice(Object.keys(s.skills).length).map(esc).join(' · ') + skillOfferLines(state,content).map(line=>`<div>${esc(line)}</div>`).join('') + '</div>'),
         panel('World', worldSummary, worldRows(state, content).filter(([label]) => label !== 'On the ground'), open, groundItems(state)),
     ].join('\n')+party;
 }

@@ -140,7 +140,7 @@ test('9C completion (2): a Skill at P5 that showed a pattern in two hard fights 
     assert.match(outcomeOf(g).skill_offers[0].text, /Sweeping Heavy Slash \[F · C2\]: 11 \+ STR×1\.44 physical, ENGAGED; 9 STA\. Heavy Slash, one step further: it strikes every foe ENGAGED with him/);
     assert.ok(sheetOf(g).skills['warrior.heavy_slash'] && !sheetOf(g).skills[offer.skill.id], 'nothing of his changed');
     assert.match(catalogText(buildCatalog(g.state(), content, { known: true, c: true })), /POSSIBLE SKILL \(offered by the engine; his only if he accepts\): dec\.skill\.evo_warrior_heavy_slash_crowd[^ ]* \(Sweeping Heavy Slash .* It would replace Heavy Slash; not his yet\)/);
-    assert.match(panel(g, '#skills'), /POSSIBLE SKILL — Sweeping Heavy Slash .* it would replace Heavy Slash \(his Proficiency kept; Heavy Slash his no longer\) · not his yet/);
+    assert.match(panel(g, '#skills'), /POSSIBLE SKILL — Sweeping Heavy Slash .* it would replace Heavy Slash \(his Proficiency kept; Heavy Slash his no longer\).*P5 kept, 0 PP · not his yet/);
     assert.deepEqual(validateState(g.state(), content), []);
     await reply(g, 'Something settles in his arms.');
     // nothing more is offered for it meanwhile (one evolution per Skill), and a rest offers nothing again

@@ -292,6 +292,7 @@ export function parseInterpretation(answer, vocab, catalog, { currency = null, t
     if (errors.length) return { commands: null, errors: errors.slice(0, 8), raw };
     const sums = amountErrors(value.commands, currency, catalog, text);
     if (sums.length) return { commands: null, errors: sums.slice(0, 8), raw };
+    for (const cmd of value.commands) if (cmd.learn_rank === null) delete cmd.learn_rank;
     return { commands: [...value.commands].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)), errors: [], raw, hints: financeHints(value.commands, currency, text) };
 }
 

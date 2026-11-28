@@ -351,6 +351,16 @@ export function installActionComposer({context,state,content,enabled,settings,bl
     }
     function intercept(e){
         if(!enabled())return;
+        const target = e.type === 'click' && e.target.closest?.('[data-avereth-target-choice]');
+        if (target) {
+            e.preventDefault();
+            const chat = context().chat, index = Number(target.dataset.source), id = target.dataset.averethTargetChoice;
+            if (chat.length !== index + 2 || !chat[index]?.is_user || !state().scene.present.includes(id) || unavailable()) return;
+            textarea().value = chat[index].mes + ' (Target: ' + target.textContent + ', ' + id + '.)';
+            textarea().dispatchEvent(new Event('input', {bubbles:true}));
+            textarea().focus();
+            return;
+        }
         if (e.type==='click' && e.target.closest?.('[data-avereth-party]')?.closest('#chat')) {
             e.preventDefault();e.stopImmediatePropagation();openParty();return;
         }

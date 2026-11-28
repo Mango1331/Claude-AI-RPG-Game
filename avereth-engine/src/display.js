@@ -17,6 +17,7 @@ import { sceneHandle, tacticalHere, sideOf } from './v4/scene_handles.js';
 import { livingOf, gateCard, floorAt } from './v4/living.js';
 import { masteryChange } from './proficiency_display.js';
 import { skillOf } from './content.js';
+import { promotion } from './v4/guild.js';
 import { offerCard } from './v4/items.js';
 
 const sys = (text) => `\`${text}\``;
@@ -152,6 +153,10 @@ function changeLines(before, after, content, events) {
             // Patch 9B-1: a check of real difficulty with a learned Skill (a fight's progress is told at its end, endLines)
             out.push(sys(progressText(d, after, content)));
         } else if (e.t === 'level.up' && d.id === 'pc') {
+            if (d.level === content.rules.ranks.bands.find(x=>x.rank==='E')?.min) {
+                const guild = promotion(after,content);
+                out.push(sys(`POWER RANK E — E gear and eligible E manuals, stones and instruction are now usable. P5 techniques can develop from qualifying experience. Choose a class at a safe moment (#class). Guild: ${guild.text || guild.reason}.`));
+            }
             lvl = d.level;
             out.push(sys(`LEVEL UP → Level ${d.level} (+${d.free_points} free Stat Points) · spend them with #assign <STAT> <n>, e.g. #assign INT 3 WIL 2`));
         } else if (e.t === 'quest.ready') {

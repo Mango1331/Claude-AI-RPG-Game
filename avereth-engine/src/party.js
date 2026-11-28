@@ -441,7 +441,7 @@ export function partyView(s,content,compact=false) {
         const known = here ? s.scene.at : m.lastSeen?.at || m.at;
         const mode = (here?e?.status:m.lastSeen?.status)==='dead' ? 'dead' : m.mode;
         lines.push([e?.name || m.who,mode,here ? '' : 'last seen '+known+' · minute '+(m.lastSeen?.minute ?? '?'),
-            sheet ? 'L'+sheet.level+' '+(sheet.class || sheet.training) : 'profile pending'].filter(Boolean).join(' · '));
+            sheet ? 'L'+sheet.level+' '+(sheet.class || sheet.training)+' · Rank '+deriveCharacter(sheet,content).rank : 'profile pending'].filter(Boolean).join(' · '));
         if (sheet) {
             const d=deriveCharacter(sheet,content);
             lines.push(`HP ${sheet.hp}/${d.maxHp} · MP ${sheet.mp}/${d.maxMp} · STA ${sheet.sta}/${d.maxSta}`+

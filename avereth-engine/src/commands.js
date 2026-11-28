@@ -9,7 +9,7 @@ import { classLines, className } from './v4/class_growth.js';
 import { featLines } from './v4/feats.js';
 import { effectsNow, masteryChange } from './proficiency_display.js';
 import { carriedObjects } from './v4/trade.js';
-import { profileOf, sourceText } from './v4/items.js';
+import { profileOf, sourceText, equipmentComparison } from './v4/items.js';
 import { formatCoin } from './economy.js';
 import { findSkill, rulesetOf, startClasses, skillOf, kitOf } from './content.js';
 import { passiveTotals, skillCostAmount, passivesOf, passiveText, effectiveStats, statsText, passiveSlots } from './passives.js';
@@ -175,7 +175,7 @@ function ppText(content, sk, v, state) {
     return v.prof >= 5 ? 'PP max' : `PP ${v.pp || 0}/${promotionPp(content, sk, state)}`;
 }
 
-function skill(state, content, arg) {
+export function skillDetails(state, content, arg) {
     const s = pcSheet(state);
     const sk = findSkill(content, arg, s.class, state);
     if (!sk) return `[SYSTEM // SKILL]\nUNKNOWN SKILL "${arg}".`;
@@ -278,6 +278,7 @@ function item(state, content, arg) {
     if (it.contains) lines.push(`Contains: ${Object.entries(it.contains).map(([k]) => `${content.items.get(k)?.name || k} ×${s.inventory[k] || 0}`).join(', ')}`);
     if (it.note) lines.push(it.note);
     if (it.quality) lines.push('Quality: ' + it.quality);
+    if (!it.equipped && ['weapon','armor','offhand'].includes(it.slot)) lines.push(equipmentComparison(state, content, it));
     const source = sourceText(it);
     if (source) lines.push(source);
     if (it.kind === 'restore') lines.push('Restores ' + it.amount + ' ' + it.resource.toUpperCase());
@@ -450,7 +451,7 @@ export function runCommands(state, content, text) {
         switch (name) {
             case 'status': case 'stats': panels.push(status(s, content)); break;
             case 'skills': panels.push(skills(s, content)); break;
-            case 'skill': panels.push(arg ? skill(s, content, arg) : skills(s, content)); break;
+            case 'skill': panels.push(arg ? skillDetails(s, content, arg) : skills(s, content)); break;
             case 'class': panels.push(klass(s, content)); break;
             case 'passives': panels.push(['[SYSTEM // PASSIVES]', ...(rulesetOf(s) >= 2 ? passiveLines(s, content) : ['No dynamic Passives under these rules.'])].join('\n')); break;
             case 'feats': panels.push(featLines(state, content).join('\n')); break;

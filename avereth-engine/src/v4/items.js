@@ -134,18 +134,24 @@ export function gearText(profile) {
     return `${profile.rank} ${profile.slot}: ${stats}`;
 }
 
+export function equipmentComparison(state, content, p) {
+    const sheet = state.entities.pc.sheet;
+    const worn = sheet.equipment?.[p.slot];
+    const current = typeof worn === 'string' ? content.items.get(worn) : worn;
+    const stats = ['atk','matk','def','mdef'].filter(k => p[k] || current?.[k]).map(k => {
+        const old = current?.[k] || 0, next = p[k] || 0, delta = next - old;
+        return `${k.toUpperCase()} equipped ${old}, ${delta >= 0 ? '+' : ''}${delta} → ${next}`;
+    });
+    return [p.rank, p.quality, ...stats, rankRefusal(content, sheet.level, p)].filter(Boolean).join(' · ');
+}
+
 /** Player-visible confirmed offers. A price is for the stated lot; comparisons use the actual equipped snapshot. */
 export function offerCard(state, content, offer) {
     const seller = offer.canon ? 'Guild' : state.entities[offer.seller]?.name || 'merchant';
     const clean = text => String(text).replace(/[<>`\n\r]/g, ' ');
     return offer.lines.map(l => {
         const p = l.profile;
-        const equipped = p?.kind === 'gear' && state.entities.pc.sheet.equipment[p.slot];
-        const current = typeof equipped === 'string' ? content.items.get(equipped) : equipped;
-        const compare = current ? ['atk', 'matk', 'def', 'mdef'].filter(k => p[k] || current[k]).map(k => {
-            const d = (p[k] || 0) - (current[k] || 0);
-            return `${k.toUpperCase()} equipped ${current[k] || 0}, ${d >= 0 ? '+' : ''}${d}`;
-        }).join('; ') : '';
+        const compare = p?.kind === 'gear' ? equipmentComparison(state, content, p) : '';
         const info = gearText(p) || sourceText(p) || (p?.kind === 'restore' ? `${p.amount} ${p.resource.toUpperCase()}` : 'ordinary merchandise');
         // Build .142: a price that does not bind is shown as information, not as something to buy
         if ((l.terms ?? 'firm') !== 'firm') return clean(`NOT BINDING — ${seller}: ${l.what} · ${Number.isInteger(l.price_cp) ? `${l.qty ?? 1} for ${l.price_cp} cp` : 'no confirmed price'} · ${l.terms === 'conditional' ? `conditional${l.condition ? `: ${l.condition}` : ''}` : 'price not confirmed'} · cannot be bought yet`);

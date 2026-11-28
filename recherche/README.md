@@ -4,6 +4,7 @@ Hier stehen **nur Quellenlinks**, keine wiederholten Ergebnisbeschreibungen. Erg
 
 | Etappe / Forschungsfeld | Berichte und unabhängige Reviews | Reproduktion und Originale |
 |---|---|---|
+| **E–S · Balance und Weltmodell** | [GPT-Fachgrundlage F→E bis S](AVERETH_261_E_BIS_S_SPIELDESIGN_BALANCE_WELT_FACHGRUNDLAGE_GPT.md) · [Claude-Analyse: Balancekopplungen, Weltmodell und Entscheidungsvorlage](AVERETH_261_E_BIS_S_BALANCE_WELTMODELL_CLAUDE.md) | [Offline-Simulationen und Rechenmodelle](claude_261_e_bis_s/) |
 | **.262 · Rangfähiges Fundament** | [Fachbericht und Abnahme](AVERETH_262_RANGFAEHIGES_FUNDAMENT_ABNAHME.md) | [Gepaartes Modellabenteuer](../testrun_10b/openrouter-20261128-fundament-262/) · [Messdaten](abnahme_262/) |
 | **.261 · Gesamtarchitektur, Effizienz und Beta-Reife (Claude-Analyse)** | [Unabhängige Gesamtanalyse mit Paketen A–D](AVERETH_261_GESAMTARCHITEKTUR_EFFIZIENZ_UND_BETA_REIFE_CLAUDE.md) · [Bewertung des GPT-Gegenreviews R1–R12, Korrekturen und nächste Schritte](AVERETH_261_CLAUDE_BEWERTUNG_GPT_GEGENREVIEW_UND_NAECHSTE_SCHRITTE.md) | [Offline-Skripte der Analyse](claude_261_analyse/) · [Offline-Skripte zum Gegenreview](claude_261_gegenreview/) |
 | **.261 · Restpaket nach Claim + State** | [Extractor-Recovery und Teilübernahme](AVERETH_261_EXTRACTOR_RECOVERY_ABNAHME.md) | [Abnahme der Validierungsvereinfachung auf .260](AVERETH_252_VALIDIERUNGSVEREINFACHUNG_ABNAHME.md) |
